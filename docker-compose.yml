@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  flexget:
+    image: pthelper:v1.0
+    container_name: pthelper
+    restart: always
+    volumes:
+      - 本地目录/db:/db
+      - 本地目录/logs:/logs
+      - 本地目录/backups:/backups
+    ports:
+      - "58000:80"

@@ -1,0 +1,72 @@
+{% extends 'base_right.html' %}
+{% load static %}
+
+
+{% block header %}
+<link href="{% static 'multi-select/css/multi-select.dist.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block bodycontent %}
+<div class="content">
+    <form id="form" class="form-horizontal form-ajax" role="form"  data-toggle="validator" method="POST" >{% csrf_token %}
+        <input type="hidden" name="id" value="{{ id }}"/>
+        <div class="form-group">
+            <label for="name" class="control-label col-xs-12 col-sm-2">用户组名</label>
+            <div class="col-xs-12 col-sm-6">
+                <input type="text" class="form-control" id="name" name="row[name]" placeholder="用户组名" value="{{ group.name }}" readonly data-rule="required" />
+            </div>
+        </div>
+        <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户成员</label>
+                <div class="col-xs-12 col-sm-6">
+                <select id='users' name="users[]" multiple='multiple'>
+                    {{ html|safe }}
+                </select>
+                </div>
+        </div>
+        <div class="form-group layer-footer">
+            <label class="control-label col-xs-12 col-sm-2"></label>
+            <div class="col-xs-12 col-sm-6">
+                <a href="javascript:;" id="btnsubmit" class="btn btn-success btn-embossed" >确定</a> 
+                <button type="reset" class="btn btn-default btn-embossed">重置</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
+
+
+{% block footer %}
+<script src="{% static 'multi-select/js/jquery.multi-select.js' %}"></script>
+<script>
+
+    $('#users').multiSelect({
+        keepOrder: true,
+        //dblClick : true, //双击，默认点击选中
+        afterSelect: function(values){
+            //console.log("select===>" + values)
+        },
+        afterDeselect: function(values){
+            //console.log("deselect===>" + values)
+        }
+        });
+/*
+    $('#form').on('click', 'a.btn.btn-success.btn-embossed', function () {
+        var data = $("#form").serialize();
+        console.log(data);
+    })*/
+
+
+    $('#form').validator({
+        valid: function (ret) {
+            var data = $("#form").serialize();
+            apiAjax("/myauth/group/groupusersadd", data)
+        }
+    })
+        // 使用链接代替submit按钮（注意：这种情况下输入框里面的回车键不能触发submit事件）
+        .on("click", "a.btn.btn-success.btn-embossed", function (e) {
+            $(e.delegateTarget).trigger("validate");
+        });
+</script>
+{% endblock %}

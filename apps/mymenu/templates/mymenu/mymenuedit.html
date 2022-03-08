@@ -1,0 +1,86 @@
+{% extends 'base_right.html' %}
+
+{% block bodycontent %}
+<div class="content">
+    <form id="form" class="form-horizontal form-ajax" role="form" data-toggle="validator" method="POST" >{% csrf_token %}
+        <input type="hidden" name="id" value="{{ id }}"/>
+
+        <div class="form-group">
+                <label for="name" class="control-label col-xs-12 col-sm-2">菜单名称</label>
+                <div class="col-xs-12 col-sm-6">
+                    <input type="text" class="form-control" id="name" name="row[name]" placeholder="菜单名称" data-rule="required" value="{{mymenu.name}}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="menuurl" class="control-label col-xs-12 col-sm-2">菜单地址</label>
+                <div class="col-xs-12 col-sm-6">
+                    <input type="text" class="form-control" id="menuurl" name="row[menuurl]" placeholder="菜单地址" data-rule="required" value="{{mymenu.menuurl}}"  />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="menutype" class="control-label col-xs-12 col-sm-2">菜单类型</label>
+                <div class="col-xs-12 col-sm-6">
+                    <select class="form-control" data-rule="required" name="row[menutype]" id="menutype">
+                        {% if mymenu.menutype == 1 %}
+                        <option value="1" selected="selected">菜单</option>
+                        <option value="2">功能</option>
+                        {% else %}
+                        <option value="1">菜单</option>
+                        <option value="2" selected="selected">功能</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="menuseq" class="control-label col-xs-12 col-sm-2">排序序号</label>
+                <div class="col-xs-12 col-sm-6">
+                    <input type="text" class="form-control" id="menuseq" name="row[menuseq]" placeholder="排序序号"
+                    data-rule-intnum="[/^\+?[1-9][0-9]*$/,'请输入大于0的正整数']" data-rule="required;intnum" value="{{mymenu.menuseq}}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="menupid" class="control-label col-xs-12 col-sm-2">上级菜单</label>
+                <div class="col-xs-12 col-sm-6">
+                    <select class="form-control" name="row[menupid]" id="menupid">
+
+                            <option value="0">顶级</option>
+
+                        {% for data in menu %}
+
+                            {% if mymenu.menupid == data.id %}
+                                <option value="{{data.id}}" selected="selected">{{data.name}}</option>
+                            {% else%}
+                                <option value="{{data.id}}">{{data.name}}</option>
+                            {% endif %}
+
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        <div class="form-group layer-footer">
+                <label class="control-label col-xs-12 col-sm-2"></label>
+                <div class="col-xs-12 col-sm-6">
+                    <a href="javascript:;" class="btn btn-success btn-embossed" >确定</a> 
+                    <button type="reset" class="btn btn-default btn-embossed">重置</button>
+                </div>
+            </div>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block footer %}
+<script>
+        $('#form').validator({
+            valid: function (ret) {
+                var data = $("#form").serialize();
+                apiAjax("/mymenu/edit", data)
+                parent.flushztree();//点击确定调用父页面方法  
+            }
+        })
+            // 使用链接代替submit按钮（注意：这种情况下输入框里面的回车键不能触发submit事件）
+            .on("click", "a.btn.btn-success.btn-embossed", function (e) {
+                $(e.delegateTarget).trigger("validate");
+            });
+</script>
+{% endblock %}

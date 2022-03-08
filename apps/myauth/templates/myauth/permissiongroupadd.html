@@ -1,0 +1,99 @@
+{% extends 'base_right.html' %}
+
+{% block bodycontent %}
+<div class="content">
+    <form id="form" class="form-horizontal form-ajax" role="form"  data-toggle="validator" method="POST" >{% csrf_token %}
+        <input type="hidden" name="id" value="{{ id }}"/>
+        <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户组</label>
+                <div class="col-xs-12 col-sm-6">
+                <input type="text" class="form-control" id="groupname" name="row[groupname]" value="{{ groupname }}" readonly data-rule="required" />
+                </div>
+        </div>
+        <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">访问权限</label>
+                <div class="col-xs-12 col-sm-6">
+                        <ul id="menusid" class="ztree"></ul>
+                </div>
+        </div>
+        <div class="form-group layer-footer">
+            <label class="control-label col-xs-12 col-sm-2"></label>
+            <div class="col-xs-12 col-sm-6">
+                <a href="javascript:;" id="btnsubmit" class="btn btn-success btn-embossed" >确定</a> 
+                <button type="reset" class="btn btn-default btn-embossed">重置</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
+
+
+{% block footer %}
+<script>
+
+    var ztree_setting = {
+        check: {
+            enable: true
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        }
+    };
+    //获取数据组合成ztree数据
+    $.get('/mymenu/groupmenuztree?id={{id}}',{},function(data){
+        $.fn.zTree.init($("#menusid"), ztree_setting,eval(data));
+    });
+
+    //获取选中树的节点ID
+    function getTreeid(treeID){
+        var treeObj=$.fn.zTree.getZTreeObj(treeID);
+        nodes=treeObj.getCheckedNodes(true);
+        var v=[]
+        for(var i=0;i<nodes.length;i++){
+            v.push(nodes[i].id)
+        }
+        return v;
+    }
+/*
+    $('#form').on('click', 'a.btn.btn-success.btn-embossed', function () {
+        var data = $("#form").serialize();
+        console.log(data);
+    })*/
+
+    //将form中的值转换为键值对。
+    function getFormJson(frm) {
+        var o = {};
+        var a = $(frm).serializeArray();
+        $.each(a, function () {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+
+        return o;
+    }
+
+    $('#form').validator({
+        valid: function (ret) {
+            //var data = $("#form").serialize();
+            var data = getFormJson('#form');
+            //将数值的ID加到form字典中
+            var treedata = getTreeid("menusid");
+            data["menusid"]=treedata.join(",");
+            apiAjax("/myauth/permissiongroup/add", data)
+        }
+    })
+        // 使用链接代替submit按钮（注意：这种情况下输入框里面的回车键不能触发submit事件）
+        .on("click", "a.btn.btn-success.btn-embossed", function (e) {
+            $(e.delegateTarget).trigger("validate");
+        });
+</script>
+{% endblock %}

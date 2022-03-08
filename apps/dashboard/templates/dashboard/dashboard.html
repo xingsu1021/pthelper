@@ -1,0 +1,184 @@
+{% load static %}
+<style>
+/** 最新动态时间线 */
+.layui-timeline-dynamic .layui-timeline-item {
+    padding-bottom: 0;
+}
+
+.layui-timeline-dynamic .layui-timeline-item:before {
+    top: 16px;
+}
+
+.layui-timeline-dynamic .layui-timeline-axis {
+    width: 9px;
+    height: 9px;
+    left: 1px;
+    top: 7px;
+    background-color: #cbd0db;
+}
+
+.layui-timeline-dynamic .layui-timeline-axis.active {
+    background-color: #0c64eb;
+    box-shadow: 0 0 0 2px rgba(12, 100, 235, .3);
+}
+</style>
+
+<!-- 正文开始 -->
+<div class="layui-fluid ew-console-wrapper">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    PT站数量<span class="layui-badge layui-badge-green pull-right">个</span>
+                </div>
+                <div class="layui-card-body">
+                    <p class="lay-big-font">{{sites_num}}</p>
+                </div>
+            </div>
+        </div>
+        <!--
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    今日签到成功<span class="layui-badge layui-badge-blue pull-right">个</span>
+                </div>
+                <div class="layui-card-body">
+                    <p class="lay-big-font">1</p>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    今日签到失败<span class="layui-badge layui-badge-red pull-right">个</span>
+                </div>
+                <div class="layui-card-body">
+                    <p class="lay-big-font">1</p>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    总做种下载量<span class="layui-badge layui-badge-red pull-right">GB</span>
+                </div>
+                <div class="layui-card-body">
+                    <p>做种<span class="pull-right">1G</span></p>
+                    <p>下载<span class="pull-right">1G</span></p>
+                </div>
+            </div>
+        </div>
+        -->
+    </div>
+
+    <div class="layui-row layui-col-space15">
+
+        <div class="layui-col-sm6">
+            <div class="layui-card">
+                <div class="layui-card-header">今日签到失败信息</div>
+                <div class="layui-card-body">
+                    <table class="layui-table" id="signFailTable" lay-filter="signFailTable"></table>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">已知问题</div>
+                <div class="layui-card-body dynamic-card-body mini-bar" style="height: 265px;">
+                    <ul class="layui-timeline layui-timeline-dynamic">
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis"></i>
+                            <div class="layui-timeline-content layui-text">
+                                <div class="layui-timeline-title">学校由于CF干扰，需要同一浏览器访问后在执行补签
+                            </div>
+                        </li>
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis active"></i>
+                            <div class="layui-timeline-content layui-text">
+                                <div class="layui-timeline-title">暂不支持全站备份和恢复
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="signFailTableBar">
+    <a class="layui-btn layui-btn-sm layui-btn-danger" lay-event="signAgain">补签</a>
+</script>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin',  'formX', 'dropdown'], function () {
+    var $ = layui.jquery;
+    var layer = layui.layer;
+    var form = layui.form;
+    var table = layui.table;
+    var tableX = layui.tableX;
+    var util = layui.util;
+    var admin = layui.admin;
+    var formX = layui.formX;
+    var setter = layui.setter;
+
+    // 渲染表格
+    var insTb = tableX.render({
+        elem: '#signFailTable',
+        url: setter.base_server + 'cron/loginfo',
+        method: 'POST',
+        page: true,
+        limit:20,
+        limits:[20,50,100],
+        cols: [[
+            {type: 'checkbox'},
+            {field: 'id', title: 'ID',hide:true},
+            {field: 'name', sort: true, title: '站点'},
+            {field: 'message', title: '失败原因'},
+            {align: 'center', toolbar: '#signFailTableBar', title: '操作'}
+        ]]
+    });
+
+    // 工具条点击事件
+    table.on('tool(signFailTable)', function (obj) {
+        var data = obj.data;
+        var layEvent = obj.event;
+
+        if(layEvent === 'signAgain'){
+
+            //var csrftoken = getCookie('csrftoken');
+            layer.confirm('确定对 ' + data.name + '进行补签操作？',{icon: 0, title: '提示', shadeClose: true},
+            function (i) {
+                layer.close(i);
+                layer.load(2);
+                $.ajax({ 
+                        url : "common/signagain",
+                        type: 'POST', 
+                        dataType : "json", 
+                        data: {'id':data.id,'action':'again', 'name':data.name, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                        // beforeSend: function(request) {
+                        //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                        //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                        // },
+                        success : function(d) { 
+                            layer.closeAll('loading');
+                            if (d.code == 1) {
+                                table.reload('signFailTable', {});
+                                layer.msg(d.msg, {icon: 1});
+                            } else {
+                                layer.msg(d.msg, {icon: 2});
+                            }
+                        } 
+                }); 
+            });
+        }
+    });
+    
+});
+</script>

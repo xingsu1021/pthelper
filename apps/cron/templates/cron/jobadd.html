@@ -1,0 +1,321 @@
+<!-- 表单弹窗 -->
+<form id="jobAddForm" lay-filter="jobAddForm" class="layui-form model-form" method="POST">{% csrf_token %}
+
+    <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">任务类型</label>
+            <div class="layui-input-block">
+                <div id="job_type"></div>
+            </div>
+        </div>
+    
+    <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">任务名称</label>
+            <div class="layui-input-block">
+                <input name="name" type="text" class="layui-input" maxlength="30" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">执行周期</label>
+            <div class="layui-input-inline" style="width: 150px;">
+
+                <div id="crontab_time" class="xm-select-demo"></div>
+
+            </div>
+            <span id="crontab_where_view"></span>
+        </div>
+
+    
+        <div class="layui-form-item">
+            <label class="layui-form-label">任务状态</label>
+            <div class="layui-input-block">
+                <input type="radio" name="crontab_status" value="1" title="激活" checked/>
+                <input type="radio" name="crontab_status" value="0" title="禁用"/>
+            </div>
+        </div>
+
+        <div class="layui-form-itemm" id="crontab_type_view"></div>
+
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="jobAddForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+
+<script>
+    /**
+     * 根据ID获取DOM元素对象
+     * @param {string} id 
+     */
+    function getById(id) {
+        return document.getElementById(id);
+    }
+
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'formX', 'dropdown','laytpl'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var laytpl = layui.laytpl;
+
+        var jobTypeList = [];
+
+        form.render('radio');
+        form.render('select', 'jobAddForm');
+
+          // 渲染多选下拉框
+          var insSel = xmSelect.render({
+            el: '#job_type',
+            name: 'job_type',
+            prop: {
+                name: 'name',
+                value: 'value',
+            },
+            layVerify: 'required',
+            radio: true,
+	        clickClose: true,
+            data: [],
+            on: function(data){
+                //isAdd, 此次操作是新增还是删除
+		        var isAdd = data.isAdd;
+
+                //点击获取数组对象
+                //console.log(data.arr)
+                if (isAdd){
+                    crontab_sel_action(data.arr[0].value)
+                }else{
+                    crontab_sel_action('')
+                }
+
+            }
+        });
+
+        /* 获取所有记录类型 */
+        var loadIndex = layer.load(2);
+        admin.req('cron/jobtypeinfo/list', function (res) {
+            layer.close(loadIndex);
+            if (0 === res.code) {
+                $.each(res.data, function (index, item) {
+                    jobTypeList.push({name: item.name, value: item.type_id});
+                });
+                insSel.update({
+                    data: jobTypeList,
+                    autoRow: true,
+                })
+            } else {
+                layer.msg(res.msg, {icon: 2});
+            }
+        });
+
+        var crontab_time = xmSelect.render({
+            el: '#crontab_time', 
+            radio: true,
+	        clickClose: true,
+            height: "252px",
+            theme: {
+                color: '#0081ff',
+            },
+            data: [
+                {name: '每小时', value: "hour"},
+                {name: '每天', value: "day"},
+                {name: '每星期', value: "week"},
+                {name: '每月', value: "month"},
+                {name: 'N分钟', value: "minute_n"},
+                {name: 'N小时', value: "hour_n"},
+                {name: 'N天', value: "day_n"},
+            ],
+            on: function(data){
+                //isAdd, 此次操作是新增还是删除
+		        var isAdd = data.isAdd;
+
+                //点击获取数组对象
+                //console.log(data.arr)
+                if (isAdd){
+                    crontab_where_sel_action(data.arr[0].value)
+                }else{
+                    crontab_where_sel_action('')
+                }
+
+            }
+        })
+
+        form.on('submit(jobAddForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('cron/job/add', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('jobTable', {});
+                    admin.closeDialog('#jobAddForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#jobAddForm').attr('method'));
+            return false;
+        });
+
+        /**
+         * 任务类型 选择框
+         * @param {string} type       任务类型
+         */
+        let crontab_sel_action = function(type = '') {
+            console.log(type)
+            let rule = {
+                type: type
+                }
+                ,getTpl = crontab_type_tpl.innerHTML
+                ,view = getById('crontab_type_view');
+            //初始清空
+            view.innerHTML = '';
+            if (type === '') {
+                getById('switch').checked = false;
+                form.render();
+                return ;
+            }
+
+            laytpl(getTpl).render(rule, function(html) {
+                view.innerHTML = html;
+            });
+            form.render();
+
+            //联动：签到任务
+            sign_sel_action(type);
+
+        };
+        
+        /**
+         * 任务周期选择框
+         * @param {string} where     执行周期
+         */
+        let crontab_where_sel_action = function(where = '') {
+        let rule = {
+            where: where
+            ,weeks: where === 'week'
+            ,day: $.inArray(where, ['day_n', 'month']) >= 0
+            ,hour: $.inArray(where, ['hour', 'minute_n']) < 0
+            ,minute: !!where
+            }
+            ,getTpl = crontab_where_tpl.innerHTML
+            ,view = document.getElementById('crontab_where_view');
+        //初始清空
+        view.innerHTML = '';
+        if (where === '') {
+            return ;
+        }
+        laytpl(getTpl).render(rule, function(html) {
+            view.innerHTML = html;
+        });
+        form.render();
+        };
+
+        /**
+         * 任务选择框联动，签到任务
+         * @param {string} type       任务类型
+         */
+        let sign_sel_action = function(type = '') {
+            if (type !== 1000) {
+                return;
+            }
+            let callback = null;
+
+            //站点
+            $.getJSON('/sites/siteconfigname/list', function (d) {
+                let getTpl = sign_sites_tpl.innerHTML
+                ,view = getById('sign_sites_view');
+                if (d.code !== 0) {
+                    return;
+                }
+                if (d.data.count <= 0) {
+                    layer.alert('请先配置站点信息', function(index){
+                        layer.close(index);
+                    });
+                    return;
+                }
+
+                let data = Object.keys(d.data).map(function (key){
+                    return d.data[key].name;
+                });
+                laytpl(getTpl).render(data, function(html) {
+                    view.innerHTML = html;
+                });
+                //回调
+                callback !== null && typeof callback[0] === 'function' && callback[0]();
+                form.render('checkbox');
+            });
+
+        };
+
+    });
+</script>
+
+{% verbatim myblock %}
+
+<script type="text/html" id="crontab_type_tpl">
+
+    {{# if (d.type === 1000) { }}
+    <div class="layui-form-item">
+        <label class="layui-form-label required">签到站点</label>
+        <div class="layui-input-block" id="sign_sites_view">
+        </div>
+        <div class="layui-input-block">
+            <br><span class="layui-badge layui-badge-red"><h2>默认所有站点，忽略配置！</h2></span>&nbsp;
+        </div>
+    </div>
+    {{# } }}
+</script>
+<!-- 模板：签到任务 [站点] 复选框 -->
+<script id="sign_sites_tpl" type="text/html">
+    {{#  layui.each(d, function(index, item){ }}
+    <input type="checkbox" name="sites[{{item}}]" title="{{item}}" checked>
+    {{#  }); }}
+</script>
+
+<!-- 模板：计划任务 [执行周期] 组合 -->
+<script type="text/html" id="crontab_where_tpl">
+    {{# if (d.weeks) { }}
+    <div class="layui-inline">
+      <div class="layui-input-inline" style="width: 100px;">
+        <select name="weeks" lay-filter="weeks" lay-verify="required" id="weeks">
+          <option value="1" selected>周一</option>
+          <option value="2">周二</option>
+          <option value="3">周三</option>
+          <option value="4">周四</option>
+          <option value="5">周五</option>
+          <option value="6">周六</option>
+          <option value="0">周日</option>
+        </select>
+      </div>
+    </div>
+    {{# } }}
+    {{# if (d.day) { }}
+    <div class="layui-inline">
+      <div class="layui-input-inline" style="width: 140px;">
+        <input type="number" name="day" lay-verify="required" lay-reqtext="{{ d.where === 'day_n' ? '间隔天数' : '每月第几日' }}不能为空" placeholder="请输入{{ d.where === 'day_n' ? '间隔天数' : '每月第几日' }}" class="layui-input" id="day">
+      </div>
+      <div class="layui-form-mid">{{ d.where === 'day_n' ? '天' : '日' }}</div>
+    </div>
+    {{# } }}
+    {{# if (d.hour) { }}
+    <div class="layui-inline">
+      <div class="layui-input-inline" style="width: 100px;">
+        <input type="number" name="hour" lay-verify="required" lay-reqtext="小时不能为空" placeholder="请输入小时" class="layui-input" id="hour">
+      </div>
+      <div class="layui-form-mid">小时</div>
+    </div>
+    {{# } }}
+    {{# if (d.minute) { }}
+    <div class="layui-inline">
+      <div class="layui-input-inline" style="width: 100px;">
+        <input type="number" name="minute" lay-verify="required" lay-reqtext="分钟不能为空" placeholder="请输入分钟" class="layui-input" id="minute">
+      </div>
+      <div class="layui-form-mid">分钟</div>
+    </div>
+    {{# } }}
+  </script>
+  {% endverbatim myblock %}

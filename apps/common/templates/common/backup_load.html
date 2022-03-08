@@ -1,0 +1,75 @@
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表单开始 -->
+            <form class="layui-form" id="backuploadForm" lay-filter="backuploadForm"  method="POST">{% csrf_token %}
+                <input name="id" type="hidden" value="{{id}}"/>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-filter="backupSubmit" lay-submit>&emsp;备份&emsp;</button>
+                        <button class="layui-btn layui-btn-normal" lay-filter="loadSubmit" lay-submit>&emsp;恢复&emsp;</button>
+
+                    </div>
+                </div>
+            </form>
+            <!-- //表单结束 -->
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">说明</div>
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote layui-quote-nm">备份恢复数据
+            </blockquote>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script>
+        layui.use(['layer', 'form', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+
+        form.on('submit(backupSubmit)', function (data) {
+            layer.load(2);
+            admin.req('common/backup', {'action':'backup'}, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#backuploadForm').attr('method'));
+            return false;
+        });
+
+        // form.on('submit(backuploadcrtestSubmit)', function (data) {
+        //     layer.load(2);
+        //     admin.req('common/backuploadcrtest', data.field, function (data) {
+        //         layer.closeAll('loading');
+        //         if (data.code == 1) {
+        //             layer.msg(data.msg, {icon: 1});
+        //         } else {
+        //             layer.msg(data.msg, {icon: 2});
+        //         }
+        //     }, $('#backuploadcrForm').attr('method'));
+        //     return false;
+        // });
+
+
+
+
+
+    });
+
+</script>

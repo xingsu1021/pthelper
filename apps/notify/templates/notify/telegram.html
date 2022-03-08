@@ -1,0 +1,113 @@
+<style>
+    #telegramForm {
+        max-width: 800px;
+    }
+
+
+    #telegramForm .layui-form-item {
+        margin-top: 20px;
+    }
+
+
+</style>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表单开始 -->
+            <form class="layui-form" id="telegramForm" lay-filter="telegramForm"  method="POST">{% csrf_token %}
+                <input name="id" type="hidden" value="{{id}}"/>
+                <input name="name" type="hidden" value="telegram"/>
+
+                <div class="layui-form-item" >
+                    <label class="layui-form-label layui-form-required">频道/个人ID:</label>
+                    <div class="layui-input-block">
+                        <input name="tg_chat_id" class="layui-input"
+                               lay-verType="message" lay-verify="required" required value="{{tg_chat_id}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">Telegram令牌:</label>
+                    <div class="layui-input-block">
+                        <input name="tg_token" class="layui-input"
+                               lay-verType="message" lay-verify="required" required value="{{tg_token}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-filter="telegramSubmit" lay-submit>&emsp;提交&emsp;</button>
+                        <button class="layui-btn layui-btn-normal" lay-filter="telegramtestSubmit" lay-submit>&emsp;测试&emsp;</button>
+
+                    </div>
+                </div>
+            </form>
+            <!-- //表单结束 -->
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">说明</div>
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote layui-quote-nm">
+                1、自备扶手梯<br>
+                2、关注@BotFather用户&emsp;&emsp;<a href="https://telegram.me/botfather" target="_blank" rel="noopener">点击这里创建token</a><br>
+                <pre class="layui-code">依次输入:
+                    /start
+                    /newbot
+                    # 然后输入机器人的名字,注意必须以 bot 结尾!
+                    # `987654321:FEDCBA_dfoiuweSWEczgxT7-l4r9Y` 收到类似这样的就是你的token
+                </pre>
+                3、获取个人chat_id &emsp;&emsp;<a href="https://telegram.me/userinfobot" target="_blank" rel="noopener">点击这里获取chat_id</a></p>
+                4、获取频道chat_id &emsp;&emsp;
+                <pre class="layui-code">创建新的频道,并把创建的机器人拉到频道里,然后@你的机器人并随意发送一条信息,然后访问 https://api.telegram.org/bot<token>/getUpdates 获取,-100开头的id就是.
+                </pre>
+            
+            </blockquote>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'admin'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var admin = layui.admin;
+
+
+        /* 监听表单提交 */
+        // form.on('submit(telegramSubmit)', function (data) {
+        //     layer.msg(JSON.stringify(data.field));
+        //     return false;
+        // });
+
+        form.on('submit(telegramSubmit)', function (data) {
+            layer.load(2);
+            admin.req('notify/telegram', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#telegramForm').attr('method'));
+            return false;
+        });
+
+        form.on('submit(telegramtestSubmit)', function (data) {
+            layer.load(2);
+            admin.req('notify/telegramtest', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#telegramForm').attr('method'));
+            return false;
+        });
+    });
+</script>

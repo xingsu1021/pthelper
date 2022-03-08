@@ -1,0 +1,169 @@
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline searchInput">
+                        <input id="logSearchValue" class="layui-input" type="text" placeholder="输入关键字"/>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="logBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                        <button id="logBtnDel" class="layui-btn layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="logTable" lay-filter="logTable"></table>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="logTableBar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+<script>
+        layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+
+        form.render('select');
+        // 渲染表格
+        var insTb = tableX.render({
+            elem: '#logTable',
+            url: setter.base_server + 'cron/log/list',
+            method: 'GET',
+            page: true,
+            limit:15,
+            limits:[15,50,100],
+            cols: [[
+                {type: 'checkbox'},
+                {field: 'id', title: 'ID',hide:true},
+                {field: 'name', sort: true, title: '任务名称'},
+                {field: 'type_id', sort: true, title: '任务类型'},
+                {field: 'crontab_id', sort: true, title: '任务ID'},
+                {field: 'message', sort: true, title: '执行结果'},
+                {field: 'created_at', sort: true, title: '执行时间'},
+                {field: 'status', sort: true, title: '执行状态'},
+                {align: 'center', toolbar: '#logTableBar', title: '操作'}
+            ]]
+        });
+
+
+        // 工具条点击事件
+        table.on('tool(logTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if(layEvent === 'del'){
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定删除此记录 ' + data.name + '？',{icon: 3, title: '警告', shadeClose: true},
+                function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    $.ajax({ 
+                            url : "cron/log/del",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: {'ids':[data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success : function(d) { 
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('logTable', {});
+                                    layer.msg(d.msg, {icon: 1});
+                                } else {
+                                    layer.msg(d.msg, {icon: 2});
+                                }
+                            } 
+                    }); 
+                });
+            }
+        });
+
+
+         // 批量删除按钮点击事件
+         $('#logBtnDel').click(function () {
+            //选中事件
+            var checkStatus = table.checkStatus('logTable')
+            //得到选择长度
+            dataLength = checkStatus.data.length
+            data = checkStatus.data;
+            var ids = [];
+            if (dataLength==0){
+                //未选中
+                layer.msg("请选择需要删除的记录", {icon: 2});
+            }else{
+                layer.confirm('确定删除选中的'+dataLength+'个记录？',{icon: 3, title: '警告', shadeClose: true},
+                function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    for (var i = 0; i < data.length; i++) {
+                        ids.push(data[i].id);
+                    }
+                    $.ajax({ 
+                            url : "cron/log/del",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: {'ids':ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success : function(d) { 
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('logTable', {});
+                                    layer.msg(d.msg, {icon: 1});
+                                } else {
+                                    layer.msg(d.msg, {icon: 2});
+                                }
+                            } 
+                    }); 
+                });
+            } 
+        });
+
+
+        // 监听enter键，光标在搜索框
+        $('#logSearchValue').keydown(function (event) {
+                if (event.keyCode === 13) {
+                    var key = 'search';
+                    var value = $('#logSearchValue').val();
+
+                    table.reload('logTable', {where: {searchKey: key, searchValue: value}});
+                } else if (event.keyCode === 8 && !$psw.val()) {
+                    $("#logSearchValue").val('');
+                    ptable();
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.returnValue) event.returnValue = false;
+                }
+        });
+
+        // 搜索按钮点击事件
+        $('#logBtnSearch').click(function () {
+            var key = 'search';
+            var value = $('#logSearchValue').val();
+
+            table.reload('logTable', {where: {searchKey: key, searchValue: value}});
+        });
+
+
+    });
+</script>

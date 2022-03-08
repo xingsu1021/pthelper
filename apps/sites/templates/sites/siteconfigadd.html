@@ -1,0 +1,62 @@
+<!-- 表单弹窗 -->
+<form id="siteconfigAddForm" lay-filter="siteconfigAddForm" class="layui-form model-form" method="POST">{% csrf_token %}
+
+    <div class="layui-form-item">
+            <label class="layui-form-label">网站名EN</label>
+            <div class="layui-input-block">
+                <input name="name" type="text" class="layui-input" lay-verify="required" required maxlength="20" />
+            </div>
+        </div>
+    
+    <div class="layui-form-item">
+            <label class="layui-form-label">网站名CN</label>
+            <div class="layui-input-block">
+                <input name="name_cn" type="text" class="layui-input" maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">首页地址</label>
+                <div class="layui-input-block">
+                  <input name="index_url" type="text" class="layui-input"  lay-verify="required|urlX"/>
+                </div>
+              </div>
+
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="siteconfigAddForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+
+
+        form.render('select', 'siteconfigAddForm');
+
+
+        form.on('submit(siteconfigAddForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('sites/siteconfig/add', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('siteconfigTable', {});
+                    admin.closeDialog('#siteconfigAddForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#siteconfigAddForm').attr('method'));
+            return false;
+        });
+    });
+</script>

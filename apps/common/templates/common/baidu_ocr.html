@@ -1,0 +1,134 @@
+<style>
+    #baiduocrForm {
+        max-width: 700px;
+
+    }
+
+    #baiduocrForm .layui-form-item {
+        margin-bottom: 25px;
+    }
+
+    #img {
+        width: 25px;
+        height: 15px;
+        position: absolute;
+        right: 5px;
+        margin-top: 12px;
+        top: 1px;
+        text-align: center;
+    }
+
+</style>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表单开始 -->
+            <form class="layui-form" id="baiduocrForm" lay-filter="baiduocrForm"  method="POST">{% csrf_token %}
+                <input name="id" type="hidden" value="{{id}}"/>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">APP_ID</label>
+                    <div class="layui-input-block">
+                            <input name="app_id" class="layui-input"
+                                   lay-verify="required" required value="{{app_id}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">API_KEY</label>
+                    <div class="layui-input-block">
+                        <input name="app_key" class="layui-input"
+                               lay-verify="required" required value="{{app_key}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">SECRET_KEY</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="secret_key" id="secret_key" class="layui-input" lay-verify="required" required value="{{secret_key}}"/>
+                        <!--在输入框后接img标签-->
+                        <img id="img" onclick="hideShowPsw()"
+                        src="/static/assets/images/icon-visible.png">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-filter="baiduocrSubmit" lay-submit>&emsp;提交&emsp;</button>
+                        <!--
+                        <button class="layui-btn layui-btn-normal" lay-filter="baiduocrtestSubmit" lay-submit>&emsp;测试&emsp;</button>
+                        -->
+                    </div>
+                </div>
+            </form>
+            <!-- //表单结束 -->
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">说明</div>
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote layui-quote-nm">申请百度云的免费图片和文字识别,用于验证码识别,天空、皇后必须
+            </blockquote>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script>
+        layui.use(['layer', 'form', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+
+        form.on('submit(baiduocrSubmit)', function (data) {
+            layer.load(2);
+            admin.req('common/baiduocr', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#baiduocrForm').attr('method'));
+            return false;
+        });
+
+        // form.on('submit(baiduocrtestSubmit)', function (data) {
+        //     layer.load(2);
+        //     admin.req('common/baiduocrtest', data.field, function (data) {
+        //         layer.closeAll('loading');
+        //         if (data.code == 1) {
+        //             layer.msg(data.msg, {icon: 1});
+        //         } else {
+        //             layer.msg(data.msg, {icon: 2});
+        //         }
+        //     }, $('#baiduocrForm').attr('method'));
+        //     return false;
+        // });
+
+
+
+
+
+    });
+
+    var demoImg = document.getElementById("img");
+    var PWD = document.getElementById("secret_key");
+    function hideShowPsw() {
+        if (PWD.type == "password") {
+            PWD.type = "text";
+            demoImg.src = "/static/assets/images/icon-invisible.png"; //图片路径（闭眼图片）
+        } else {
+            PWD.type = "password";
+            demoImg.src = "/static/assets/images/icon-visible.png"; // 图片路径（睁眼图片）
+
+        }
+    }
+</script>

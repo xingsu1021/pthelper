@@ -1,0 +1,183 @@
+<style>
+    #signForm {
+        max-width: 700px;
+
+    }
+
+    #signForm .layui-form-item {
+        margin-bottom: 25px;
+    }
+
+</style>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表单开始 -->
+            <form class="layui-form" id="signForm" lay-filter="signForm"  method="POST">{% csrf_token %}
+                <input name="id" type="hidden" value="{{id}}"/>
+                <input name="crontab_id" type="hidden" value="{{crontab_id}}"/>
+                <input name="jobtype_id" type="hidden" value="1000"/>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">每天执行时间:</label>
+                    <div class="layui-inline">
+                        
+                        <div class="layui-input-inline" style="width: 100px;">
+                          <input type="number" name="hour" lay-verify="required|numberX|h5" lay-reqtext="小时不能为空" 
+                                maxlength="2" min="0" max="24" class="layui-input" id="hour" value="{{hour}}"/>
+                        </div>
+                        <div class="layui-form-mid">点</div>
+                        
+                      </div>
+                      <div class="layui-inline">
+                        
+                        <div class="layui-input-inline" style="width: 100px;">
+                          <input type="number" name="minute" lay-verify="required|numberX|h5" lay-reqtext="分钟不能为空" placeholder="请输入分钟" 
+                                maxlength="2" min="0" max="59" class="layui-input" id="minute" value="{{minute}}"/>
+                        </div>
+                        <div class="layui-form-mid">分</div>
+                        
+                      </div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">任务状态<i class="layui-icon layui-icon-tips" lay-tips="禁用模式为直接删除"
+                        lay-direction="1" lay-offset="0,-10px"></i></label>
+                    {% if crontab_status %}
+                    <div class="layui-input-block">
+                        <input type="radio" name="crontab_status" value="1" title="激活" checked/>
+                        <input type="radio" name="crontab_status" value="0" title="禁用"/>
+                    </div>
+                    {% else %}
+                    <div class="layui-input-block">
+                        <input type="radio" name="crontab_status" value="1" title="激活"/>
+                        <input type="radio" name="crontab_status" value="0" title="禁用" checked/>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">消息通知</label>
+
+                    <div class="layui-inline-block" style="margin: 10px;">
+                        {{ notifys|safe }}
+                        <!--
+                        <input type="checkbox" name="notifys[iyuu]" title="IYUU"/>
+                        <input type="checkbox" name="notifys[telegram]" title="Telegram"/>
+                        <input type="checkbox" name="notifys[email]" title="邮件"/>
+                        -->
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-filter="signSubmit" lay-submit>&emsp;提交&emsp;</button>
+
+                    </div>
+                </div>
+            </form>
+            <!-- //表单结束 -->
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">日志</div>
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote layui-quote-nm">
+                <div id="log_view"></div>
+            </blockquote>
+        </div>
+    </div>
+</div>
+
+{% verbatim myblock %}
+<script type="text/html" id="log_tpl">
+    {{#  layui.each(d, function(index, item){ }}
+    <span>{{item}}</span>&nbsp;<br>
+    {{#  }); }}
+    
+</script>
+{% endverbatim myblock %}
+
+<!-- js部分 -->
+<script>
+
+        /**
+     * 根据ID获取DOM元素对象
+     * @param {string} id 
+     */
+     function getById(id) {
+        return document.getElementById(id);
+    }
+    var timer1=null;
+
+    layui.use(['layer', 'form', 'util', 'admin', 'xmSelect', 'formX', 'dropdown','laytpl'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+        var laytpl = layui.laytpl;
+
+        form.render('radio');
+        form.render('checkbox');
+
+        form.on('submit(signSubmit)', function (data) {
+            layer.load(2);
+            //将页面全部复选框选中的值拼接到一个数组中
+            var arr_box = [];
+            $('input[type=checkbox]:checked').each(function() {
+                arr_box.push($(this).val());
+            });
+            data.field.notifys = arr_box
+
+            admin.req('cron/sign', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#signForm').attr('method'));
+            return false;
+        });
+
+        let joblog_action = function() {
+            let callback = null;
+
+            //站点
+            $.getJSON('/cron/loginfo?crontab_id={{crontab_id}}', function (d) {
+                let getTpl = log_tpl.innerHTML
+                ,view = getById('log_view');
+                if (d.code !== 0) {
+                    return;
+                }
+
+                let data = Object.keys(d.data).map(function (key){
+                    console.log(d.data)
+                    return d.data[key].message;
+                });
+                laytpl(getTpl).render(data, function(html) {
+                    view.innerHTML = html;
+                });
+                //回调
+                callback !== null && typeof callback[0] === 'function' && callback[0]();
+
+            });
+
+        };
+
+        joblog_action()
+        //定时请求刷新
+        // timer1=setInterval(function(){
+        //     joblog_action()
+        //   },5000);
+
+    });
+    
+</script>
+

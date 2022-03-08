@@ -1,0 +1,141 @@
+{% extends 'base_right.html' %}
+
+{% block bodycontent %}
+
+<section class="content">
+        <div class="row">
+            <div class="col-md-2">
+                    <div id="treetoolbar" class="toolbar">
+                        <a href="javascript:;" class="btn btn-primary btn-refresh" ><i class="fa fa-refresh"></i> </a>                    
+                    </div>
+                <ul id="menusid" class="ztree"></ul>
+            </div>
+            <div class="col-md-10">
+                <div id="toolbar" class="toolbar">
+                    <a href="javascript:;" class="btn btn-primary btn-refresh" ><i class="fa fa-refresh"></i> </a> 
+                    <a href="javascript:;" id="btnadd" class="btn btn-success btn-add" ><i class="fa fa-plus"></i> 添加</a>                     
+                </div>
+                <table id="table" class="table table-striped table-bordered table-hover" width="100%">
+                </table>
+            </div>
+        </div>
+</section>
+
+{% endblock %}
+
+{% block footer %}
+<script>
+        var toolbar = $("#toolbar");
+        var table = $("#table");
+        
+        // 初始化表格
+        table.bootstrapTable({
+            url: '/mymenu/list',
+            sortName: 'id',
+            sortOrder: 'desc',
+            cache: false,
+            sidePagination: 'server',
+            pagination: true,
+            method: 'get',
+            pageSize: 20,
+            pageList: [20, 50, 100, 200, 'All'],
+            toolbar: "#toolbar",
+            mobileResponsive: true,
+            pk: 'id', //editable插件
+            search: true,
+            searchOnEnterKey: true, //回车查询
+            columns: [
+                [
+                    {field: 'id', title: '序号', visible: false, switchable: false},
+                    {field: 'name', title: '菜单名称'},
+                    {field: 'menuurl', title: 'url地址'},
+                    {field: 'menupid', title: '上级菜单'},
+                    {field: 'menuseq', title: '排序'},
+                    {field: 'menutype', title: '类型'},
+                    {field: 'operate', title: '操作', align: 'center',formatter:function(value,row,index){  
+                        var a = '<a href="#" onclick="edit('+ row.id + ')"><i class="fa fa-pencil"></i>编辑</a>';  
+                        a = a + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" onclick="del('+ row.id +',\'' + row.name + '\')"><i class="fa fa-trash"></i>删除</a> ';  
+                        return a;  
+                        } 
+                    }
+                ]
+            ]
+        });
+        var zTreeObj="";
+        //左边树结构
+        var ztree_setting = {
+            check: {
+                enable: true
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            }
+        };
+        //获取数据组合成ztree数据
+        $.get('/mymenu/menuztree',{},function(data){
+            zTreeObj = $.fn.zTree.init($("#menusid"), ztree_setting,eval(data));
+        });
+
+        function flushztree(){
+            //refresh无效，重新获取一次
+            $.get('/mymenu/menuztree',{},function(data){
+                zTreeObj = $.fn.zTree.init($("#menusid"), ztree_setting,eval(data));
+            });
+        }
+        // 刷新按钮事件
+        $("#treetoolbar").on('click', '.btn-refresh', function () {
+            flushztree()
+        });
+
+        // 刷新按钮事件
+        $(toolbar).on('click', '.btn-refresh', function () {
+            table.bootstrapTable('refresh');
+        });
+
+        //添加按钮事件
+        $(toolbar).on('click', '.btn-add', function () {
+            layui_show('添加','/mymenu/add')
+        })
+
+        function edit(id){
+            layui_show('编辑','/mymenu/edit?id=' + id)
+        }
+
+        // 删除按钮事件
+        function del(id, name) {
+            var csrftoken = getCookie('csrftoken');
+            var data = {"id" : id}
+
+            var indexlayer = layer.confirm(
+                    '确定要删除 '+name+' ?',
+                    //{icon: 3, title: 'Warning', offset: 0, shadeClose: true},
+                    {icon: 3, title: '警告', shadeClose: true},
+                    function () {
+                        $.ajax({ 
+                            url : "/mymenu/del",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: data, 
+                            beforeSend: function(request) {
+                                //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                                request.setRequestHeader("X-CSRFToken", csrftoken);
+                            },
+                            success : function(d) { 
+                                if (d.code == 1){
+                                    toastr.success("操作成功");  
+                                    table.bootstrapTable('refresh');
+                                    layer.close(indexlayer);
+                                }else{
+                                    toastr.error(d.msg);  
+                                }
+                            } 
+                        }); 
+                        
+                    }
+            );
+
+        };
+</script>
+{% endblock %}

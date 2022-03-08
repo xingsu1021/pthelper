@@ -1,0 +1,59 @@
+<!-- user表单弹窗 -->
+<form id="resetPasswordForm" lay-filter="resetPasswordForm" class="layui-form model-form" method="POST">{% csrf_token %}
+    <input name="id" type="hidden" value="{{id}}"/>
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-block">
+            <input type="password" name="password" placeholder="登录密码,长度6-20" type="text" class="layui-input"
+                   lay-verify="pass" required/>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">确认密码</label>
+        <div class="layui-input-block">
+            <input type="password" name="repassword" placeholder="请再次填写密码" type="text" class="layui-input"
+                   lay-verify="repassword" required/>
+        </div>
+    </div>
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="resetPasswordForm-submit" lay-submit>保存</button>
+    </div>
+
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'formX', 'admin'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var admin = layui.admin;
+
+        form.render('radio');
+
+        //自定义验证规则
+        form.verify({
+            pass: [/(.+){6,20}$/, '密码必须6到20位'],
+            repassword: function(value) {
+                var pwd = $('input[name=password').val();
+                if (pwd !== value) 
+                return "二次输入的密码不一致！";
+            }
+        });
+
+        // 表单提交事件
+        form.on('submit(resetPasswordForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('myauth/user/resetpasswd', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    admin.closeDialog('#resetPasswordForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#resetPasswordForm').attr('method'));
+            return false;
+        });
+    });
+</script>

@@ -1,0 +1,54 @@
+<!-- 表单弹窗 -->
+<form id="jobtypeEditForm" lay-filter="jobtypeEditForm" class="layui-form model-form" method="POST">{% csrf_token %}
+    <input name="id" type="hidden" value="{{id}}"/>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">类型名</label>
+            <div class="layui-input-block">
+                <input name="name" type="text" class="layui-input" lay-verify="required" required maxlength="20" value="{{name}}" />
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">唯一标识ID</label>
+            <div class="layui-input-block">
+                <input name="type_id" type="text" class="layui-input" maxlength="4" lay-verify="required|numberX" required value="{{type_id}}"/>
+            </div>
+        </div>
+        
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="jobtypeEditForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'xmSelect', 'table', 'admin','formX'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var xmSelect = layui.xmSelect;
+        var table = layui.table;
+        var admin = layui.admin;
+
+        var formX = layui.formX;
+
+        
+        form.render('select',"jobtypeEditForm");
+
+        form.on('submit(jobtypeEditForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('cron/jobtype/edit', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('jobtypeTable', {});
+                    admin.closeDialog('#jobtypeEditForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#jobtypeEditForm').attr('method'));
+            return false;
+        });
+    });
+</script>

@@ -1,0 +1,56 @@
+<form class="layui-form model-form" id="form-resetaccount"  method="POST">{% csrf_token %}
+    <input name="id" type="hidden" value="{{id}}"/>
+    <div class="layui-form-item">
+        <label class="layui-form-label layui-form-required">新用户名:</label>
+        <div class="layui-input-block">
+            <input type="text" name="name"  class="layui-input"
+                   lay-verType="tips" lay-verify="required" required/>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label layui-form-required">密码:</label>
+        <div class="layui-input-block">
+            <input type="password" name="password" placeholder="请输入新密码" class="layui-input"
+                   lay-verType="tips" lay-verify="required" required/>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block text-right">
+            <button class="layui-btn" lay-filter="submit-resetaccount" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'admin', 'formX'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var admin = layui.admin;
+
+        // 监听提交
+        // form.on('submit(submit-resetaccount)', function (data) {
+        //     layer.msg(JSON.stringify(data.field));
+        //     return false;
+        // });
+
+        // 表单提交事件
+        form.on('submit(submit-resetaccount)', function (data) {
+            console.log(data)
+            layer.load(2);
+            admin.req('myauth/user/resetaccount', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    admin.closeDialog('#form-resetaccount');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#form-resetaccount').attr('method'));
+            return false;
+        });
+
+    });
+</script>

@@ -1,0 +1,131 @@
+{% extends 'base_right.html' %}
+
+{% block bodycontent %}
+
+       
+        <div class="panel panel-default panel-intro">
+                <div class="panel-heading">
+                    <ul class="nav nav-tabs">
+
+                        <li class="active"><a href="#groupperm" data-toggle="tab">用户组权限</a></li>
+
+                        <li class=""><a href="#userperm" data-toggle="tab">用户权限</a></li>
+
+                    </ul>
+                </div>
+
+                <div class="panel-body">
+                    <div id="myTabContent" class="tab-content">
+
+                        <div class="tab-pane fade active in" id="groupperm">
+                            <div class="widget-body no-padding">
+                                    <div id="grouptoolbar" class="toolbar">
+                                        <a href="javascript:;" class="btn btn-primary btn-refresh" ><i class="fa fa-refresh"></i> </a>            
+                                    </div>
+                                    <table id="grouptable" class="table table-striped table-bordered table-hover" width="100%">
+                                    </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade " id="userperm">
+                            <div class="widget-body no-padding">
+                                <div id="usertoolbar" class="toolbar">
+                                    <a href="javascript:;" class="btn btn-primary btn-refresh" ><i class="fa fa-refresh"></i> </a>            
+                                </div>
+                                <table id="usertable" class="table table-striped table-bordered table-hover" width="100%">
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+{% endblock %}
+
+{% block footer %}
+<script>
+        var grouptoolbar = $("#grouptoolbar");
+        var grouptable = $("#grouptable");
+
+        var usertoolbar = $("#usertoolbar");
+        var usertable = $("#usertable");  
+
+        // 初始化表格
+        grouptable.bootstrapTable({
+            url: '/myauth/permissiongroup/list',
+            sortName: 'id',
+            sortOrder: 'desc',
+            cache: false,
+            sidePagination: 'server',
+            pagination: true,
+            method: 'get',
+            pageSize: 20,
+            pageList: [20, 50, 100, 200, 'All'],
+            toolbar: "#grouptoolbar",
+            mobileResponsive: true,
+            pk: 'id', //editable插件
+            columns: [
+                [
+                    {field: 'state', checkbox: true, },
+                    {field: 'id', title: 'ID', visible: false, switchable: false},
+                    {field: 'name', title: '用户组名'},
+                    {field: 'menus', title: '访问权限列表'},
+                    {field: 'operate', title: '操作', formatter: function(value,row,index){
+                        var html = [];
+                        html.push('<a href="javascript:;" onclick="editpermgroup('+ row.id + ')"><i class="fa fa-pencil"></i>设置权限</a>');
+                        return html.join(' ');
+                    }}
+                ]
+            ]
+        });
+
+        // 刷新按钮事件
+        $(grouptoolbar).on('click', '.btn-refresh', function () {
+            grouptable.bootstrapTable('refresh');
+        });
+
+        function editpermgroup(id){
+            layui_show('设置权限','/myauth/permissiongroup/add?id='+id)
+        }
+
+        // 初始化表格
+        usertable.bootstrapTable({
+            url: '/myauth/permissionuser/list',
+            sortName: 'id',
+            sortOrder: 'desc',
+            cache: false,
+            sidePagination: 'server',
+            pagination: true,
+            method: 'get',
+            pageSize: 20,
+            pageList: [20, 50, 100, 200, 'All'],
+            toolbar: "#usertoolbar",
+            mobileResponsive: true,
+            pk: 'id', //editable插件
+            columns: [
+                [
+                    {field: 'state', checkbox: true, },
+                    {field: 'id', title: 'ID', visible: false, switchable: false},
+                    {field: 'name', title: '用户'},
+                    {field: 'menus', title: '访问权限列表'},
+                    {field: 'operate', title: '操作', formatter: function(value,row,index){
+                        var html = [];
+                        html.push('<a href="javascript:;" onclick="editpermuser('+ row.id + ')"><i class="fa fa-pencil"></i>设置权限</a>');
+                        return html.join(' ');
+                    }}
+                ]
+            ]
+        });
+
+        // 刷新按钮事件
+        $(usertoolbar).on('click', '.btn-refresh', function () {
+            usertable.bootstrapTable('refresh');
+        });
+
+        function editpermuser(id){
+            layui_show('设置权限','/myauth/permissionuser/add?id='+id)
+        }
+</script>
+{% endblock %}

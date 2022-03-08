@@ -1,0 +1,128 @@
+<!-- 表单弹窗 -->
+<form id="siterankconfigAddForm" lay-filter="siterankconfigAddForm" class="layui-form model-form" method="POST">{% csrf_token %}
+
+    <div class="layui-form-item">
+            <label class="layui-form-label">级别名称</label>
+            <div class="layui-input-block">
+                <input name="name" type="text" class="layui-input" lay-verify="required" required maxlength="20" />
+            </div>
+        </div>
+    
+    <div class="layui-form-item">
+            <label class="layui-form-label">网站名称</label>
+            <div class="layui-input-block">
+                <div id="siteconfig_name"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">下载量</label>
+            <div class="layui-input-block">
+                <input name="download" type="text" class="layui-input" maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">上传量</label>
+            <div class="layui-input-block">
+                <input name="upload" type="text" class="layui-input" maxlength="20" value="0"/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">分享率</label>
+            <div class="layui-input-block">
+                <input name="ratio" type="text" class="layui-input" maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">升级时间</label>
+            <div class="layui-input-block">
+                <input name="up_time" type="text" class="layui-input" maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">权限说明</label>
+            <div class="layui-input-block">
+                <input name="privilege" type="text" class="layui-input" maxlength="200" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">序号</label>
+            <div class="layui-input-block">
+                <input name="serial_number" type="text" class="layui-input" maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="siterankconfigAddForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+
+        var siteConfigNameList = [];
+
+        form.render('select', 'siterankconfigAddForm');
+
+          // 渲染多选下拉框
+          var insSel = xmSelect.render({
+            el: '#siteconfig_name',
+            name: 'siteconfig_name',
+            prop: {
+                name: 'name',
+                value: 'value',
+            },
+            layVerify: 'required',
+            radio: true,
+	        clickClose: true,
+            data: []
+        });
+
+        /* 获取所有记录类型 */
+        var loadIndex = layer.load(2);
+        admin.req('sites/siteconfigname/list', function (res) {
+            layer.close(loadIndex);
+            if (0 === res.code) {
+                $.each(res.data, function (index, item) {
+                    siteConfigNameList.push({name: item.name_en_cn, value: item.name});
+                });
+                insSel.update({
+                    data: siteConfigNameList,
+                    autoRow: true,
+                })
+            } else {
+                layer.msg(res.msg, {icon: 2});
+            }
+        });
+
+        form.on('submit(siterankconfigAddForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('sites/siterankconfig/add', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('siterankconfigTable', {});
+                    admin.closeDialog('#siterankconfigAddForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#siterankconfigAddForm').attr('method'));
+            return false;
+        });
+    });
+</script>

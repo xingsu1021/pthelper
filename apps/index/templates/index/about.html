@@ -1,0 +1,84 @@
+
+<div class="layui-fluid">
+
+    <div class="layui-row layui-col-space15">
+        
+        <div class="layui-col-lg12 layui-col-md12">
+            <div class="layui-card">
+                    <div class="layui-card-header"><h2>所有被管理主机需要安装agent</h2></div>
+                    <div class="layui-card-body">
+                        <ul class="layui-timeline">
+                            <li class="layui-timeline-item">
+                                <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                                <div class="layui-timeline-content layui-text">
+                                    <h3 class="layui-timeline-title">
+                                        Centos 安装
+                                        <small>需要使用自定义yum源</small>&emsp;
+                                    </h3>
+                                    <ul>
+                                        <li>yum install python36-setuptools python36-django python36-osquery
+                                                python36-requests python36-simplejson python36-djangorestframework 
+                                                python36-gunicorn python36-greenlet python36-gevent python36-supervisor osquery</li>
+                                        <li>yum install opsadmin-agent</li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="layui-timeline-item">
+                                <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                                <div class="layui-timeline-content layui-text">
+                                    <h3 class="layui-timeline-title">
+                                        Debian 安装
+                                        <small>需要使用自定义apt源</small>&emsp;
+                                    </h3>
+                                    <ul>
+                                        <li>apt-get install python3-setuptools  python3-django python3-osquery 
+                                                python3-requests python3-simplejson python3-djangorestframework
+                                                python3-gunicorn python3-greenlet python3-gevent python3-supervisor osquery</li>
+                                        <li>apt-get install opsadmin-agent</li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="layui-timeline-item">
+                                <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                                <div class="layui-timeline-content layui-text">
+                                    <h3 class="layui-timeline-title">
+                                        Agent启动方式
+                                    </h3>
+                                    <ul>
+                                        <li>systemctl start supervisord</li>
+                                        <li>启动后使用端口20080,访问http://ip:20080检查是否安装成功</li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-header">更新日志</div>
+                <div class="layui-card-body">
+                    <ul class="layui-timeline">
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title">
+                                    V1.0.0
+                                    <small>基础功能实现</small>&emsp;
+                                    <span class="layui-badge-rim">2019-01-08</span>
+                                </h3>
+                                <ul>
+                                    <li>网易云ssh秘钥管理,直接可以操作网易云平台</li>
+                                    <li>网易云VPC管理,只支持同步查看</li>
+                                    <li>网易云DNS管理，支持同步和操作网易云平台</li>
+                                    <li>根据项目分类云实例,并后台同步云实例</li>
+                                    <li>对实例进行主机名修改以及DNS记录同步</li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+

@@ -1,0 +1,197 @@
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline searchInput">
+                        <input id="siteconfigSearchValue" class="layui-input" type="text" placeholder="输入关键字"/>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="siteconfigBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                        <button id="siteconfigBtnAdd" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
+                        <button id="siteconfigBtnDel" class="layui-btn layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="siteconfigTable" lay-filter="siteconfigTable"></table>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="siteconfigTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+<script>
+        layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+
+        form.render('select');
+        // 渲染表格
+        var insTb = tableX.render({
+            elem: '#siteconfigTable',
+            url: setter.base_server + 'sites/siteconfig/list',
+            method: 'GET',
+            page: true,
+            limit:15,
+            limits:[15,50,100],
+            cols: [[
+                {type: 'checkbox'},
+                {field: 'id', title: 'ID',hide:true},
+                {field: 'name', sort: true, title: '简称EN'},
+                {field: 'name_cn', sort: true, title: '简称CN'},
+				{field: 'index_url', sort: true, title: '网站地址'},
+                {align: 'center', toolbar: '#siteconfigTableBar', title: '操作'}
+            ]]
+        });
+
+        // 添加按钮点击事件
+        $('#siteconfigBtnAdd').click(function () {
+            showAddModel();
+        });
+
+        // 工具条点击事件
+        table.on('tool(siteconfigTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'edit') { // 修改
+                showEditModel(data);
+            } else if(layEvent === 'del'){
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定删除此记录 ' + data.name + '？',{icon: 3, title: '警告', shadeClose: true},
+                function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    $.ajax({ 
+                            url : "sites/siteconfig/del",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: {'ids':[data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success : function(d) { 
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('siteconfigTable', {});
+                                    layer.msg(d.msg, {icon: 1});
+                                } else {
+                                    layer.msg(d.msg, {icon: 2});
+                                }
+                            } 
+                    }); 
+                });
+            }
+        });
+
+        //显示表单弹窗
+        var showAddModel = function () {
+            var title = '添加站点';
+            admin.open({
+                title: title,
+                url: 'sites/siteconfig/add',
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+        
+        var showEditModel = function (data) {
+            var title = '编辑';
+            admin.open({
+                title: title,
+                //area: ['600px', '500px'],
+                url: 'sites/siteconfig/edit?id='+data.id,
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+         // 批量删除按钮点击事件
+         $('#siteconfigBtnDel').click(function () {
+            //选中事件
+            var checkStatus = table.checkStatus('siteconfigTable')
+            //得到选择长度
+            dataLength = checkStatus.data.length
+            data = checkStatus.data;
+            var ids = [];
+            if (dataLength==0){
+                //未选中
+                layer.msg("请选择需要删除的记录", {icon: 2});
+            }else{
+                layer.confirm('确定删除选中的'+dataLength+'个记录？',{icon: 3, title: '警告', shadeClose: true},
+                function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    for (var i = 0; i < data.length; i++) {
+                        ids.push(data[i].id);
+                    }
+                    $.ajax({ 
+                            url : "sites/siteconfig/del",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: {'ids':ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success : function(d) { 
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('siteconfigTable', {});
+                                    layer.msg(d.msg, {icon: 1});
+                                } else {
+                                    layer.msg(d.msg, {icon: 2});
+                                }
+                            } 
+                    }); 
+                });
+            } 
+        });
+
+        // 监听enter键，光标在搜索框
+        $('#siteconfigSearchValue').keydown(function (event) {
+                if (event.keyCode === 13) {
+                    var key = 'search';
+                    var value = $('#siteconfigSearchValue').val();
+
+                    table.reload('siteconfigTable', {where: {searchKey: key, searchValue: value}});
+                } else if (event.keyCode === 8 && !$psw.val()) {
+                    $("#siteconfigSearchValue").val('');
+                    ptable();
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.returnValue) event.returnValue = false;
+                }
+        });
+
+        // 搜索按钮点击事件
+        $('#siteconfigBtnSearch').click(function () {
+            var key = 'search';
+            var value = $('#siteconfigSearchValue').val();
+
+            table.reload('siteconfigTable', {where: {searchKey: key, searchValue: value}});
+        });
+
+
+    });
+</script>

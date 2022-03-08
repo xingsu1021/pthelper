@@ -1,0 +1,183 @@
+<style>
+    #emailForm {
+        max-width: 700px;
+
+    }
+
+    #emailForm .layui-form-item {
+        margin-bottom: 25px;
+    }
+
+    #img {
+        width: 25px;
+        height: 15px;
+        position: absolute;
+        right: 5px;
+        margin-top: 12px;
+        top: 1px;
+        text-align: center;
+    }
+
+</style>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表单开始 -->
+            <form class="layui-form" id="emailForm" lay-filter="emailForm"  method="POST">{% csrf_token %}
+                <input name="id" type="hidden" value="{{id}}"/>
+                <input name="name" type="hidden" value="email"/>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">邮箱类型:</label>
+                    <div class="layui-input-block">
+                        <div id="mail_type"></div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">发件人:</label>
+                    <div class="layui-input-block">
+                        <input name="smtp_user" class="layui-input"
+                               lay-verify="required" required value="{{smtp_user}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">发件人密码:</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="smtp_password" id="smtp_password" class="layui-input" lay-verify="required" required value="{{smtp_password}}"/>
+                        <!--在输入框后接img标签-->
+                        <img id="img" onclick="hideShowPsw()"
+                        src="/static/assets/images/icon-visible.png">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">收件人:</label>
+                    <div class="layui-input-block">
+                        <input name="receive_user" class="layui-input" placeholder="默认为发件人自身,如有多个收件人使用逗号,分隔"
+                               value="{{receive_user}}"/>
+                    </div>
+
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-filter="emailSubmit" lay-submit>&emsp;提交&emsp;</button>
+                        <button class="layui-btn layui-btn-normal" lay-filter="emailtestSubmit" lay-submit>&emsp;测试&emsp;</button>
+
+                    </div>
+                </div>
+            </form>
+            <!-- //表单结束 -->
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">说明</div>
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote layui-quote-nm">目前支持邮箱:腾讯,新浪,网易163
+            </blockquote>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script>
+        layui.use(['layer', 'form', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+
+        var mailTypeList = [];
+
+        var mailType = "{{mail_type}}";
+
+        form.render('select', 'emailForm');
+
+          // 渲染多选下拉框
+          var insSel = xmSelect.render({
+            el: '#mail_type',
+            name: 'mail_type',
+            prop: {
+                name: 'name',
+                value: 'value',
+            },
+            layVerify: 'required',
+            radio: true,
+	        clickClose: true,
+            data: []
+        });
+
+        /* 获取所有记录类型 */
+        var loadIndex = layer.load(2);
+        admin.req('notify/mailtype/list', function (res) {
+            layer.close(loadIndex);
+            if (0 === res.code) {
+                $.each(res.data, function (index, item) {
+                    if ( item.value === mailType ){
+                        mailTypeList.push({name: item.name, value: item.value,selected: true});
+                    } else {
+                        mailTypeList.push({name: item.name, value: item.value});
+                    }
+                });
+                insSel.update({
+                    data: mailTypeList,
+                    autoRow: true,
+                })
+            } else {
+                layer.msg(res.msg, {icon: 2});
+            }
+        });
+
+        form.on('submit(emailSubmit)', function (data) {
+            layer.load(2);
+            admin.req('notify/email', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#emailForm').attr('method'));
+            return false;
+        });
+
+        form.on('submit(emailtestSubmit)', function (data) {
+            layer.load(2);
+            admin.req('notify/emailtest', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#emailForm').attr('method'));
+            return false;
+        });
+
+
+
+
+
+    });
+
+    var demoImg = document.getElementById("img");
+    var PWD = document.getElementById("smtp_password");
+    function hideShowPsw() {
+        if (PWD.type == "password") {
+            PWD.type = "text";
+            demoImg.src = "/static/assets/images/icon-invisible.png"; //图片路径（闭眼图片）
+        } else {
+            PWD.type = "password";
+            demoImg.src = "/static/assets/images/icon-visible.png"; // 图片路径（睁眼图片）
+
+        }
+    }
+</script>

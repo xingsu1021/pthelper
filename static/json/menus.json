@@ -1,0 +1,92 @@
+{
+  "code": 0,
+  "data": [
+    {
+      "title": "Dashboard",
+      "icon": "layui-icon-unlink",
+      "path": "#/dashboard"
+    },
+    {
+      "title": "系统管理",
+      "icon": "layui-icon layui-icon-set",
+      "path": "javascript:;",
+      "children": [
+        {
+          "title": "用户管理",
+          "path": "#/myauth/user"
+        },
+        {
+          "title": "站点配置",
+          "path": "#/sites/siteconfig"
+        },
+        {
+          "title": "站点升阶配置",
+          "path": "#/sites/siterankconfig"
+        },
+        {
+          "title": "任务类型配置",
+          "path": "#/cron/jobtype"
+        },
+        {
+          "title": "备份恢复",
+          "path": "#/common/backupload"
+        }
+        
+      ]
+    },
+    {
+      "title": "站点管理",
+      "icon": "layui-icon layui-icon-set",
+      "path": "javascript:;",
+      "children": [
+        {
+          "title": "站点信息",
+          "path": "#/sites/siteinfo"
+        }
+      ]
+    },
+    {
+        "title": "消息推送配置",
+        "icon": "layui-icon layui-icon-set",
+        "path": "javascript:;",
+        "children": [
+          {
+            "title": "IYUU",
+            "path": "#/notify/iyuu"
+          },
+          {
+            "title": "Telegram",
+            "path": "#/notify/telegram"
+          },
+          {
+            "title": "邮箱",
+            "path": "#/notify/email"
+          }
+        ]
+      },
+      {
+        "title": "任务管理",
+        "icon": "layui-icon layui-icon-set",
+        "path": "javascript:;",
+        "children": [
+          {
+            "title": "签到任务",
+            "path": "#/cron/sign"
+          },
+          {
+            "title": "任务信息",
+            "path": "#/cron/job"
+          },
+          {
+            "title": "任务日志",
+            "path": "#/cron/log"
+          }
+        ]
+      },
+    {
+      "title": "路由传参",
+      "path": "#/example/router-param",
+      "hide": true
+    }
+  ]
+}

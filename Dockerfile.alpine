@@ -1,0 +1,60 @@
+# pull official base image
+FROM python:3.9-alpine
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# create the appropriate directories
+ENV APP_HOME=/home/data/www
+RUN mkdir -p $APP_HOME
+WORKDIR $APP_HOME
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && apk update
+RUN apk add --update-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && apk del tzdata && \
+    rm -rf /var/cache/apk/*
+
+#apt-get install -y apt-utils gnupg libgl1-mesa-glx libglib2.0
+
+RUN apk add --no-cache --virtual .build-deps \
+    ca-certificates gcc linux-headers musl-dev \
+    libffi-dev jpeg-dev zlib-dev
+
+RUN pip install --upgrade pip -i https://pypi.mirrors.ustc.edu.cn/simple/
+
+RUN pip install --no-cache-dir --upgrade pip -i https://pypi.mirrors.ustc.edu.cn/simple/
+#RUN pip install --no-cache-dir --upgrade setuptools -i https://pypi.mirrors.ustc.edu.cn/simple/
+
+COPY requirements.txt .
+
+#将需要的包体全部打包成直接安装的包whl
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
+
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+RUN apk del .build-deps
+RUN rm -rf /var/cache/apk/*
+
+# copy project
+COPY . $APP_HOME
+
+RUN ln -s /home/data/www/db /db && \
+    ln -s /home/data/www/logs /logs && \
+    ln -s /home/data/www/backups /backups && \
+    rm -rf conf && \
+    rm -rf docker-compose.yml && \
+    rm -rf Dockerfile && \
+    rm -rf README.md && \
+    rm -rf requirements.txt && \
+    rm -rf db/* logs/* backups/* \
+    rm -rf .git*
+
+EXPOSE 80
+#apt-get安装路径
+#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+#pip安装路径
+#CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
+
+CMD ["/usr/local/bin/start.sh"]
