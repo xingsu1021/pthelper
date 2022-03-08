@@ -65,28 +65,24 @@ A-SOUL(asf) | ✔
 他吹吹风(et8)) | ✘
 海带(hd) | ✘
 海豹(greatposterwall) | ✘
+烧包(ptsbao) | ✘
 
 ## 暂时不支持站点
 
 站点 |
 --- |
 馒头 |
-
-## 已知问题站点
-
-站点 |--- |
---- |--- |
-学校(btschool) | ✔
+学校(btschool) |
 
 ## 截图
 
-1. IYUU
+1. IYUU  
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/iyuu.png)
-2. Telegram
+2. Telegram  
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/tg.png)
-3. 邮箱
+3. 邮箱  
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/mail.png)
-4. 补签
+4. 补签  
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/buqian.png)
 
 # docker-compose.yml
@@ -108,11 +104,11 @@ services:
 
 ## 感谢
 
-**带带弟弟OCR通用验证码识别：<https://github.com/sml2h3/ddddocr>
-** 爱语飞飞：<https://iyuu.cn>
-**<https://github.com/ledccn/IYUUPlus>
-** PTPP：<https://github.com/ronggang/PT-Plugin-Plus>
-** PTPP增强版：白大版PTPP@菩提蛋（没找到仓库：（）
+带带弟弟OCR通用验证码识别：<https://github.com/sml2h3/ddddocr>  
+爱语飞飞：<https://iyuu.cn>  
+         <https://github.com/ledccn/IYUUPlus>  
+PTPP：<https://github.com/ronggang/PT-Plugin-Plus>  
+PTPP增强版：白大版PTPP@菩提蛋（没找到仓库：（）  
 
 ## 以下忽略，只做个人记录
 

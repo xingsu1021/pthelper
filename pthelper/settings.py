@@ -179,6 +179,7 @@ SITE_NAME = 'PT助手'
 SITE_URL = 'https://www.baidu.com'
 SITE_VERSION = 'Version 1.0.0'
 SITE_COPYRIGHT = 'copyright © 2022'
+SITE_NAME_COPYRIGHT = 'copyright © 2022 PT助手'
 
 #https://docs.djangoproject.com/en/dev/ref/templates/builtins/#std:templatefilter-date
 APSCHEDULER_DATETIME_FORMAT = "Y-m-d H:i:s"

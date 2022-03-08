@@ -12,5 +12,6 @@ def get_global_settings(request):
         'SITE_URL': settings.SITE_URL,
         'SITE_VERSION': settings.SITE_VERSION,
         'SITE_COPYRIGHT': settings.SITE_COPYRIGHT,
+        'SITE_NAME_COPYRIGHT': settings.SITE_NAME_COPYRIGHT,
     }
     return context

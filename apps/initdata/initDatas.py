@@ -69,6 +69,7 @@ def init_datas():
                   {'name':'52pt','name_cn':'52PT','index_url':'https://52pt.site'},
                   {'name':'hdtime','name_cn':'高清时间','index_url':'https://hdtime.org'},
                   {'name':'asf','name_cn':'A-SOUL','index_url':'https://p2p.bbs.asf.ink'},
+                  {'name':'ptsbao','name_cn':'烧包','index_url':'https://ptsbao.club'},
                   ]
     
     for site in sites_data:

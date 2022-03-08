@@ -11,7 +11,7 @@ import shutil
 
 from sites.models import SiteInfo,SiteConfig
 from cron.models import Log
-from .sites_sign import hdchina, general,noSign,keepfrds,tjupt,pterclub,hdarea,hdcity,btschool,hares,hd,ttg,pt52,greatposterwall,hdsky,opencd
+from .sites_sign import hdchina, general,noSign,keepfrds,tjupt,pterclub,hdarea,hdcity,btschool,hares,hd,ttg,pt52,greatposterwall,hdsky,opencd,haidan,ptsbao
 
 #==================
 @login_required
@@ -117,7 +117,7 @@ def signAgain(request):
             flag, data = ttg(site_name, site_name_cn, site_url, site_cookie)
         elif site_name == '52pt':
             flag, data = pt52(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name in ['beitai','msg','hdmayi','oshen','avgv','eastgame']:
+        elif site_name in ['beitai','msg','hdmayi','oshen','avgv','eastgame','et8','itzmx']:
             flag, data = noSign(site_name, site_name_cn, site_url, site_cookie)      
         elif site_name == 'keepfrds':
             flag, data = keepfrds(site_name, site_name_cn, site_url, site_cookie)
@@ -131,6 +131,10 @@ def signAgain(request):
             flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
         elif site_name == 'hdsky':
             flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
+        elif site_name == 'haidan':
+            flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
+        elif site_name == 'ptsbao':
+            flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie) 
         else:
             flag, data = (False,'%s 未匹配站点' % site_name)
         

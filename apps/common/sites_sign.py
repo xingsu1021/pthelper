@@ -1159,3 +1159,75 @@ def haidan(site_name, site_name_cn, site_url, site_cookie):
         logger.error(str(e))
         
         return False, msg    
+    
+def ptsbao(site_name, site_name_cn, site_url, site_cookie):
+    """
+    烧包签到
+    """
+    
+    headers = {
+        'user-agent': user_agent,
+        'referer': site_url,
+        'cookie': site_cookie
+    }
+    
+    #获取网站url,不带/结尾
+    sign_url = getSiteUrl(site_url) + '/index.php'
+    
+    logger.info('--------------%s开始签到----------------' % site_name)
+    
+    try:
+        response = requests.get(sign_url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            
+            html = response.text
+        
+            soup = BeautifulSoup(html, "lxml")
+            
+            tables = soup.findAll('table', {'id':'info_block'})
+        
+            if len(tables) != 0:
+                
+                info = tables[0].findAll('span', {'class':'medium'})
+                user_info = info[0]
+
+                #用户详情链接
+                user_info_link = user_info.a.attrs['href']
+                #用户名
+                user_name = user_info.a.get_text()
+
+                #魔力值
+                data = re.search(r']：(.*)<font class="color_bonus">',str(user_info)).group().strip()
+                bonus = data.split(' ')[0].replace(']：','')
+
+                #分享率
+                ratio = user_info.find('font',{'class':'color_ratio'}).nextSibling.get_text().strip()
+
+                #上传量
+                uploaded = user_info.find('font',{'class':'color_uploaded'}).nextSibling.get_text().strip()
+
+                #下载量
+                downloaded = user_info.find('font',{'class':'color_downloaded'}).nextSibling.get_text().strip()
+
+                message_info = info[1]
+                new_message = message_info.a.nextSibling.get_text().strip()
+                #print('用户详情链接:%s' % user_info_link)
+                msg = "魔力:%s,分享率:%s,新消息:%s" % (bonus,ratio,new_message)
+                
+                return True, msg
+            else:
+                msg = "%s(%s) 登录网站失败,cookie已经失效"
+                return False, msg
+        else:
+            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(response.text)
+            
+            return False, msg
+                
+    except Exception as e:
+        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        logger.error(str(e))
+        
+        return False, msg
