@@ -533,7 +533,12 @@ def send_email(mail_type,smtp_user,smtp_password,receiver_users = [],send_data =
         elif mail_type == "163":
             smtp_client = smtplib.SMTP_SSL("smtp.163.com", 465)
         elif mail_type == "sina":
-            smtp_client = smtplib.SMTP_SSL("smtp.sina.com", 465)
+            try:
+                #sina不支持sslv3
+                smtp_client = smtplib.SMTP_SSL("smtp.sina.com", 465)
+            except:
+                #sslv3失败后使用明文
+                smtp_client = smtplib.SMTP("smtp.sina.com", 25)
         else:
             return False,"未知邮件类型"
         
