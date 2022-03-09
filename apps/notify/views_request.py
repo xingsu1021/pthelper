@@ -135,8 +135,8 @@ def emailtest(request):
 
             #response_msg = json.loads(response)
             response_data={"code":1,"msg":response}
-        except:
-            response_data={"code":0,"msg":response }
+        except Exception as e:
+            response_data={"code":0,"msg":str(e) }
 
     return JsonResponse(response_data)
 

@@ -12,6 +12,54 @@ import ddddocr
 logger = logging.getLogger('sign')
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
 
+def signIngress(site_name, site_name_cn, site_url, site_cookie):
+    """
+    签到站点匹配入口
+    """
+    
+    if site_name == 'hdchina':
+        flag, data = hdchina(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name in ['hdfans','1ptba','ptchina','3wmg','discfan','hddolby','hdatmos','soulvoice',
+                       'pthome','hdtime','hdzone','htpt','audiences','nicept','hdhome','pttime',
+                       'lemonhd','ourbits','asf']:
+        flag, data = general(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'pterclub':
+        flag, data = pterclub(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'hdarea':
+        flag, data = hdarea(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'hdcity':
+        flag, data = hdcity(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'btschool':
+        flag, data = btschool(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'hares':
+        flag, data = hares(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'totheglory':
+        flag, data = ttg(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == '52pt':
+        flag, data = pt52(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name in ['beitai','msg','hdmayi','oshen','avgv','eastgame','et8','itzmx']:
+        flag, data = noSign(site_name, site_name_cn, site_url, site_cookie)      
+    elif site_name == 'keepfrds':
+        flag, data = keepfrds(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'tjupt':
+        flag, data = tjupt(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'hd':
+        flag, data = hd(site_name, site_name_cn, site_url, site_cookie)    
+    elif site_name == 'greatposterwall':
+        flag, data = greatposterwall(site_name, site_name_cn, site_url, site_cookie)  
+    elif site_name == 'open':
+        flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'hdsky':
+        flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
+    elif site_name == 'haidan':
+        flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
+    elif site_name == 'ptsbao':
+        flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie)             
+    else:
+        flag, data = (False,'%s 未匹配站点' % site_name) 
+        
+    return flag, data
+
 def hdchina(site_name, site_name_cn, site_url, site_cookie):
     """
     瓷器签到
@@ -1044,11 +1092,12 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                             status = True
                             return True, msg                            
                         else:
-                            if 'invalid_imagehash' == result['message']:
+                            if 'date_unmatch' == result['message']:
                                 msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
                                 status = True
                                 return True, msg
                             else:
+                                #invalid_imagehash说明数据验证码错误
                                 msg = "%s(%s) 错误:%s" % (site_name,site_name_cn, result['message'])
                                 if status or i > 2:
                                     return False,msg

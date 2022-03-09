@@ -11,7 +11,7 @@ import shutil
 
 from sites.models import SiteInfo,SiteConfig
 from cron.models import Log
-from .sites_sign import hdchina, general,noSign,keepfrds,tjupt,pterclub,hdarea,hdcity,btschool,hares,hd,ttg,pt52,greatposterwall,hdsky,opencd,haidan,ptsbao
+from common.sites_sign import signIngress
 
 #==================
 @login_required
@@ -96,53 +96,14 @@ def signAgain(request):
         site_url = site_config.index_url
         site_name_cn = site_config.name_cn
      
-
-        if site_name == 'hdchina':
-            flag, data = hdchina(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name in ['hdfans','1ptba','ptchina','3wmg','discfan','hddolby','hdatmos','soulvoice',
-                           'pthome','hdtime','hdzone','htpt','audiences','nicept','hdhome','pttime',
-                           'lemonhd','ourbits','asf']:
-            flag, data = general(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'pterclub':
-            flag, data = pterclub(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'hdarea':
-            flag, data = hdarea(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'hdcity':
-            flag, data = hdcity(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'btschool':
-            flag, data = btschool(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'hares':
-            flag, data = hares(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'totheglory':
-            flag, data = ttg(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == '52pt':
-            flag, data = pt52(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name in ['beitai','msg','hdmayi','oshen','avgv','eastgame','et8','itzmx']:
-            flag, data = noSign(site_name, site_name_cn, site_url, site_cookie)      
-        elif site_name == 'keepfrds':
-            flag, data = keepfrds(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'tjupt':
-            flag, data = tjupt(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'hd':
-            flag, data = hd(site_name, site_name_cn, site_url, site_cookie)    
-        elif site_name == 'greatposterwall':
-            flag, data = greatposterwall(site_name, site_name_cn, site_url, site_cookie)  
-        elif site_name == 'open':
-            flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'hdsky':
-            flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
-        elif site_name == 'haidan':
-            flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
-        elif site_name == 'ptsbao':
-            flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie) 
-        else:
-            flag, data = (False,'%s 未匹配站点' % site_name)
-        
+        #统一签到入口
+        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie)
+                
         #补签成功，刷新状态
         if flag:
             Log.objects.filter(id=_id).update(status=flag)
         
-        print(site_name,data)
+        #print(site_name,data)
         if flag:
             response_data={"code":1,"msg":data }
         else:
