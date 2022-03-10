@@ -1107,11 +1107,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
     
                                     #超过2次退出
                                     if i > 2:
-                                        return False,msg
-                            else:
-                                #无消息目前确认为已经签到，其它后续在确认
-                                msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
-                                return True, msg                                
+                                        return False,msg                             
 
                     except:
                         msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
