@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build  -t pthelper:v1.0 .
+docker build -f Dockerfile.alpine -t pthelper:v1.0.3 .

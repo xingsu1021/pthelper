@@ -36,6 +36,7 @@
 <script type="text/html" id="siteinfoTableBar">
     <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="checkSign">验证和签到</a>
 </script>
 
 
@@ -112,7 +113,35 @@
                             } 
                     }); 
                 });
-            }
+            }else if(layEvent === 'checkSign'){
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定校验此配置 ' + data.siteconfig_name + '？',{icon: 0, title: '提示', shadeClose: true},
+                function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    $.ajax({ 
+                            url : "common/signcheck",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: {'id':data.id, 'action':'check',csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success : function(d) { 
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('siteinfoTable', {});
+                                    layer.msg(d.msg, {icon: 1});
+                                } else {
+                                    layer.msg(d.msg, {icon: 2});
+                                }
+                            } 
+                    }); 
+                });
+                }
+
         });
 
         //显示表单弹窗

@@ -50,7 +50,10 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie):
     elif site_name == 'open':
         flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
     elif site_name == 'hdsky':
-        flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
+        try:
+            flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
+        except:
+            return False,'数据异常'
     elif site_name == 'haidan':
         flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
     elif site_name == 'ptsbao':
@@ -963,14 +966,13 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
     
     logger.info('--------------%s开始签到----------------' % site_name)
     
-    status = False
     ocr = ddddocr.DdddOcr(show_ad=False,old=True)
     try:
         #验证码签到执行3次验证
         for i in range(3):
             #验证成功退出
-            if status or i > 2:
-                break     
+            if i > 2:
+                return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn) 
             
             response = requests.get("https://open.cd/plugin_sign-in.php", headers=headers, timeout=10)
             if response.status_code == 200:
@@ -1009,11 +1011,10 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                         signindays = result['signindays']
                         integral = result['integral']
                         msg = "%s(%s) 连续签到%s,本次获得%s" % (site_name,site_name_cn, signindays,integral)
-                        status = True
                         return True, msg
                     else:
                         msg = "%s(%s) 签到失败：%s" % (site_name,site_name_cn, result['msg'])
-                        if status or i > 2:
+                        if i > 2:
                             return False, msg
     
                 else:
@@ -1054,16 +1055,18 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
     image_code_name = os.path.join(settings.TMP_LOG_DIR,'hdsky_code.png')
     
     logger.info('--------------%s开始签到----------------' % site_name)
-    status = False
+ 
     ocr = ddddocr.DdddOcr(show_ad=False,old=True)
     try:
         #验证码签到执行3次验证
         for i in range(3):
             #验证成功退出
-            if status or i > 2:
-                break
+            if i > 2:
+                print('i--------->',i)
+                return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn)
             
             response = requests.post(sign_url, headers=headers, data=data, timeout=10)
+            logger.info(response.text)
             if response.status_code == 200:
                 result = json.loads(response.text)
                 if result['success']:
@@ -1085,22 +1088,31 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                             'imagestring': data_ocr
                             }
                     response = requests.post("https://hdsky.me/showup.php", headers=headers, data=data, timeout=10)
+                    logger.info(response.text)
                     try:
                         result = json.loads(response.text)
+                        
                         if result['success']:
                             msg = "%s(%s) 连续签到%s" % (site_name,site_name_cn, result['message'])
-                            status = True
                             return True, msg                            
                         else:
-                            if 'date_unmatch' == result['message']:
-                                msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
-                                status = True
-                                return True, msg
+                            #false的情况存在无message
+                            if 'message' in result:
+                                if 'date_unmatch' == result['message']:
+                                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                                    return True, msg
+                                else:
+                                    #invalid_imagehash说明数据验证码错误
+                                    msg = "%s(%s) 错误:%s" % (site_name,site_name_cn, result['message'])
+    
+                                    #超过2次退出
+                                    if i > 2:
+                                        return False,msg
                             else:
-                                #invalid_imagehash说明数据验证码错误
-                                msg = "%s(%s) 错误:%s" % (site_name,site_name_cn, result['message'])
-                                if status or i > 2:
-                                    return False,msg
+                                #无消息目前确认为已经签到，其它后续在确认
+                                msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                                return True, msg                                
+
                     except:
                         msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
                         return False, msg    

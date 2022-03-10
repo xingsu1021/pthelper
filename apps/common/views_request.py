@@ -110,3 +110,39 @@ def signAgain(request):
             response_data={"code":0,"msg":data }
 
         return JsonResponse(response_data)         
+
+#==================
+@login_required
+def signCheck(request):
+    """
+    校验
+    """
+    if request.method == "POST":
+        action = request.POST.get('action')
+        _id = request.POST.get('id','')
+        
+        if action != 'check' or _id == "":
+            response_data={"code":0,"msg":"未知操作" }
+    
+            return JsonResponse(response_data) 
+        
+        #获取配置的站点信息
+        site_info = SiteInfo.objects.get(id=_id)
+
+        site_name = site_info.siteconfig_name
+        site_cookie = site_info.cookie
+        #获取站点配置信息
+        site_config = SiteConfig.objects.get(name=site_name)
+        site_url = site_config.index_url
+        site_name_cn = site_config.name_cn
+     
+        #统一签到入口
+        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie)
+        
+        #print(site_name,data)
+        if flag:
+            response_data={"code":1,"msg":data }
+        else:
+            response_data={"code":0,"msg":data }
+
+        return JsonResponse(response_data) 

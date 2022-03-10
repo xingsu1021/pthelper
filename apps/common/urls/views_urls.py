@@ -14,6 +14,7 @@ urlpatterns = [
     path('backup', views_request.backup),
     #补签
     path('signagain', views_request.signAgain),
+    path('signcheck', views_request.signCheck),
     
 ]
 

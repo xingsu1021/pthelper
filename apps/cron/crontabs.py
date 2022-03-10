@@ -46,13 +46,14 @@ def sign(crontab_id):
                 #'cookie': site_cookie
             #}
             #统一签到入口
-            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie)
+            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie) 
             
-            #print(site_name,data)
             try:
                 Log.objects.create(name = '签到',type_id = 1000, crontab_id = crontab_id, site_name=site_name, message = data, status = flag)
             except:
                 logger.error("%s(%s)数据返回出错" % (site_name, site_name_cn))
+                #防止返回数据错误导致异常退出
+                continue
 
             send_data.append(data)
 
