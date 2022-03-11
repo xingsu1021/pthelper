@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import requests
 import simplejson as json
 import re
+import time
 from .utils import getSiteUrl
 import ddddocr
 
@@ -52,8 +53,8 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie):
     elif site_name == 'hdsky':
         try:
             flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
-        except:
-            logger.error(data)
+        except Exception as e:
+            logger.error(str(e))
             return False,'%s 数据异常' % site_name
     elif site_name == 'haidan':
         flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
@@ -1118,8 +1119,11 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
 
                     except:
                         msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
-                        return False, msg    
-    
+                        return False, msg  
+                else:
+                    #存在获取数据失败
+                    time.sleep(5)
+                    continue
                     
             else:
                 msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
