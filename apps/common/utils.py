@@ -20,7 +20,6 @@ import ftplib
 import socket
 from urllib.parse import urlparse
 import pytz
-from collections import OrderedDict
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header

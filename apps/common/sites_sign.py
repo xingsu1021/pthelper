@@ -53,7 +53,8 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie):
         try:
             flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
         except:
-            return False,'数据异常'
+            logger.error(data)
+            return False,'%s 数据异常' % site_name
     elif site_name == 'haidan':
         flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
     elif site_name == 'ptsbao':
@@ -1060,9 +1061,10 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
     try:
         #验证码签到执行3次验证
         for i in range(3):
+            logger.info('开始循环%s--------->' % str(i))
             #验证成功退出
             if i > 2:
-                print('i--------->',i)
+                #print('i--------->',i)
                 return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn)
             
             response = requests.post(sign_url, headers=headers, data=data, timeout=10)
@@ -1107,7 +1109,12 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
     
                                     #超过2次退出
                                     if i > 2:
-                                        return False,msg                             
+                                        return False,msg
+                                    else:
+                                        continue
+                            else:
+                                logger.info("no message")
+                                continue
 
                     except:
                         msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
