@@ -49,7 +49,11 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie):
     elif site_name == 'greatposterwall':
         flag, data = greatposterwall(site_name, site_name_cn, site_url, site_cookie)  
     elif site_name == 'open':
-        flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
+        try:
+            flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
+        except Exception as e:
+            logger.error(str(e))
+            return False,'%s 数据异常' % site_name      
     elif site_name == 'hdsky':
         try:
             flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
@@ -1015,7 +1019,10 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                         msg = "%s(%s) 连续签到%s,本次获得%s" % (site_name,site_name_cn, signindays,integral)
                         return True, msg
                     else:
-                        msg = "%s(%s) 签到失败：%s" % (site_name,site_name_cn, result['msg'])
+                        if 'msg' in result:
+                            msg = "%s(%s) 签到失败：%s" % (site_name,site_name_cn, result['msg'])
+                        else:
+                            msg = "%s(%s) 签到失败" % (site_name,site_name_cn)
                         if i > 2:
                             return False, msg
     
@@ -1058,7 +1065,8 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
     
     logger.info('--------------%s开始签到----------------' % site_name)
  
-    ocr = ddddocr.DdddOcr(show_ad=False,old=True)
+    #ocr = ddddocr.DdddOcr(show_ad=False,old=True)
+    ocr = ddddocr.DdddOcr(show_ad=False)
     try:
         #验证码签到执行3次验证
         for i in range(3):
