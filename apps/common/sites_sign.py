@@ -1065,8 +1065,8 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
     
     logger.info('--------------%s开始签到----------------' % site_name)
  
-    #ocr = ddddocr.DdddOcr(show_ad=False,old=True)
-    ocr = ddddocr.DdddOcr(show_ad=False)
+    ocr = ddddocr.DdddOcr(show_ad=False,old=True)
+    #ocr = ddddocr.DdddOcr(show_ad=False)
     try:
         #验证码签到执行3次验证
         for i in range(3):
