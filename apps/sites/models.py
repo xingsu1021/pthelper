@@ -10,6 +10,7 @@ class SiteConfig(models.Model):
     index_url = models.CharField('首页地址', max_length=200, unique=True)
     torrent_url = models.CharField('种子地址', max_length=200)
     bonus_url = models.CharField('魔力地址', max_length=200)
+    sign_type = models.CharField('签到类型,统一签到少改代码', max_length=20, null=True)
 
     #class Meta:
         ##db_table = 'menu' #自定义表名称为mytable
