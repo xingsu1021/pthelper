@@ -39,6 +39,7 @@ def sign(crontab_id):
             site_config = SiteConfig.objects.get(name=site_name)
             site_url = site_config.index_url
             site_name_cn = site_config.name_cn
+            site_sign_type = site_config.sign_type
      
             #headers = {
                 #'user-agent': user_agent,
@@ -46,7 +47,7 @@ def sign(crontab_id):
                 #'cookie': site_cookie
             #}
             #统一签到入口
-            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie) 
+            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type) 
             
             try:
                 Log.objects.create(name = '签到',type_id = 1000, crontab_id = crontab_id, site_name=site_name, message = data, status = flag)
