@@ -95,9 +95,10 @@ def signAgain(request):
         site_config = SiteConfig.objects.get(name=site_name)
         site_url = site_config.index_url
         site_name_cn = site_config.name_cn
+        site_sign_type = site_config.sign_type
      
         #统一签到入口
-        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type)
                 
         #补签成功，刷新状态
         if flag:
