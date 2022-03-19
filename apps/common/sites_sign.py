@@ -32,9 +32,9 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
         flag, data = btschool(site_name, site_name_cn, site_url, site_cookie)
     elif sign_type == 'hares':
         flag, data = hares(site_name, site_name_cn, site_url, site_cookie)
-    elif sign_type == 'totheglory':
+    elif sign_type == 'ttg':
         flag, data = ttg(site_name, site_name_cn, site_url, site_cookie)
-    elif sign_type == '52pt':
+    elif sign_type == 'pt52':
         flag, data = pt52(site_name, site_name_cn, site_url, site_cookie)
     elif sign_type == 'nosign':
         flag, data = nosign(site_name, site_name_cn, site_url, site_cookie)      
@@ -46,7 +46,7 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
         flag, data = hd(site_name, site_name_cn, site_url, site_cookie)    
     elif sign_type == 'greatposterwall':
         flag, data = greatposterwall(site_name, site_name_cn, site_url, site_cookie)  
-    elif sign_type == 'open':
+    elif sign_type == 'opencd':
         try:
             flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
         except Exception as e:
