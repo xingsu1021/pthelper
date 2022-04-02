@@ -1386,7 +1386,7 @@ def ssd(site_name, site_name_cn, site_url, site_cookie):
             #需要安装pip install lxml
             soup = BeautifulSoup(response.text, "lxml")
             
-            tables = soup.findAll('table', {'id':'info_block'})
+            tables = soup.findAll('div', {'id':'info_block'})
         
             if len(tables) != 0:
                 
