@@ -61,7 +61,9 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
     elif sign_type == 'haidan':
         flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
     elif sign_type == 'ptsbao':
-        flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie)             
+        flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie)   
+    elif sign_type == 'ssd':
+        flag, data = ssd(site_name, site_name_cn, site_url, site_cookie)     
     else:
         flag, data = (False,'%s 未匹配站点' % site_name) 
         
@@ -139,15 +141,15 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
     try:
         
         #请求首页获取csrf
-        #response = requests.get(site_url, headers=headers, timeout=10)
+        response = requests.get(site_url, headers=headers, timeout=10)
         
-        #soup = BeautifulSoup(response.text, "lxml")
-        #csrf = soup.find('meta',{'name':'x-csrf'})
-        #csrf = csrf.attrs['content']
+        soup = BeautifulSoup(response.text, "lxml")
+        csrf = soup.find('meta',{'name':'x-csrf'})
+        csrf = csrf.attrs['content']
         
         data = {  
-            #'csrf': csrf
-            'csrf': 'e3a2895bb529c567fb2aae3723a97ba9144c1c5c'
+            'csrf': csrf
+            #'csrf': 'e3a2895bb529c567fb2aae3723a97ba9144c1c5c'
         }
         
         response = requests.post(sign_url, headers=headers, data=data) 
@@ -1361,3 +1363,70 @@ def ptsbao(site_name, site_name_cn, site_url, site_cookie):
         logger.error(str(e))
         
         return False, msg
+    
+def ssd(site_name, site_name_cn, site_url, site_cookie):
+    """
+    无签到，春天cmct
+    """
+    
+    headers = {
+        'user-agent': user_agent,
+        'cookie': site_cookie
+    }
+    
+    #获取网站url,不带/结尾
+    sign_url = getSiteUrl(site_url) + '/index.php'
+    
+    logger.info('--------------%s开始签到----------------' % site_name)
+    
+    try:
+        response = requests.get(sign_url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            #需要安装pip install lxml
+            soup = BeautifulSoup(response.text, "lxml")
+            
+            tables = soup.findAll('table', {'id':'info_block'})
+        
+            if len(tables) != 0:
+                
+                #span获取有2个，一个为用户信息，一个为信箱信息
+                info = tables[0].findAll('span', {'class':'medium'})
+                user_info = info[0]
+                
+                #print(user_info)
+                #print("-------------")
+                #用户详情链接
+                user_info_link = user_info.a.attrs['href']
+                #用户名
+                user_name = user_info.a.get_text()
+                #魔力值
+                bonus = user_info.find('a',{'href':'mybonus.php'}).get_text().split(':')[-1]
+                #分享率
+                ratio = user_info.find('font',{'class':'color_ratio'}).nextSibling.get_text()
+                #上传量
+                uploaded = user_info.find('font',{'class':'color_uploaded'}).nextSibling.get_text()
+                #下载量
+                downloaded = user_info.find('font',{'class':'color_downloaded'}).nextSibling.get_text()
+
+                message_info = info[1].find('a',{'href':'messages.php'}).nextSibling.get_text()
+                msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus.strip(), ratio.strip(), message_info.strip())
+                
+                return True, msg
+            else:
+                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                return False, msg
+                
+        else:
+            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(msg)
+            
+            return False, msg
+            
+    except Exception as e:
+        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        logger.error('--------------%s----------------' % site_name)
+        logger.error(str(e))
+        
+        return False, msg    

@@ -70,6 +70,7 @@ def init_datas():
                   {'name':'hdtime','name_cn':'高清时间','index_url':'https://hdtime.org','sign_type':'general'},
                   {'name':'asf','name_cn':'A-SOUL','index_url':'https://p2p.bbs.asf.ink','sign_type':'general'},
                   {'name':'ptsbao','name_cn':'烧包','index_url':'https://ptsbao.club','sign_type':'ptsbao'},
+                  {'name':'ssd','name_cn':'春天','index_url':'https://springsunday.net','sign_type':'ssd'},
                   ]
     
     for site in sites_data:
