@@ -57,10 +57,12 @@ class SiteConfigAddView(LoginRequiredMixin,TemplateView):
         name = request.POST.get("name").strip()
         name_cn = request.POST.get("name_cn").strip()
         index_url = request.POST.get("index_url").strip()
+        sign_type = request.POST.get("sign_type").strip()
 
         ormdata = SiteConfig.objects.create(name=name,
                                             name_cn=name_cn,
                                             index_url=index_url,
+                                            sign_type = sign_type
                                             )
 
         ormdata.save()
@@ -96,6 +98,7 @@ class SiteConfigEditView(LoginRequiredMixin,TemplateView):
             'name': self.ormdata.name,
             'name_cn': self.ormdata.name_cn,
             'index_url': self.ormdata.index_url,
+            'sign_type':self.ormdata.sign_type,
 
         }
         kwargs.update(context)
@@ -109,6 +112,7 @@ class SiteConfigEditView(LoginRequiredMixin,TemplateView):
         name = request.POST.get("name").strip()
         name_cn = request.POST.get("name_cn").strip()
         index_url = request.POST.get("index_url").strip()
+        sign_type = request.POST.get("sign_type").strip()
 
         _id = request.POST.get('id')
 
@@ -117,6 +121,7 @@ class SiteConfigEditView(LoginRequiredMixin,TemplateView):
         ormdata.name = name
         ormdata.name_cn = name_cn
         ormdata.index_url = index_url
+        ormdata.sign_type = sign_type
 
         ormdata.save()
 

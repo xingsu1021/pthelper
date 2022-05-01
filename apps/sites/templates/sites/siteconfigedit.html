@@ -23,6 +23,12 @@
                 </div>
         </div>
 
+        <div class="layui-form-item">
+            <label class="layui-form-label">签到类型</label>
+            <div class="layui-input-block">
+                <input name="sign_type" type="text" class="layui-input" lay-verify="required" required maxlength="20" value="{{sign_type}}"  />
+            </div>
+        </div>
     <div class="layui-form-item text-right">
         <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
         <button class="layui-btn" lay-filter="siteconfigEditForm-submit" lay-submit>保存</button>

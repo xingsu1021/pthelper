@@ -68,9 +68,11 @@ def init_datas():
                   {'name':'hdatmos','name_cn':'阿童木','index_url':'https://hdatmos.club','sign_type':'general'},
                   {'name':'52pt','name_cn':'52PT','index_url':'https://52pt.site','sign_type':'pt52'},
                   {'name':'hdtime','name_cn':'高清时间','index_url':'https://hdtime.org','sign_type':'general'},
-                  {'name':'asf','name_cn':'A-SOUL','index_url':'https://p2p.bbs.asf.ink','sign_type':'general'},
+                  {'name':'asf','name_cn':'A-SOUL','index_url':'https://pt.asf.ink','sign_type':'general'},
                   {'name':'ptsbao','name_cn':'烧包','index_url':'https://ptsbao.club','sign_type':'ptsbao'},
                   {'name':'ssd','name_cn':'春天','index_url':'https://springsunday.net','sign_type':'ssd'},
+                  {'name':'gainbound','name_cn':'丐帮','index_url':'https://gainbound.net','sign_type':'general'},
+                  {'name':'joyhd','name_cn':'开心','index_url':'https://www.joyhd.net','sign_type':'nosign'},
                   ]
     
     for site in sites_data:
@@ -82,12 +84,12 @@ def init_datas():
                                       sign_type = site['sign_type'],
                                       )
             print('添加站点 [%s] 成功' % site['name'])
-        else:
-            #更新站点配置
-            SiteConfig.objects.filter(name=site['name']).update(sign_type = site['sign_type'])
+        #else:
+            ##更新站点配置
+            #SiteConfig.objects.filter(name=site['name']).update(sign_type = site['sign_type'])
             
-            print('站点 [%s] 更新成功' % site['name'])
-            #print('站点 [%s] 已经存在,忽略...' % site['name'])
+            #print('站点 [%s] 更新成功' % site['name'])
+            ##print('站点 [%s] 已经存在,忽略...' % site['name'])
             
         
     print('开始初始化任务类型...')

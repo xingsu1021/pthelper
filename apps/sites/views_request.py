@@ -66,6 +66,7 @@ def siteconfig(request):
                          "name":i.name,
                          "name_cn":i.name_cn,
                          "index_url":i.index_url,
+                         "sign_type":i.sign_type,
                          })
     #返回json串
     #return HttpResponse(json.dumps(data,ensure_ascii = False), "application/json")
