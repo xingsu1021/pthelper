@@ -7,13 +7,15 @@
                 <div class="layui-form-item">
 
                     <div class="layui-inline searchInput">
-                        <input id="siteinfoSearchValue" class="layui-input" type="text" placeholder="输入关键字"/>
+                        <input id="siteinfoSearchValue" class="layui-input" type="text" placeholder="输入关键字" />
                     </div>
                     <div class="layui-inline">
                         <button id="siteinfoBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
                         </button>
-                        <button id="siteinfoBtnAdd" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
-                        <button id="siteinfoBtnDel" class="layui-btn layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>
+                        <button id="siteinfoBtnAdd" class="layui-btn icon-btn"><i
+                                class="layui-icon">&#xe654;</i>添加</button>
+                        <button id="siteinfoBtnDel" class="layui-btn layui-btn-danger icon-btn"><i
+                                class="layui-icon">&#xe640;</i>删除</button>
                         <button id="siteinfoExportBtn" class="layui-btn icon-btn" type="button">
                             <i class="layui-icon">&#xe67d;</i>导出
                         </button>
@@ -41,7 +43,7 @@
 
 
 <script>
-        layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown','upload'], function () {
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown', 'upload'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var form = layui.form;
@@ -61,16 +63,16 @@
             url: setter.base_server + 'sites/siteinfo/list',
             method: 'GET',
             page: true,
-            limit:15,
-            limits:[15,50,100],
+            limit: 15,
+            limits: [15, 50, 100],
             cols: [[
-                {type: 'checkbox'},
-                {field: 'id', title: 'ID',hide:true},
-                {field: 'siteconfig_name', sort: true, title: '站点'},
-                {field: 'siteconfig_name_cn', sort: true, title: '中文'},
-                {field: 'cookie', title: 'Cookie'},
-				{field: 'passkey', title: 'Passkey'},
-                {align: 'center', toolbar: '#siteinfoTableBar', title: '操作'}
+                { type: 'checkbox' },
+                { field: 'id', title: 'ID', hide: true },
+                { field: 'siteconfig_name', sort: true, title: '站点' },
+                { field: 'siteconfig_name_cn', sort: true, title: '中文' },
+                { field: 'cookie', title: 'Cookie' },
+                { field: 'passkey', title: 'Passkey' },
+                { align: 'center', toolbar: '#siteinfoTableBar', title: '操作' }
             ]]
         });
 
@@ -86,61 +88,61 @@
 
             if (layEvent === 'edit') { // 修改
                 showEditModel(data);
-            } else if(layEvent === 'del'){
+            } else if (layEvent === 'del') {
 
                 //var csrftoken = getCookie('csrftoken');
-                layer.confirm('确定删除此记录 ' + data.siteconfig_name + '？',{icon: 3, title: '警告', shadeClose: true},
-                function (i) {
-                    layer.close(i);
-                    layer.load(2);
-                    $.ajax({ 
-                            url : "sites/siteinfo/del",
-                            type: 'POST', 
-                            dataType : "json", 
-                            data: {'ids':[data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
+                layer.confirm('确定删除此记录 ' + data.siteconfig_name + '？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        $.ajax({
+                            url: "sites/siteinfo/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': [data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
                             // beforeSend: function(request) {
                             //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
                             //     request.setRequestHeader("X-CSRFToken", csrftoken);
                             // },
-                            success : function(d) { 
+                            success: function (d) {
                                 layer.closeAll('loading');
                                 if (d.code == 1) {
                                     table.reload('siteinfoTable', {});
-                                    layer.msg(d.msg, {icon: 1});
+                                    layer.msg(d.msg, { icon: 1 });
                                 } else {
-                                    layer.msg(d.msg, {icon: 2});
+                                    layer.msg(d.msg, { icon: 2 });
                                 }
-                            } 
-                    }); 
-                });
-            }else if(layEvent === 'checkSign'){
+                            }
+                        });
+                    });
+            } else if (layEvent === 'checkSign') {
 
                 //var csrftoken = getCookie('csrftoken');
-                layer.confirm('确定校验此配置 ' + data.siteconfig_name + '？',{icon: 0, title: '提示', shadeClose: true},
-                function (i) {
-                    layer.close(i);
-                    layer.load(2);
-                    $.ajax({ 
-                            url : "common/signcheck",
-                            type: 'POST', 
-                            dataType : "json", 
-                            data: {'id':data.id, 'action':'check',csrfmiddlewaretoken: '{{ csrf_token }}' },
+                layer.confirm('确定校验此配置 ' + data.siteconfig_name + '？', { icon: 0, title: '提示', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        $.ajax({
+                            url: "common/signcheck",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'id': data.id, 'action': 'check', csrfmiddlewaretoken: '{{ csrf_token }}' },
                             // beforeSend: function(request) {
                             //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
                             //     request.setRequestHeader("X-CSRFToken", csrftoken);
                             // },
-                            success : function(d) { 
+                            success: function (d) {
                                 layer.closeAll('loading');
                                 if (d.code == 1) {
                                     table.reload('siteinfoTable', {});
-                                    layer.msg(d.msg, {icon: 1});
+                                    layer.msg(d.msg, { icon: 1 });
                                 } else {
-                                    layer.msg(d.msg, {icon: 2});
+                                    layer.msg(d.msg, { icon: 2 });
                                 }
-                            } 
-                    }); 
-                });
-                }
+                            }
+                        });
+                    });
+            }
 
         });
 
@@ -157,70 +159,70 @@
             });
         };
 
-        
+
         var showEditModel = function (data) {
             var title = '编辑';
             admin.open({
                 title: title,
                 area: ['650px', '300px'],
-                url: 'sites/siteinfo/edit?id='+data.id,
+                url: 'sites/siteinfo/edit?id=' + data.id,
                 success: function (layero, index) {
                     $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
                 }
             });
         };
 
-         // 批量删除按钮点击事件
-         $('#siteinfoBtnDel').click(function () {
+        // 批量删除按钮点击事件
+        $('#siteinfoBtnDel').click(function () {
             //选中事件
             var checkStatus = table.checkStatus('siteinfoTable')
             //得到选择长度
             dataLength = checkStatus.data.length
             data = checkStatus.data;
             var ids = [];
-            if (dataLength==0){
+            if (dataLength == 0) {
                 //未选中
-                layer.msg("请选择需要删除的记录", {icon: 2});
-            }else{
-                layer.confirm('确定删除选中的'+dataLength+'个记录？',{icon: 3, title: '警告', shadeClose: true},
-                function (i) {
-                    layer.close(i);
-                    layer.load(2);
-                    for (var i = 0; i < data.length; i++) {
-                        ids.push(data[i].id);
-                    }
-                    $.ajax({ 
-                            url : "sites/siteinfo/del",
-                            type: 'POST', 
-                            dataType : "json", 
-                            data: {'ids':ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
-                            success : function(d) { 
+                layer.msg("请选择需要删除的记录", { icon: 2 });
+            } else {
+                layer.confirm('确定删除选中的' + dataLength + '个记录？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        for (var i = 0; i < data.length; i++) {
+                            ids.push(data[i].id);
+                        }
+                        $.ajax({
+                            url: "sites/siteinfo/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success: function (d) {
                                 layer.closeAll('loading');
                                 if (d.code == 1) {
                                     table.reload('siteinfoTable', {});
-                                    layer.msg(d.msg, {icon: 1});
+                                    layer.msg(d.msg, { icon: 1 });
                                 } else {
-                                    layer.msg(d.msg, {icon: 2});
+                                    layer.msg(d.msg, { icon: 2 });
                                 }
-                            } 
-                    }); 
-                });
-            } 
+                            }
+                        });
+                    });
+            }
         });
 
         // 监听enter键，光标在搜索框
         $('#siteinfoSearchValue').keydown(function (event) {
-                if (event.keyCode === 13) {
-                    var key = 'search';
-                    var value = $('#siteinfoSearchValue').val();
+            if (event.keyCode === 13) {
+                var key = 'search';
+                var value = $('#siteinfoSearchValue').val();
 
-                    table.reload('siteinfoTable', {where: {searchKey: key, searchValue: value}});
-                } else if (event.keyCode === 8 && !$psw.val()) {
-                    $("#siteinfoSearchValue").val('');
-                    ptable();
-                    if (event.preventDefault) event.preventDefault();
-                    if (event.returnValue) event.returnValue = false;
-                }
+                table.reload('siteinfoTable', { where: { searchKey: key, searchValue: value } });
+            } else if (event.keyCode === 8 && !$psw.val()) {
+                $("#siteinfoSearchValue").val('');
+                ptable();
+                if (event.preventDefault) event.preventDefault();
+                if (event.returnValue) event.returnValue = false;
+            }
         });
 
         // 搜索按钮点击事件
@@ -228,7 +230,7 @@
             var key = 'search';
             var value = $('#siteinfoSearchValue').val();
 
-            table.reload('siteinfoTable', {where: {searchKey: key, searchValue: value}});
+            table.reload('siteinfoTable', { where: { searchKey: key, searchValue: value } });
         });
 
         /* 导出json */
@@ -239,43 +241,43 @@
             dataLength = checkStatus.data.length
             data = checkStatus.data;
             var ids = [];
-            if (dataLength==0){
+            if (dataLength == 0) {
                 //未选中
-                layer.confirm('确定导出所有记录？',{icon: 1, title: '提示', shadeClose: true},
-                function (i) {
-                    layer.close(i);
-                    tableX.exportDataBack('sites/siteinfo/export', {}, 'post');
-                });
-                
+                layer.confirm('确定导出所有记录？', { icon: 1, title: '提示', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        tableX.exportDataBack('sites/siteinfo/export', {}, 'post');
+                    });
 
-            }else{
-                layer.confirm('确定导出选中的'+dataLength+'个记录？',{icon: 1, title: '提示', shadeClose: true},
-                function (i) {
-                    layer.close(i);
-                    for (var i = 0; i < data.length; i++) {
-                        ids.push(data[i].id);
-                    }
 
-                    fetch("sites/siteinfo/export", {
-                        body: JSON.stringify({'ids':ids, csrfmiddlewaretoken: '{{ csrf_token }}' }),
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json; charset=utf-8'
-                        },
-                    })
-                    .then(response => response.blob())
-                    .then(response => {
-                        const blob = new Blob([response], {type: 'application/json'});
-                        const downloadUrl = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = downloadUrl;
-                        a.download = "pthelper站点配置信息";
-                        document.body.appendChild(a);
-                        a.click();
-                    })
+            } else {
+                layer.confirm('确定导出选中的' + dataLength + '个记录？', { icon: 1, title: '提示', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        for (var i = 0; i < data.length; i++) {
+                            ids.push(data[i].id);
+                        }
 
-                });
-            } 
+                        fetch("sites/siteinfo/export", {
+                            body: JSON.stringify({ 'ids': ids, csrfmiddlewaretoken: '{{ csrf_token }}' }),
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json; charset=utf-8'
+                            },
+                        })
+                            .then(response => response.blob())
+                            .then(response => {
+                                const blob = new Blob([response], { type: 'application/json' });
+                                const downloadUrl = URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = downloadUrl;
+                                a.download = "pthelper站点配置信息";
+                                document.body.appendChild(a);
+                                a.click();
+                            })
+
+                    });
+            }
 
         });
 
@@ -286,18 +288,18 @@
             accept: 'file', //可选值有：images（图片）、file（所有文件）、video（视频）、audio（音频）
             exts: 'json', //exts: 'zip|rar|7z' 即代表只允许上传压缩格式的文件
             multiple: false,                             //多文件上传
-            done: function(d){
+            done: function (d) {
                 layer.closeAll('loading');
                 if (d.code == 1) {
                     table.reload('siteinfoTable', {});
-                    layer.msg(d.msg, {icon: 1});
+                    layer.msg(d.msg, { icon: 1 });
                 } else {
-                    layer.msg(d.msg, {icon: 2});
+                    layer.msg(d.msg, { icon: 2 });
                 }
             },
-            error: function(){
+            error: function () {
                 //请求异常回调
-                layer.msg("请求错误", {icon: 2});
+                layer.msg("请求错误", { icon: 2 });
             }
         });
 

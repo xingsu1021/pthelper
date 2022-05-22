@@ -209,7 +209,104 @@ def get_stream(data):
 
 #==================
 @login_required
-def export(request):
+def siteconfigExport(request):
+    """        
+    文件导出
+    """
+
+    ids = []
+    #fetch方法
+    if request.method == "PUT":
+        body = request.body
+        json_body = json.loads(body) 
+
+        ids = json_body['ids']
+        
+    data = []
+
+    if len(ids) == 0:
+        ormdata = SiteConfig.objects.all()
+    else:
+        ormdata = SiteConfig.objects.filter(id__in=ids)
+
+    for i in ormdata:
+        
+        data.append({"name":i.name,
+                    "name_cn":i.name_cn,
+                    "index_url":i.index_url,
+                    "torrent_url":i.torrent_url,
+                    "bonus_url":i.bonus_url,
+                    "sign_type":i.sign_type,
+                    })
+    #print(data)
+    json_stream=get_stream(data)
+    response = HttpResponse(content_type='application/json')
+    
+    response['Content-Disposition'] = 'attachment;filename=' + parse.quote('pthelper站点配置') + '.json'
+    response.write(json_stream)
+
+    return response
+
+#==================
+@login_required
+def siteconfigImport(request):
+    """        
+    文件上传
+    """
+    data = {}
+    data['code'] = 0
+    data['msg'] = ""
+    data['data'] = []
+
+    if request.method == 'POST':
+        file_obj = request.FILES.get('file')
+        #data = get_stream(file_obj)
+        
+        file_temp = tempfile.NamedTemporaryFile()
+        file_temp.write(file_obj.read())
+        #res=file_temp.getvalue()
+        file_temp.seek(0)
+        data = file_temp.read()
+        file_temp.close()
+        
+        #print(data)
+        try:
+            json_data = json.loads(data)
+            for i in json_data:
+                name = i['name']
+                name_cn = i['name_cn']
+                index_url = i['index_url']
+                torrent_url = i['torrent_url']
+                bonus_url = i['bonus_url']
+                sign_type = i['sign_type']
+                
+                get_site = SiteConfig.objects.filter(name=name).count()
+                if get_site == 0:
+                    SiteConfig.objects.create(name = name,
+                                              name_cn = name_cn,
+                                              index_url = index_url,
+                                              torrent_url = torrent_url,
+                                              bonus_url = bonus_url,
+                                              sign_type = sign_type
+                                              )
+                else:
+                    #更新站点配置
+                    SiteConfig.objects.filter(name=name).update(name_cn = name_cn,
+                                                                index_url = index_url,
+                                                                torrent_url = torrent_url,
+                                                                bonus_url = bonus_url,
+                                                                sign_type = sign_type
+                                                                )
+            response_data={"code":1,"msg":"更新成功"}
+            
+        except:
+            response_data={"code":0,"msg":"非法文件"}
+
+    return JsonResponse(response_data)
+
+#==================
+@login_required
+def siteinfoExport(request):
     """        
     文件导出
     """
@@ -242,14 +339,14 @@ def export(request):
     json_stream=get_stream(data)
     response = HttpResponse(content_type='application/json')
     
-    response['Content-Disposition'] = 'attachment;filename=' + parse.quote('pthelper站点配置信息') + '.json'
+    response['Content-Disposition'] = 'attachment;filename=' + parse.quote('pthelper站点信息') + '.json'
     response.write(json_stream)
 
     return response
 
 #==================
 @login_required
-def importJson(request):
+def siteinfoImport(request):
     """        
     文件上传
     """

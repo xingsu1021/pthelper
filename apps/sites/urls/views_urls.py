@@ -15,6 +15,8 @@ urlpatterns = [
     path('siteconfig/list', views_request.siteconfig),
     path('siteconfigname/list', views_request.siteconfigname),
     path('siteconfigname2siteinfo/list', views_request.siteconfigname2siteinfo),
+    path('siteconfig/export', views_request.siteconfigExport),
+    path('siteconfig/import', views_request.siteconfigImport),    
     #站点升级配置
     path('siterankconfig', views.SiteRankConfigListView.as_view()),
     path('siterankconfig/add', views.SiteRankConfigAddView.as_view()),
@@ -27,8 +29,8 @@ urlpatterns = [
     path('siteinfo/edit', views.SiteInfoEditView.as_view()),
     path('siteinfo/del', views.SiteInfoDelView.as_view()),
     path('siteinfo/list', views_request.siteinfo),
-    path('siteinfo/export', views_request.export),
-    path('siteinfo/import', views_request.importJson),
+    path('siteinfo/export', views_request.siteinfoExport),
+    path('siteinfo/import', views_request.siteinfoImport),
 
 ]
 

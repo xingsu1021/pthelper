@@ -425,11 +425,12 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
     headers = {
         'user-agent': user_agent,
         'referer': site_url,
-        'cookie': site_cookie
+        'cookie': site_cookie,
+        'Accept': 'application/json'
     }
     
     #获取网站url,不带/结尾
-    sign_url = getSiteUrl(site_url) + '/attendance.php'
+    sign_url = getSiteUrl(site_url) + '/attendance.php?action=sign'
     
     logger.info('--------------%s开始签到----------------' % site_name)
     
@@ -437,32 +438,27 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
         response = requests.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
-            
-            html = response.text
-            
-            soup = BeautifulSoup(html, "lxml")
-            #script = soup.findAll('script')
-            #sign_data = script[-1]
-            #print(sign_data)
-            pattern = re.compile(r"layer.confirm\('(.*)',")
-            script = soup.find("script", text=pattern)
-        
-            if script != None:
+            try:
                 
-                data = re.search(r"layer.confirm\('(.*),",str(script)).group()
-                sign_data = data.replace("layer.confirm('",'').replace("。',",'')
-                
-                if '签到获得' in sign_data:
-                    #替换掉p标签,tg不支持
-                    msg = "%s(%s) %s" % (site_name,site_name_cn,sign_data)
-         
+                #正确请求，得到json字符串
+                response_msg = json.loads(response.text)
+                if response_msg['code'] == '0':
+                    sign_data = response_msg['datas']
+                    uid = sign_data['uid']
+                    #签到魔力
+                    points = sign_data['points']
+                    #连续签到天数
+                    days = sign_data['days']
+                    
+                    msg = "%s(%s) 签到成功,连续签到%s,今日签到得%s积分" % (site_name,site_name_cn,str(days),str(points))
                 else:
-                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
-            else:
-                msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
-                return False, msg
+                    msg = "%s(%s) 提示：%s" % (site_name,site_name_cn,response_msg['msg'])
 
-            return True, msg
+                return True, msg
+            except:
+                #失败，返回html
+                msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                return False, msg            
         else:
             msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
             logger.error('--------------%s----------------' % site_name)
