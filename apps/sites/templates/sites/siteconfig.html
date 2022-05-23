@@ -42,7 +42,7 @@
 
 
 <script>
-    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown', 'upload'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var form = layui.form;
@@ -53,6 +53,7 @@
         var formX = layui.formX;
         var setter = layui.setter;
         var xmSelect = layui.xmSelect;
+        var upload = layui.upload;
 
         form.render('select');
         // 渲染表格

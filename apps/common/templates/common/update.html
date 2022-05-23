@@ -1,0 +1,74 @@
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表单开始 -->
+            <form class="layui-form" id="updateForm" lay-filter="updateForm"  method="POST">{% csrf_token %}
+                <input name="id" type="hidden" value="{{id}}"/>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-filter="updateSubmit" lay-submit>&emsp;升级&emsp;</button>
+
+                    </div>
+                </div>
+            </form>
+            <!-- //表单结束 -->
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">说明</div>
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote layui-quote-nm">更新本地git代码
+            </blockquote>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script>
+        layui.use(['layer', 'form', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+
+        form.on('submit(updateSubmit)', function (data) {
+            layer.load(2);
+            admin.req('common/update', {'action':'update'}, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#updateForm').attr('method'));
+            return false;
+        });
+
+        // form.on('submit(updatecrtestSubmit)', function (data) {
+        //     layer.load(2);
+        //     admin.req('common/updatecrtest', data.field, function (data) {
+        //         layer.closeAll('loading');
+        //         if (data.code == 1) {
+        //             layer.msg(data.msg, {icon: 1});
+        //         } else {
+        //             layer.msg(data.msg, {icon: 2});
+        //         }
+        //     }, $('#updatecrForm').attr('method'));
+        //     return false;
+        // });
+
+
+
+
+
+    });
+
+</script>

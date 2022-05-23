@@ -15,7 +15,7 @@ from common.sites_sign import signIngress
 
 #==================
 @login_required
-def backup(request):
+def backupExport(request):
     """        
     备份数据
     """
@@ -55,7 +55,7 @@ def backup(request):
     
 #==================
 @login_required
-def load(request):
+def backupImport(request):
     """
     数据恢复
     """

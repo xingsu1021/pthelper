@@ -29,7 +29,11 @@
         },
         {
           "title": "备份恢复",
-          "path": "#/common/backupload"
+          "path": "#/common/backup"
+        },
+        {
+          "title": "更新升级",
+          "path": "#/common/update"
         }
         
       ]
