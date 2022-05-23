@@ -73,6 +73,8 @@ def init_datas():
                   {'name':'ssd','name_cn':'春天','index_url':'https://springsunday.net','sign_type':'ssd'},
                   {'name':'gainbound','name_cn':'丐帮','index_url':'https://gainbound.net','sign_type':'general'},
                   {'name':'joyhd','name_cn':'开心','index_url':'https://www.joyhd.net','sign_type':'nosign'},
+                  {'name':'carpt','name_cn':'车PT','index_url':'https://carpt.net','sign_type':'general'},
+                  {'name':'piggo','name_cn':'猪猪网','index_url':'https://piggo.me','sign_type':'general'},
                   ]
     
     for site in sites_data:

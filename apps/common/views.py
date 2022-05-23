@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.conf import settings
-import git
+from git.repo import Repo
 
 # Create your views here.
 #------------------------------
@@ -124,7 +124,7 @@ class UpdateView(LoginRequiredMixin,TemplateView):
         
         if action == 'update':
             #指定仓库地址
-            repo = git.repo.Repo(settings.BASE_DIR)
+            repo = Repo(settings.BASE_DIR)
             #通过Repo对象获取git对象
             git = repo.git
             #通过repo对象获取remote对象
