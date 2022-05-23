@@ -10,21 +10,29 @@ ENV APP_HOME=/home/data/www
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
+RUN apk --no-cache add unit unit-openrc unit-python3
+
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 RUN git clone https://github.com/xingsu1021/pthelper.git ${APP_HOME}
 
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/ && \
-    cp -ra start.sh /usr/local/bin/start.sh && \
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
+    
+RUN cp start.sh /usr/local/bin/start.sh && \
     chmod +x /usr/local/bin/start.sh && \
-    ln -s /home/data/www/db /db && \
+    cp conf.json /var/lib/unit/conf.json
+
+# COPY start.sh /usr/local/bin/start.sh
+# RUN  chmod +x /usr/local/bin/start.sh
+
+RUN ln -s /home/data/www/db /db && \
     ln -s /home/data/www/logs /logs && \
     ln -s /home/data/www/backups /backups
 
+#COPY conf.json /var/lib/unit/conf.json
+
 EXPOSE 80
-#apt-get安装路径
-#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-#pip安装路径
-#CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
+#unit管理端口
+EXPOSE 60081
 
 CMD ["/usr/local/bin/start.sh"]

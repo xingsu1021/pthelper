@@ -123,18 +123,23 @@ class UpdateView(LoginRequiredMixin,TemplateView):
         action = request.POST.get('action')
         
         if action == 'update':
-            #指定仓库地址
-            repo = Repo(settings.BASE_DIR)
-            #通过Repo对象获取git对象
-            git = repo.git
-            #通过repo对象获取remote对象
-            remote = repo.remote()
-            remote.pull()
-            
-            log_msg=git.log()
-            print (log_msg)
-
-
-        response_data={"code":1,"msg":"添加成功"}
-
-        return JsonResponse(response_data)
+            try:
+                
+                #指定仓库地址
+                repo = Repo(settings.BASE_DIR)
+                #通过Repo对象获取git对象
+                git = repo.git
+                #通过repo对象获取remote对象
+                remote = repo.remote()
+                remote.pull()
+                
+                #log_msg=git.log()
+                #print (log_msg)
+    
+    
+                response_data={"code":1,"msg":"更新成功"}
+            except:
+                
+                response_data={"code":0,"msg":"更新失败,请查看日志"}
+                
+            return JsonResponse(response_data)

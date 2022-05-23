@@ -9,6 +9,7 @@ lxml >= 4.7.1
 beautifulsoup4 >= 4.10.0
 #ddddocr
 typing_extensions
+GitPython
 #本地测试使用
 #PyMySQL >= 1.0.2
 #使用后台运行
