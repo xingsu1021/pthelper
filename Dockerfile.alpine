@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.9-alpine
+FROM a76yyyy/ddddocr:latest
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -10,36 +10,16 @@ ENV APP_HOME=/home/data/www
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && apk update
-RUN apk add --update-cache nginx tzdata && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && apk del tzdata && \
-    rm -rf /var/cache/apk/*
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-COPY requirements.txt .
+RUN git clone https://github.com/xingsu1021/pthelper.git ${APP_HOME}
 
-#将需要的包体全部打包成直接安装的包whl
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
-
-COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY conf/vhost.conf /etc/nginx/conf.d/vhost.conf
-COPY conf/supervisord.conf /etc/supervisord.conf
-
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-# copy project
-COPY . $APP_HOME
-
-RUN ln -s /home/data/www/db /db && \
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/ && \
+    cp -ra start.sh /usr/local/bin/start.sh && \
+    chmod +x /usr/local/bin/start.sh && \
+    ln -s /home/data/www/db /db && \
     ln -s /home/data/www/logs /logs && \
-    ln -s /home/data/www/backups /backups && \
-    rm -rf conf && \
-    rm -rf docker-compose.yml && \
-    rm -rf Dockerfile && \
-    rm -rf README.md && \
-    rm -rf requirements.txt && \
-    rm -rf db/* logs/* backups/* \
-    rm -rf .git*
+    ln -s /home/data/www/backups /backups
 
 EXPOSE 80
 #apt-get安装路径

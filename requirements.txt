@@ -7,7 +7,8 @@ django-apscheduler >= 0.6.0
 python-telegram-bot >= 13.11
 lxml >= 4.7.1
 beautifulsoup4 >= 4.10.0
-ddddocr
+#ddddocr
+typing_extensions
 #本地测试使用
 #PyMySQL >= 1.0.2
 #使用后台运行
