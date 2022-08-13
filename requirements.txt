@@ -7,6 +7,7 @@ django-apscheduler >= 0.6.0
 python-telegram-bot >= 13.11
 lxml >= 4.7.1
 beautifulsoup4 >= 4.10.0
+wechatpy = 1.8.18
 #ddddocr
 typing_extensions
 GitPython
