@@ -19,7 +19,7 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 
 1、支持签到功能
 2、支持配置导出导入
-3、支持签到信息发送IYUU，Telegram，邮箱
+3、支持签到信息发送IYUU,Telegram,邮箱,企业微信
 
 ## 支持站点
 
