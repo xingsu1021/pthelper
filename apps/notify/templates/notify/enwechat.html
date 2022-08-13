@@ -1,0 +1,125 @@
+<style>
+    #enwechatForm {
+        max-width: 800px;
+    }
+
+
+    #enwechatForm .layui-form-item {
+        margin-top: 20px;
+    }
+
+
+</style>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表单开始 -->
+            <form class="layui-form" id="enwechatForm" lay-filter="enwechatForm"  method="POST">{% csrf_token %}
+                <input name="id" type="hidden" value="{{id}}"/>
+                <input name="name" type="hidden" value="enwechat"/>
+
+                <div class="layui-form-item" >
+                    <label class="layui-form-label layui-form-required">企业ID:</label>
+                    <div class="layui-input-block">
+                        <input name="enwechat_corp_id" class="layui-input"
+                               lay-verType="message" lay-verify="required" required value="{{enwechat_corp_id}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">应用ID:</label>
+                    <div class="layui-input-block">
+                        <input name="enwechat_agent_id" class="layui-input"
+                               lay-verType="message" lay-verify="required" required value="{{enwechat_agent_id}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">应用密钥:</label>
+                    <div class="layui-input-block">
+                        <input name="enwechat_agent_secret" class="layui-input"
+                               lay-verType="message" lay-verify="required" required value="{{enwechat_agent_secret}}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">接收者账号:</label>
+                    <div class="layui-input-block">
+                        <input name="receive_user" class="layui-input" 
+                        lay-verType="message" lay-verify="required" placeholder="如有多个接收者使用逗号,分隔"
+                               value="{{receive_user}}"/>
+                    </div>
+
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-filter="enwechatSubmit" lay-submit>&emsp;提交&emsp;</button>
+                        <button class="layui-btn layui-btn-normal" lay-filter="enwechattestSubmit" lay-submit>&emsp;测试&emsp;</button>
+
+                    </div>
+                </div>
+            </form>
+            <!-- //表单结束 -->
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">说明</div>
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote layui-quote-nm">
+                1、开通企业微信,https://work.weixin.qq.com/<br>
+                2、创建应用<br>
+                <pre class="layui-code">
+                    应用管理---->自建---->创建应用-支持小程序。根据情况填写
+                    
+                </pre>
+                3、<front color="red"><b>目前测试只应用于免费单部门账户</b></front>
+            </blockquote>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'admin'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var admin = layui.admin;
+
+
+        /* 监听表单提交 */
+        // form.on('submit(enwechatSubmit)', function (data) {
+        //     layer.msg(JSON.stringify(data.field));
+        //     return false;
+        // });
+
+        form.on('submit(enwechatSubmit)', function (data) {
+            layer.load(2);
+            admin.req('notify/enwechat', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#enwechatForm').attr('method'));
+            return false;
+        });
+
+        form.on('submit(enwechattestSubmit)', function (data) {
+            layer.load(2);
+            admin.req('notify/enwechattest', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#enwechatForm').attr('method'));
+            return false;
+        });
+    });
+</script>

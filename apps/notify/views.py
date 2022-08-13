@@ -139,8 +139,8 @@ class EmailView(LoginRequiredMixin,TemplateView):
     def get_context_data(self, **kwargs):
         
         #获取记录
-        telegram_count = NotifyConfig.objects.filter(name='email').count()
-        if telegram_count == 0:
+        email_count = NotifyConfig.objects.filter(name='email').count()
+        if email_count == 0:
             
             context = {}
         else:
@@ -183,6 +183,75 @@ class EmailView(LoginRequiredMixin,TemplateView):
             ormdata.mail_type = mail_type
             ormdata.smtp_user = smtp_user
             ormdata.smtp_password = smtp_password
+            ormdata.receive_user = receive_user
+
+        ormdata.save()
+
+        response_data={"code":1,"msg":"添加成功"}
+
+        return JsonResponse(response_data)
+    
+#------------------------------
+class EnWechatView(LoginRequiredMixin,TemplateView):
+    """
+    企业微信配置
+    """
+    template_name = 'notify/enwechat.html'
+
+    #显示添加模板
+    def get(self, request, *args, **kwargs):
+        """
+        得到
+        """
+
+        return super(EnWechatView, self).get(request, *args, **kwargs)
+
+    #显示编辑模板
+    def get_context_data(self, **kwargs):
+        
+        #获取记录
+        num = NotifyConfig.objects.filter(name='enwechat').count()
+        if num == 0:
+            
+            context = {}
+        else:
+            ormdata = NotifyConfig.objects.get(name='enwechat')
+            context = {
+                'id': ormdata.id,
+                'name': ormdata.name,
+                'enwechat_corp_id': ormdata.enwechat_corp_id,
+                'enwechat_agent_id': ormdata.enwechat_agent_id,
+                'enwechat_agent_secret': ormdata.enwechat_agent_secret,
+                'receive_user': ormdata.receive_user,
+            }
+        kwargs.update(context)
+        return super(EnWechatView, self).get_context_data(**kwargs)
+
+    #数据提交接收方法
+    def post(self, request, *args, **kwargs):
+        """
+        数据提交
+        """
+        _id = request.POST.get('id','')
+        enwechat_corp_id = request.POST.get("enwechat_corp_id").strip()
+        enwechat_agent_id = request.POST.get("enwechat_agent_id").strip()
+        enwechat_agent_secret = request.POST.get("enwechat_agent_secret").strip()
+        receive_user = request.POST.get("receive_user","").strip()
+
+            
+        num = NotifyConfig.objects.filter(name='enwechat').count()
+        if num == 0:
+            ormdata = NotifyConfig.objects.create(name='enwechat',
+                                                  enwechat_corp_id=enwechat_corp_id,
+                                                  enwechat_agent_id=enwechat_agent_id,
+                                                  enwechat_agent_secret=enwechat_agent_secret,
+                                                  receive_user=receive_user,
+                                                  )
+        else:
+            ormdata = NotifyConfig.objects.get(id=_id)
+            ormdata.enwechat_corp_id = enwechat_corp_id
+            ormdata.enwechat_agent_id = enwechat_agent_id
+            ormdata.enwechat_agent_secret = enwechat_agent_secret
             ormdata.receive_user = receive_user
 
         ormdata.save()

@@ -10,7 +10,7 @@ from urllib import parse
 import simplejson as json
 import telegram
 import sys
-from common.utils import send_email
+from common.utils import send_email, EnWechat
 
 #直接使用检查是否管理员
 #from django.contrib.auth.decorators import user_passes_test
@@ -140,6 +140,46 @@ def emailtest(request):
 
     return JsonResponse(response_data)
 
+@login_required
+def enwechattest(request):
+    """        
+    提供相应的数据
+    """
+
+    _id = request.POST.get('id','')
+
+    if _id == '':
+        
+        response_data={"code":0,"msg":"请先配置企业微信"}
+
+    else:
+        
+        ormdata = NotifyConfig.objects.get(id=_id)
+        enwechat_corp_id = ormdata.enwechat_corp_id
+        enwechat_agent_id = ormdata.enwechat_agent_id
+        enwechat_agent_secret = ormdata.enwechat_agent_secret
+        receive_user = ormdata.receive_user
+        
+        receiver_users = []
+        for i in receive_user.split(","):
+            receiver_users.append(i)
+
+        now = datetime.datetime.now()
+        time = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        try:
+            weclient = EnWechat(corp_id=enwechat_corp_id, agent_id=enwechat_agent_id, agent_secret=enwechat_agent_secret)
+                        
+            sendata="""<font color="#4CAF50">%s [测试]</font>""" % time
+            
+            flag,response = weclient.send_markdown(receiver_users,sendata)
+
+            #response_msg = json.loads(response)
+            response_data={"code":1,"msg":response}
+        except Exception as e:
+            response_data={"code":0,"msg":str(e) }
+
+    return JsonResponse(response_data)
 
 #==================
 @login_required

@@ -388,7 +388,7 @@ class SignJobView(LoginRequiredMixin,TemplateView):
     def get_context_data(self, **kwargs):
         
         html = []
-        notify_type = {'iyuu':'IYUU','telegram':'Telegram','email':'邮箱'}
+        notify_type = {'iyuu':'IYUU','telegram':'Telegram','email':'邮箱','enwechat':'企业微信'}
         #获取记录
         sign_count = Job.objects.filter(jobtype_id=1000).count()
         if sign_count == 0:

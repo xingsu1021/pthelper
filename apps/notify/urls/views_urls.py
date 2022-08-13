@@ -15,5 +15,7 @@ urlpatterns = [
     path('email', views.EmailView.as_view()),
     path('emailtest', views_request.emailtest),   
     path('mailtype/list', views_request.mailtypeinfo),
+    path('enwechat', views.EnWechatView.as_view()),
+    path('enwechattest', views_request.enwechattest),     
 ]
 

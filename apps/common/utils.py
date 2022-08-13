@@ -25,6 +25,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 import telegram
 from urllib import parse
+from wechatpy.enterprise import WeChatClient
 #from PIL import Image
 #from io import BytesIO
 
@@ -672,3 +673,56 @@ def cookie_parse(cookie_str):
         cookie = cookie.split("=")
         cookie_dict[cookie[0]] = cookie[1]
     return cookie_dict
+
+class EnWechat:
+    def __init__(self, corp_id=None, agent_id=None, agent_secret=None):
+        """企业微信"""
+        self.corp_id = corp_id
+        self.agent_id = agent_id
+        self.agent_secret = agent_secret
+        self.client = self.weclient()
+        
+    def weclient(self):
+        return WeChatClient(self.corp_id, self.agent_secret)
+        
+    def getDepartmentUsers(self, department_id = None):
+        """获取部门下的所有用户ID
+        #返回：{姓名: 用户ID}
+        """
+        try:
+            
+            return True, self.client.department.get_map_users(id = department_id)
+            
+        except Exception as e:
+            return False, str(e) 
+        
+    def getDepartmentUsersID(self, department_id = None):
+        """获取部门下的所有用户ID
+        
+        """
+        try:
+            #返回：{姓名: 用户ID}
+            user_ids = self.client.department.get_map_users(id = department_id)
+            return list(user_ids.values())
+        except Exception as e:
+            return False, str(e)
+            
+    def send_text(self, user_ids = [], msg = None):
+        """发送文本消息
+        """
+        return True, self.client.message.send_text(self.agent_id, user_ids, msg)
+        #try:
+            
+            #return True, self.client.message.send_text(self.agent_id, user_ids, msg)
+        #except Exception as e:
+            #return False, str(e)
+        
+    def send_markdown(self, user_ids = [], msg = None):
+        """发送markdown消息
+        https://developer.work.weixin.qq.com/document/path/90236#%E6%94%AF%E6%8C%81%E7%9A%84markdown%E8%AF%AD%E6%B3%95
+        """
+        return True, self.client.message.send_markdown(self.agent_id, user_ids, msg)
+        #try:
+            #return True, self.client.message.send_markdown(self.agent_id, user_ids, msg)
+        #except Exception as e:
+            #return False, str(e)

@@ -6,7 +6,7 @@ import os
 import logging
 from bs4 import BeautifulSoup
 
-from common.utils import send_email,send_telegram,send_iyuu
+from common.utils import send_email,send_telegram,send_iyuu, EnWechat
 from common.sites_sign import signIngress
 from sites.models import SiteConfig, SiteInfo
 from .models import Job, Log
@@ -83,5 +83,15 @@ def sign(crontab_id):
         receiver_users = [x for x in email_ormdata.receive_user.split(',')]
         flag,msg = send_email(email_ormdata.mail_type,email_ormdata.smtp_user,email_ormdata.smtp_password,receiver_users,send_data)
         logger.info("-------------email-------------------")
-        logger.info(msg)        
+        logger.info(msg)   
+        
+    if 'enwechat' in notify_ormdata.notifys:
+        enwechat_ormdata = NotifyConfig.objects.get(name='enwechat')
+        
+        receiver_users = [x for x in enwechat_ormdata.receive_user.split(',')]
+        weclient = EnWechat(corp_id=enwechat_ormdata.enwechat_corp_id, agent_id=enwechat_ormdata.enwechat_agent_id, agent_secret=enwechat_ormdata.enwechat_agent_secret)
+        
+        flag,msg = weclient.send_text(receiver_users,"\r\n".join(send_data).replace('<b>','').replace('</b>',''))
+        logger.info("-------------enwechat-------------------")
+        logger.info(msg)     
 

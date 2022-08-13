@@ -13,11 +13,14 @@ class NotifyConfig(models.Model):
     """
     通知配置
     """
-    name = models.CharField('名称,特定:iyuu,telegram,email', max_length=20, unique=True)
+    name = models.CharField('名称,特定:iyuu,telegram,email,enwechat', max_length=20, unique=True)
     iyuu_key = models.CharField("IYUU令牌", max_length=200)
     tg_chat_id = models.BigIntegerField('频道ID或自身id',default=0)
     tg_token = models.CharField("telegram令牌", max_length=200)
     mail_type = models.CharField("发件邮箱类型:qq,sina,163", max_length=10,null=True)
     smtp_user = models.CharField("发信账号", max_length=100)
     smtp_password = models.CharField("发信账号密码", max_length=128)
-    receive_user = models.CharField("接收账号,默认为发信账号", max_length=100)
+    receive_user = models.CharField("接收账号,默认为发信账号,企业微信接收者", max_length=200)
+    enwechat_corp_id = models.CharField("企业ID", max_length=100, default='')
+    enwechat_agent_id = models.CharField("应用ID", max_length=50, default='')
+    enwechat_agent_secret = models.CharField("应用密钥", max_length=200, default='')
