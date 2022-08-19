@@ -33,9 +33,9 @@ def siteconfig(request):
     #得到排序字段
     sort = request.GET.get('sort','id')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
@@ -92,9 +92,9 @@ def siterankconfig(request):
     #得到排序字段
     sort = request.GET.get('sort','id')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
@@ -157,9 +157,9 @@ def siteinfo(request):
     #得到排序字段
     sort = request.GET.get('sort','id')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
@@ -408,9 +408,9 @@ def siteconfigname(request):
     #得到排序字段
     sort = request.GET.get('sort','name')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
@@ -446,9 +446,9 @@ def siteconfigname2siteinfo(request):
     #得到排序字段
     sort = request.GET.get('sort','name')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort

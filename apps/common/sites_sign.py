@@ -9,9 +9,19 @@ import re
 import time
 from .utils import getSiteUrl
 import ddddocr
+from paddleocr import PaddleOCR
+from thefuzz import fuzz
+from thefuzz import process
 
 logger = logging.getLogger('sign')
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
+
+msg_ok = '<font color="#4CAF50">[签到成功]</font>'
+msg_err = '<font color="#BF360C">[签到失败]</font>'
+msg_reok = '<font color="#4CAF50">[重复签到]</font>'
+msg_err_cookie = '<font color="#BF360C">[cookie失效]</font>'
+msg_err_url = '<font color="#BF360C">[请求签到地址失败]</font>'
+msg_unknow = '<font color="#BF360C">[未知错误]</font>'
 
 def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
     """
@@ -69,62 +79,6 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
         
     return flag, data
 
-def signIngressOld(site_name, site_name_cn, site_url, site_cookie):
-    """
-    签到站点匹配入口
-    """
-    
-    if site_name == 'hdchina':
-        flag, data = hdchina(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name in ['hdfans','1ptba','ptchina','3wmg','discfan','hddolby','hdatmos','soulvoice',
-                       'pthome','hdtime','hdzone','htpt','audiences','nicept','hdhome','pttime',
-                       'lemonhd','ourbits','hdmayi','asf']:
-        flag, data = general(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'pterclub':
-        flag, data = pterclub(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'hdarea':
-        flag, data = hdarea(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'hdcity':
-        flag, data = hdcity(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'btschool':
-        flag, data = btschool(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'hares':
-        flag, data = hares(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'totheglory':
-        flag, data = ttg(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == '52pt':
-        flag, data = pt52(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name in ['beitai','msg','oshen','avgv','eastgame','et8','itzmx']:
-        flag, data = nosign(site_name, site_name_cn, site_url, site_cookie)      
-    elif site_name == 'keepfrds':
-        flag, data = keepfrds(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'tjupt':
-        flag, data = tjupt(site_name, site_name_cn, site_url, site_cookie)
-    elif site_name == 'hd':
-        flag, data = hd(site_name, site_name_cn, site_url, site_cookie)    
-    elif site_name == 'greatposterwall':
-        flag, data = greatposterwall(site_name, site_name_cn, site_url, site_cookie)  
-    elif site_name == 'open':
-        try:
-            flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
-        except Exception as e:
-            logger.error(str(e))
-            return False,'%s 数据异常' % site_name      
-    elif site_name == 'hdsky':
-        try:
-            flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
-        except Exception as e:
-            logger.error(str(e))
-            return False,'%s 数据异常' % site_name
-    elif site_name == 'haidan':
-        flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
-    elif site_name == 'ptsbao':
-        flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie)             
-    else:
-        flag, data = (False,'%s 未匹配站点' % site_name) 
-        
-    return flag, data
-
 def hdchina(site_name, site_name_cn, site_url, site_cookie):
     """
     瓷器签到
@@ -159,19 +113,19 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
                 #正确请求，得到json字符串
                 response_msg = json.loads(response.text)
                 if response_msg['state'] == 'success':
-                    signindays = response_msg['signindays']
-                    integral = response_msg['integral']
-                    msg = "%s(%s) 签到成功,连续签到%s,今日签到得%s积分" % (site_name,site_name_cn,str(signindays),str(integral))
+                    #signindays = response_msg['signindays']
+                    #integral = response_msg['integral']
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
                 else:
                     #crsf不正确
                     if 'msg' in response_msg:
                         msg = "%s(%s) 错误：%s" % (site_name,site_name_cn,response_msg['msg'])
                         return False, msg 
                     else:
-                        msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
             except:
                 #失败，返回html
-                msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
             
                 ##cookie失效的抓取(待后期确认页面内容)
@@ -184,14 +138,14 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
             
             return True, msg
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
         
     except Exception as e:
-        msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -221,31 +175,31 @@ def hdarea(site_name, site_name_cn, site_url, site_cookie):
             try:
                 response_msg = response.text
                 if response_msg.strip() == '':
-                    msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                     return False, msg
                 else:
 
                     if '重复签到' in response_msg:
-                        msg = "%s(%s) 请不要重复签到哦！" % (site_name,site_name_cn)
+                        msg = "%s(%s) %s " % (site_name,site_name_cn, msg_reok)
                     else:
-                        msg = "%s(%s) 签到成功,%s" % (site_name,site_name_cn,response_msg)
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
                     
                 return True, msg
             except:
                 #失败，返回html
-                msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_err_cookie)
                 return False, msg
                         
             return True, msg
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name,site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
         
     except Exception as e:
-        msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -275,27 +229,27 @@ def pterclub(site_name, site_name_cn, site_url, site_cookie):
                 response_msg = json.loads(response.text)
 
                 if response_msg['status'] == '1':
-                    message = response_msg['message']
-                    msg = "%s(%s) 签到成功,%s" % (site_name,site_name_cn,message.replace('<p>','').replace('</p>',''))
+                    #message = response_msg['message']
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
 
                 else:
-                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
 
             except:
                 #失败，返回html
-                msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
             
             return True, msg
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
         
     except Exception as e:
-        msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -333,7 +287,7 @@ def hdcity(site_name, site_name_cn, site_url, site_cookie):
             
             if len(form) >= 1:
                 #cookie失效
-                msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg                
             else:
                 tables = soup.findAll('div', {'class':'container'})
@@ -348,14 +302,14 @@ def hdcity(site_name, site_name_cn, site_url, site_cookie):
                                 
             return True, msg
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
                 
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error(str(e))
         
         return False, msg
@@ -400,19 +354,19 @@ def btschool(site_name, site_name_cn, site_url, site_cookie):
                 if len(tables) != 0:     
                     msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
                 else:
-                    msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                     return False, msg                    
             
             return True, msg
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
                 
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error(str(e))
         
         return False, msg   
@@ -457,17 +411,17 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
                 return True, msg
             except:
                 #失败，返回html
-                msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg            
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
                 
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error(str(e))
         
         return False, msg
@@ -503,12 +457,12 @@ def general(site_name, site_name_cn, site_url, site_cookie):
                 if '签到成功' in str(j) or '簽到成功' in str(j):
                     #print(i)
                     #info = i.findAll('td', {'class':'text'})
-                    d = j.find('p')
+                    #d = j.find('p')
                     #替换掉p标签,tg不支持
-                    msg = "%s(%s) %s" % (site_name,site_name_cn,str(d).replace('<p>','').replace('</p>',''))
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
          
                 elif '已经签到' in str(j) or '已經簽到' in str(j):
-                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
 
             #cookie失效的抓取
             error_table = soup.findAll('table', {'class':'mainouter'})
@@ -517,19 +471,19 @@ def general(site_name, site_name_cn, site_url, site_cookie):
                 fail_msg = error_table[0].find('p')
                 
                 if '错误' in str(fail_msg) or '錯誤' in str(fail_msg):
-                    msg = "%s(%s) cookie失效" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                     return False, msg
             
             return True, msg
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
                 
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error(str(e))
         
         return False, msg
@@ -588,18 +542,18 @@ def nosign(site_name, site_name_cn, site_url, site_cookie):
                 
                 return True, msg
             else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
                 
         else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(msg)
             
             return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -657,18 +611,18 @@ def keepfrds(site_name, site_name_cn, site_url, site_cookie):
                 
                 return True, msg
             else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
                 
         else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(msg)
             
             return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -677,6 +631,121 @@ def keepfrds(site_name, site_name_cn, site_url, site_cookie):
 def tjupt(site_name, site_name_cn, site_url, site_cookie):
     """
     tjupt 北洋园
+    """
+    
+    headers = {
+        'user-agent': user_agent,
+        'cookie': site_cookie
+    }
+    
+    #获取网站url,不带/结尾
+    sign_url = getSiteUrl(site_url) + '/attendance.php'
+    
+    logger.info('--------------%s开始签到----------------' % site_name)
+    
+    try:
+        response = requests.get(sign_url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            #需要安装pip install lxml
+            soup = BeautifulSoup(response.text, "lxml")
+            
+            tables = soup.findAll('table', {'class':'captcha'})
+            
+            answer_data = {}
+            if len(tables) != 0:
+                
+                #获取图片链接
+                img_src = tables[0].find('img')
+                img = img_src.attrs['src']
+                logger.info(img)
+                
+                #获取答案列表
+                img_data = tables[0].findAll('input',{'name':'answer'})
+                logger.info(img_data)
+                for i in img_data:
+                    answer_data[i.nextSibling.get_text()] = i.attrs['value']
+            
+                logger.info(answer_data)
+                #use_gpu= False 使用CPU预加载，不用GPU
+                #lang支持ch, en, french, german, korean, japan
+                #use_angle_cls = True 使用分类模型，不存在则自动下载
+                ocr = PaddleOCR(lang="ch",use_angle_cls = True,use_gpu= False, show_log=False)
+                #获取所有电影名称
+                #a = answer_data.keys()
+                result = ocr.ocr(img, cls=True)
+                #保存最终图片电影名称
+                answer_data_result = ""
+                #保存匹配比率
+                ratio = 0
+                for line in result:
+                    #得到图片解释的汉字
+                    d = line[1][0]
+                    #print(d)
+                    #limit返回结果数量
+                    #f = process.extract(d, a, limit=2)
+                    #只返回一个结果
+                    f, num = process.extractOne(d, answer_data.keys())
+                    if num == 0:
+                        continue
+                    
+                    if num == 100:
+                        answer_data_result = f
+                        ratio = 100
+                        break
+                    elif num >= 75 and ratio <= 75:
+                        answer_data_result = f
+                        ratio = 75
+                    elif num >= 50 and ratio <= 50:
+                        answer_data_result = f
+                        ratio = 50
+                    elif num >= 45 and ratio <= 45:
+                        answer_data_result = f   
+                        ratio = 45
+
+                if answer_data_result != "":
+                    
+                    data = {'answer': answer_data[answer_data_result],
+                            'submit': "提交"
+                            }
+                    
+                    response = requests.post("https://tjupt.org/attendance.php", headers=headers, data=data, timeout=10)
+                    if '签到成功' in response.text:
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
+                        return True, msg
+                    else:
+                        msg = "%s(%s) %s" % (site_name,site_name_cn, msg_err)
+                        return False, msg
+                else:
+                    msg = "%s(%s) 签到失败,无法匹配电影名称" % (site_name,site_name_cn)
+                    return False, msg                    
+                    
+            else:
+                
+                if '今日已签到' in response.text:
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
+                    return True, msg
+                else:
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
+                    return False, msg
+                
+        else:
+            msg = "%s(%s) %s" % (site_name,site_name_cn,msg_err_url)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(msg)
+            
+            return False, msg
+            
+    except Exception as e:
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
+        logger.error('--------------%s----------------' % site_name)
+        logger.error(str(e))
+        
+        return False, msg        
+    
+def tjupt_old(site_name, site_name_cn, site_url, site_cookie):
+    """
+    tjupt 北洋园（废弃）
     """
     
     headers = {
@@ -794,18 +863,18 @@ def hd(site_name, site_name_cn, site_url, site_cookie):
                 
                 return True, msg
             else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
                 
         else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(msg)
             
             return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -852,19 +921,19 @@ def ttg(site_name, site_name_cn, site_url, site_cookie):
                     msg = "%s(%s) %s" % (site_name,site_name_cn, response_msg)
                 
             except:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
             
             return True, msg
         else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(msg)
             
             return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -923,16 +992,16 @@ def pt52(site_name, site_name_cn, site_url, site_cookie):
             font = soup.findAll('font', {'color':'white'})
             
             if len(font) != 0:            
-                msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
             else:
                 #input和font都没有找到，说明cookie失效
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg                 
             
         return True, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -991,18 +1060,18 @@ def greatposterwall(site_name, site_name_cn, site_url, site_cookie):
                 return True, msg
             
             else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
                 
         else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(msg)
             
             return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -1079,18 +1148,18 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                             return False, msg
     
                 else:
-                    msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                     return False, msg
                     
             else:
-                msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
                 logger.error('--------------%s----------------' % site_name)
                 logger.error(msg)
                 
                 return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -1178,7 +1247,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                                 continue
 
                     except:
-                        msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                         return False, msg  
                 else:
                     #存在获取数据失败
@@ -1186,14 +1255,14 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     continue
                     
             else:
-                msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
                 logger.error('--------------%s----------------' % site_name)
                 logger.error(msg)
                 
                 return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -1261,28 +1330,28 @@ def haidan(site_name, site_name_cn, site_url, site_cookie):
                     
                     if response.status_code == 200:
 
-                        msg = "%s(%s) 签到成功" % (site_name,site_name_cn)
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
                         return True, msg
                     else:
-                        msg = "%s(%s) 签到失败" % (site_name,site_name_cn)
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err)
                         return False, msg                        
                 else:
-                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
                     return True, msg
 
             else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
                 
         else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(msg)
             
             return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
@@ -1345,17 +1414,17 @@ def ptsbao(site_name, site_name_cn, site_url, site_cookie):
                 
                 return True, msg
             else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效"
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
         else:
-            msg = "%s(%s) 请求签到地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(response.text)
             
             return False, msg
                 
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error(str(e))
         
         return False, msg
@@ -1410,18 +1479,18 @@ def ssd(site_name, site_name_cn, site_url, site_cookie):
                 
                 return True, msg
             else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
                 
         else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
             logger.error('--------------%s----------------' % site_name)
             logger.error(msg)
             
             return False, msg
             
     except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)
         logger.error(str(e))
         
