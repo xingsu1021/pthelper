@@ -17,11 +17,13 @@ logger = logging.getLogger('sign')
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
 
 msg_ok = '<font color="#4CAF50">[签到成功]</font>'
-msg_err = '<font color="#BF360C">[签到失败]</font>'
+msg_err_start = '<font color="#BF360C">[签到失败,错误:'
+msg_err_end = ']</font>'
 msg_reok = '<font color="#4CAF50">[重复签到]</font>'
 msg_err_cookie = '<font color="#BF360C">[cookie失效]</font>'
 msg_err_url = '<font color="#BF360C">[请求签到地址失败]</font>'
 msg_unknow = '<font color="#BF360C">[未知错误]</font>'
+msg_ok_visit = '<font color="#4CAF50">[模拟访问成功]</font>'
 
 def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
     """
@@ -119,7 +121,7 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
                 else:
                     #crsf不正确
                     if 'msg' in response_msg:
-                        msg = "%s(%s) 错误：%s" % (site_name,site_name_cn,response_msg['msg'])
+                        msg = "%s(%s) %s%s%s" % (site_name,site_name_cn, msg_err_start, response_msg['msg'], msg_err_end)
                         return False, msg 
                     else:
                         msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
@@ -294,10 +296,11 @@ def hdcity(site_name, site_name_cn, site_url, site_cookie):
             
                 check_sign = tables[1].find('span',{'class':'colored'}).get_text()
                 if '已经签过' in check_sign:
-                    data = tables[1].find('div',{'class':'col-md-12'}).p.get_text()
-                    msg = "%s(%s) %s" % (site_name,site_name_cn, data.replace('<p>','').replace('</p>',''))
+                    #data = tables[1].find('div',{'class':'col-md-12'}).p.get_text()
+                    #msg = "%s(%s) %s" % (site_name,site_name_cn, data.replace('<p>','').replace('</p>',''))
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
                 else:
-                    msg = "%s(%s) 未知错误" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_unknow)
                     return False, msg
                                 
             return True, msg
@@ -347,12 +350,13 @@ def btschool(site_name, site_name_cn, site_url, site_cookie):
             font = soup.findAll('font',{'color':'white'})
 
             if len(font) != 0:
-                msg = "%s(%s) %s" % (site_name,site_name_cn,font[0].get_text())
+                #msg = "%s(%s) %s" % (site_name,site_name_cn,font[0].get_text())
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
             else:
                 tables = soup.findAll('table', {'id':'info_block'})
             
                 if len(tables) != 0:     
-                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_reok)
                 else:
                     msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                     return False, msg                    
@@ -404,9 +408,11 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
                     #连续签到天数
                     days = sign_data['days']
                     
-                    msg = "%s(%s) 签到成功,连续签到%s,今日签到得%s积分" % (site_name,site_name_cn,str(days),str(points))
+                    #msg = "%s(%s) 签到成功,连续签到%s,今日签到得%s积分" % (site_name,site_name_cn,str(days),str(points))
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
                 else:
-                    msg = "%s(%s) 提示：%s" % (site_name,site_name_cn,response_msg['msg'])
+                    #msg = "%s(%s) 提示：%s" % (site_name,site_name_cn,response_msg['msg'])
+                    msg = "%s(%s) %s%s%s" % (site_name,site_name_cn, msg_err_start, response_msg['msg'], msg_err_end)
 
                 return True, msg
             except:
@@ -538,7 +544,8 @@ def nosign(site_name, site_name_cn, site_url, site_cookie):
                 message_info = info[1]
                 new_message = message_info.a.nextSibling.get_text()
                 #print('用户详情链接:%s' % user_info_link)
-                msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
+                #msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
                 
                 return True, msg
             else:
@@ -607,7 +614,8 @@ def keepfrds(site_name, site_name_cn, site_url, site_cookie):
                 new_message = message_info.a.get_text()
                 if new_message == "":
                     new_message = 0
-                msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
+                #msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
                 
                 return True, msg
             else:
@@ -638,103 +646,118 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie):
         'cookie': site_cookie
     }
     
-    #获取网站url,不带/结尾
-    sign_url = getSiteUrl(site_url) + '/attendance.php'
-    
-    logger.info('--------------%s开始签到----------------' % site_name)
+
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            #需要安装pip install lxml
-            soup = BeautifulSoup(response.text, "lxml")
+        #验证码签到执行3次验证
+        for i in range(3):
+            #验证成功退出
+            if i > 2:
+                msg = "%s(%s) %s连续3次电影匹配失败%s" % (site_name,site_name_cn, msg_err_start, msg_err_end) 
+                return False, msg
             
-            tables = soup.findAll('table', {'class':'captcha'})
+            #获取网站url,不带/结尾
+            sign_url = getSiteUrl(site_url) + '/attendance.php'
             
-            answer_data = {}
-            if len(tables) != 0:
+            logger.info('--------------%s开始签到----------------' % site_name)        
+            response = requests.get(sign_url, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                #需要安装pip install lxml
+                soup = BeautifulSoup(response.text, "lxml")
                 
-                #获取图片链接
-                img_src = tables[0].find('img')
-                img = img_src.attrs['src']
-                logger.info(img)
+                tables = soup.findAll('table', {'class':'captcha'})
                 
-                #获取答案列表
-                img_data = tables[0].findAll('input',{'name':'answer'})
-                logger.info(img_data)
-                for i in img_data:
-                    answer_data[i.nextSibling.get_text()] = i.attrs['value']
-            
-                logger.info(answer_data)
-                #use_gpu= False 使用CPU预加载，不用GPU
-                #lang支持ch, en, french, german, korean, japan
-                #use_angle_cls = True 使用分类模型，不存在则自动下载
-                ocr = PaddleOCR(lang="ch",use_angle_cls = True,use_gpu= False, show_log=False)
-                #获取所有电影名称
-                #a = answer_data.keys()
-                result = ocr.ocr(img, cls=True)
-                #保存最终图片电影名称
-                answer_data_result = ""
-                #保存匹配比率
-                ratio = 0
-                for line in result:
-                    #得到图片解释的汉字
-                    d = line[1][0]
-                    #print(d)
-                    #limit返回结果数量
-                    #f = process.extract(d, a, limit=2)
-                    #只返回一个结果
-                    f, num = process.extractOne(d, answer_data.keys())
-                    if num == 0:
-                        continue
+                answer_data = {}
+                if len(tables) != 0:
                     
-                    if num == 100:
-                        answer_data_result = f
-                        ratio = 100
-                        break
-                    elif num >= 75 and ratio <= 75:
-                        answer_data_result = f
-                        ratio = 75
-                    elif num >= 50 and ratio <= 50:
-                        answer_data_result = f
-                        ratio = 50
-                    elif num >= 45 and ratio <= 45:
-                        answer_data_result = f   
-                        ratio = 45
-
-                if answer_data_result != "":
+                    #获取图片链接
+                    img_src = tables[0].find('img')
+                    img = img_src.attrs['src']
+                    logger.info(img)
                     
-                    data = {'answer': answer_data[answer_data_result],
-                            'submit': "提交"
-                            }
+                    #获取答案列表
+                    img_data = tables[0].findAll('input',{'name':'answer'})
+                    logger.info(img_data)
+                    for i in img_data:
+                        answer_data[i.nextSibling.get_text()] = i.attrs['value']
+                
+                    logger.info(answer_data)
+                    #use_gpu= False 使用CPU预加载，不用GPU
+                    #lang支持ch, en, french, german, korean, japan
+                    #use_angle_cls = True 使用分类模型，不存在则自动下载
+                    ocr = PaddleOCR(lang="ch",use_angle_cls = True,use_gpu= False, show_log=False)
+                    #获取所有电影名称
+                    #a = answer_data.keys()
+                    result = ocr.ocr(img, cls=True)
+                    #保存最终图片电影名称
+                    answer_data_result = ""
+                    #保存匹配比率
+                    ratio = 0
+                    for line in result:
+                        #得到图片解释的汉字
+                        d = line[1][0]
+                        #print(d)
+                        logger.info("图片电影名: " + d)
+                        #limit返回结果数量
+                        #f = process.extract(d, a, limit=2)
+                        #只返回一个结果
+                        f, num = process.extractOne(d, answer_data.keys())
+                        logger.info("模糊匹配电影名: " + f + "-" + str(num))
+                        if num == 0:
+                            continue
+                        
+                        if num == 100:
+                            answer_data_result = f
+                            ratio = 100
+                            break
+                        elif num >= 75 and ratio <= 75:
+                            answer_data_result = f
+                            ratio = num
+                        elif num >= 50 and ratio <= 50:
+                            answer_data_result = f
+                            ratio = num
+                        elif num >= 45 and ratio <= 45:
+                            answer_data_result = f   
+                            ratio = num
+                        elif num >= 10 and ratio == 0:
+                            answer_data_result = f   
+                            ratio = num
+                                                                        
+                    logger.info("结果匹配电影名: " + answer_data_result + "-" + str(ratio))
+                    if answer_data_result != "":
+                        
+                        data = {'answer': answer_data[answer_data_result],
+                                'submit': "提交"
+                                }
+                        
+                        response = requests.post("https://tjupt.org/attendance.php", headers=headers, data=data, timeout=10)
+                        if '签到成功' in response.text:
+                            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
+                            return True, msg
+                        else:
+                            logger.error(response.text)
+                            msg = "%s(%s) %s" % (site_name,site_name_cn, msg_unknow)
+                            return False, msg
+                    else:
+                        msg = "%s(%s) %s无法匹配电影名称%s" % (site_name,site_name_cn, msg_err_start, msg_err_end)
+                        return False, msg                    
+                        
+                else:
                     
-                    response = requests.post("https://tjupt.org/attendance.php", headers=headers, data=data, timeout=10)
-                    if '签到成功' in response.text:
-                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
+                    if '今日已签到' in response.text:
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
                         return True, msg
                     else:
-                        msg = "%s(%s) %s" % (site_name,site_name_cn, msg_err)
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                         return False, msg
-                else:
-                    msg = "%s(%s) 签到失败,无法匹配电影名称" % (site_name,site_name_cn)
-                    return False, msg                    
                     
             else:
+                msg = "%s(%s) %s" % (site_name,site_name_cn,msg_err_url)
+                logger.error('--------------%s----------------' % site_name)
+                logger.error(msg)
                 
-                if '今日已签到' in response.text:
-                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
-                    return True, msg
-                else:
-                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
-                    return False, msg
-                
-        else:
-            msg = "%s(%s) %s" % (site_name,site_name_cn,msg_err_url)
-            logger.error('--------------%s----------------' % site_name)
-            logger.error(msg)
-            
-            return False, msg
+                return False, msg
             
     except Exception as e:
         msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
@@ -859,7 +882,8 @@ def hd(site_name, site_name_cn, site_url, site_cookie):
                 #消息
                 new_message = infos[3].get_text().strip()
 
-                msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
+                #msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
                 
                 return True, msg
             else:
@@ -916,7 +940,8 @@ def ttg(site_name, site_name_cn, site_url, site_cookie):
                 response = requests.post(sign_url, headers=headers, data=data)
                 response_msg = response.text.encode(response.encoding).decode('utf-8')
                 if '已签到过' in response_msg:
-                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                    #msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_reok)
                 else:
                     msg = "%s(%s) %s" % (site_name,site_name_cn, response_msg)
                 
@@ -983,7 +1008,8 @@ def pt52(site_name, site_name_cn, site_url, site_cookie):
 
                 msg = "%s(%s) %s" % (site_name,site_name_cn,sign_msg )
             else:
-                msg = "%s(%s) 未知错误" % (site_name,site_name_cn)
+                #msg = "%s(%s) 未知错误" % (site_name,site_name_cn)
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_unknow)
                 logger.error('--------------%s----------------' % site_name)
                 return False, msg  
             
@@ -1055,7 +1081,8 @@ def greatposterwall(site_name, site_name_cn, site_url, site_cookie):
                 value_user_info_link = ul2[0].findAll('a',{'class':'Header-moreLink DropdownMenu-item is-profile'})
                 #用户链接
                 user_info_link = value_user_info_link[0].attrs['href']
-                msg = "%s(%s) 积分:%s,分享率:%s,令牌:%s" % (site_name,site_name_cn, bonus,ratio,fl_token)
+                #msg = "%s(%s) 积分:%s,分享率:%s,令牌:%s" % (site_name,site_name_cn, bonus,ratio,fl_token)
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
                 
                 return True, msg
             
@@ -1125,7 +1152,11 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                         
                     data_ocr = ocr.classification(image)
                     logger.info(data_ocr)
-                
+                    
+                    #验证码不足6未跳过
+                    if len(data_ocr) < 6 :
+                        continue
+                    
                     data = {'imagehash': imagehash,
                             'imagestring': data_ocr
                             }
@@ -1137,13 +1168,17 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     if result['state'] == 'success':
                         signindays = result['signindays']
                         integral = result['integral']
-                        msg = "%s(%s) 连续签到%s,本次获得%s" % (site_name,site_name_cn, signindays,integral)
+                        #msg = "%s(%s) 连续签到%s,本次获得%s" % (site_name,site_name_cn, signindays,integral)
+                        msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
                         return True, msg
                     else:
                         if 'msg' in result:
-                            msg = "%s(%s) 签到失败：%s" % (site_name,site_name_cn, result['msg'])
+                            #msg = "%s(%s) 签到失败：%s" % (site_name,site_name_cn, result['msg'])
+                            msg = "%s(%s) %s%s%s" % (site_name,site_name_cn, msg_err_start, result['msg'],msg_err_end)
                         else:
-                            msg = "%s(%s) 签到失败" % (site_name,site_name_cn)
+                            #msg = "%s(%s) 签到失败" % (site_name,site_name_cn)
+                            logger.error(str(result))
+                            msg = "%s(%s) %s" % (site_name,site_name_cn, msg_unknow)
                         if i > 2:
                             return False, msg
     
@@ -1214,7 +1249,10 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                         
                     data_ocr = ocr.classification(image)
                     logger.info(data_ocr)
-    
+                    #验证码不足6未跳过
+                    if len(data_ocr) < 6 :
+                        continue
+                    
                     data = {'action': 'showup',
                             'imagehash': code,
                             'imagestring': data_ocr
@@ -1225,17 +1263,20 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                         result = json.loads(response.text)
                         
                         if result['success']:
-                            msg = "%s(%s) 连续签到%s" % (site_name,site_name_cn, result['message'])
+                            #msg = "%s(%s) 连续签到%s" % (site_name,site_name_cn, result['message'])
+                            msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
                             return True, msg                            
                         else:
                             #false的情况存在无message
                             if 'message' in result:
                                 if 'date_unmatch' == result['message']:
-                                    msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                                    #msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
+                                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_reok)
                                     return True, msg
                                 else:
                                     #invalid_imagehash说明数据验证码错误
-                                    msg = "%s(%s) 错误:%s" % (site_name,site_name_cn, result['message'])
+                                    #msg = "%s(%s) 错误:%s" % (site_name,site_name_cn, result['message'])
+                                    msg = "%s(%s) %s%s%s" % (site_name,site_name_cn, msg_err_start, result['message'], msg_err_end)
     
                                     #超过2次退出
                                     if i > 2:
@@ -1333,7 +1374,7 @@ def haidan(site_name, site_name_cn, site_url, site_cookie):
                         msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
                         return True, msg
                     else:
-                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err)
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_unknow)
                         return False, msg                        
                 else:
                     msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
@@ -1410,7 +1451,8 @@ def ptsbao(site_name, site_name_cn, site_url, site_cookie):
                 message_info = info[1]
                 new_message = message_info.a.nextSibling.get_text().strip()
                 #print('用户详情链接:%s' % user_info_link)
-                msg = "魔力:%s,分享率:%s,新消息:%s" % (bonus,ratio,new_message)
+                #msg = "魔力:%s,分享率:%s,新消息:%s" % (bonus,ratio,new_message)
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
                 
                 return True, msg
             else:
@@ -1475,7 +1517,8 @@ def ssd(site_name, site_name_cn, site_url, site_cookie):
                 downloaded = user_info.find('font',{'class':'color_downloaded'}).nextSibling.get_text()
 
                 message_info = info[1].find('a',{'href':'messages.php'}).nextSibling.get_text()
-                msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus.strip(), ratio.strip(), message_info.strip())
+                #msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus.strip(), ratio.strip(), message_info.strip())
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
                 
                 return True, msg
             else:

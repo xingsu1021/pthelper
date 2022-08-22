@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.9-slim-buster
+FROM python:3.8-slim-buster
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -16,62 +16,36 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     sed -i 's/security.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y apt-utils gnupg libgl1-mesa-glx libglib2.0
+    apt-get install -y git libgomp1
 
-RUN pip install --upgrade pip -i https://pypi.mirrors.ustc.edu.cn/simple/
+# copy project
+#COPY . $APP_HOME
+RUN git clone https://github.com/xingsu1021/pthelper.git ${APP_HOME}
 
-RUN pip install --no-cache-dir --upgrade pip -i https://pypi.mirrors.ustc.edu.cn/simple/
-#RUN pip install --no-cache-dir --upgrade setuptools -i https://pypi.mirrors.ustc.edu.cn/simple/
-
-COPY requirements.txt .
+RUN pip install whl/python_Levenshtein-0.12.2-cp38-cp38-linux_x86_64.whl whl/future-0.18.2-py3-none-any.whl
 
 #将需要的包体全部打包成直接安装的包whl
 RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
 
-#安装nginx
-#RUN apt install curl gnupg2 ca-certificates lsb-release -y
-#RUN curl -o /tmp/nginx_signing.key https://nginx.org/keys/nginx_signing.key && \
-COPY nginx_signing.key /tmp
-RUN  cat /tmp/nginx_signing.key | apt-key add -
+RUN pip install --no-cache-dir whl/paddlepaddle-2.3.2-cp38-cp38-linux_x86_64.whl -i https://mirror.baidu.com/pypi/simple
 
-RUN echo "deb http://nginx.org/packages/debian buster nginx" > /etc/apt/sources.list.d/nginx.list && \
-    apt update && \
-    #apt install nginx supervisor -y && \
-    apt install nginx -y && \
-    rm -f /etc/nginx/conf.d/default.conf && \
-    ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log 
+#容器报错ImportError: libGL.so.1: cannot open shared object file: No such file or dir
+RUN pip uninstall opencv-python -y
+RUN pip install --no-cache-dir opencv-contrib-python==4.4.0.46 opencv-python-headless==4.4.0.46 -i https://pypi.mirrors.ustc.edu.cn/simple/
 
-#RUN pip install --no-cache-dir supervisor -i https://pypi.mirrors.ustc.edu.cn/simple/
 
-COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY conf/vhost.conf /etc/nginx/conf.d/vhost.conf
-COPY conf/supervisord.conf /etc/supervisord.conf
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-RUN apt-get purge gnupg -y && \
-    apt-get autoremove -y && \
-    apt-get clean
-
-# copy project
-COPY . $APP_HOME
+RUN apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /root/.cache && \
+    rm -rf whl
 
 RUN ln -s /home/data/www/db /db && \
     ln -s /home/data/www/logs /logs && \
-    ln -s /home/data/www/backups /backups && \
-    rm -rf conf && \
-    rm -rf docker-compose.yml && \
-    rm -rf Dockerfile && \
-    rm -rf README.md && \
-    rm -rf requirements.txt && \
-    rm -rf db/* logs/* backups/* \
-    rm -rf .git*
+    ln -s /home/data/www/backups /backups
 
 EXPOSE 80
-#apt-get安装路径
-#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-#pip安装路径
-#CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
 CMD ["/usr/local/bin/start.sh"]

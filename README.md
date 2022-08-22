@@ -1,5 +1,5 @@
 
-使用Djano编写PT助手，代码完全开放，欢迎有兴趣的小伙伴进行修改发布。禁止用于商业用途。
+使用Djano编写PT助手(主用签到)，代码完全开放，欢迎有兴趣的小伙伴进行修改发布。禁止用于商业用途。
 
 由于涉及ocr本地验证，因此docker镜像相对比较大。
 
@@ -15,6 +15,19 @@ docker pull xingsu1021/pthelper
 pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
 ```
 
+默认账号:admin
+默认密码:123456
+
+# v2.0 说明
+
+```shell
+  1、如果无北洋园，U2（后期增加）账号者，不推荐使用这个版本
+  2、由于使用飞浆PaddleOCR,因此不在支持alpine镜像,镜像改为python:3.8-slim-buster,体积进一步增加
+  3、Docker原型基于J4125 CPU，因此镜像使用飞浆版本只能使用noavx版本的python3.8(https://www.paddlepaddle.org.cn/whl/linux/mkl/noavx/stable.html)
+  4、由于目前使用的nas或小主机的CPU绝大多数都没有avx,也无显卡（独享N卡）,因此暂不提供avx版本,GPU版本
+  5、简化签到结果显示
+```
+
 # v1.0 说明
 
 1、支持签到功能
@@ -23,51 +36,13 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 
 ## 支持站点
 
-站点 | 签到支持|
---- |--- |
-红豆饭(hdfans) |  ✔
-壹PT吧(1ptba) | ✔
-铂金学院(ptchina) | ✔
-瓷器(hdchina) | ✔
-芒果(3wmg) | ✔
-碟粉(discfan) | ✔
-杜比(hddolby) | ✔
-阿童木(hdatmos) | ✔
-聆音(soulvoice) | ✔
-铂金家(pthome) | ✔
-高清时间(hdtime) | ✔
-高清地带(hdzone) | ✔
-海棠(htpt) | ✔
-观众(audiences) | ✔
-老师(nicept) | ✔
-家园(hdhome) | ✔
-时间(pttime) | ✔
-柠檬(lemonhd) | ✔
-我堡(ourbits) | ✔
-猫站(pterclub) | ✔
-城市(hdcity) | ✔
-高清视界(hdarea) | ✔
-白兔(hares) | ✔
-A-SOUL(asf) | ✔
-听听歌(totheglory) | ✔
-52PT(52pt) | ✔
-海胆(haidan) | ✔
-皇后(open) | ✔
-天空(hdsky) | ✔
-备胎(beitai) | ✘
-马杀鸡(msg) | ✘
-奥申(oshen) | ✘
-爱薇(avgv) | ✘
-吐鲁番(eastgame) | ✘
-小蚂蚁(hdmayi) | ✘
-朋友(keepfrds) | ✘
-北洋园(tjupt) | ✘
-他吹吹风(et8)) | ✘
-海带(hd) | ✘
-海豹(greatposterwall) | ✘
-烧包(ptsbao) | ✘
+由于开放签到功能，因此不在罗列支持站点。基本支持所有通用站，具体可以参考系统。
+
+特殊站由于特殊原因独立进行开发配置，系统有类型说明。如有特殊站目前没有支持的，可以发issues给我，我会根据情况（我有号的情况）进行添加。
 
 ## 暂时不支持站点
+
+由于强CF模式无法绕过，因此放弃（常规模拟浏览器也不行），以下罗列为已知但不限于的站点
 
 站点 |
 --- |
@@ -109,6 +84,7 @@ services:
          <https://github.com/ledccn/IYUUPlus>  
 PTPP：<https://github.com/ronggang/PT-Plugin-Plus>  
 PTPP增强版：白大版PTPP@菩提蛋（没找到仓库：（）  
+飞浆：<https://github.com/PaddlePaddle/PaddleOCR>
 
 ## 以下忽略，只做个人记录
 
