@@ -27,6 +27,7 @@ urlpatterns = [
     #日志
     path('log', views.LogListView.as_view()),
     path('log/del', views.LogDelView.as_view()),
+    path('log/delall', views.LogDelAllView.as_view()),
     path('log/list', views_request.log),
     path('loginfo', views_request.loginfo),
     

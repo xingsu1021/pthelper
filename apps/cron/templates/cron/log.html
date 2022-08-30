@@ -13,6 +13,7 @@
                         <button id="logBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
                         </button>
                         <button id="logBtnDel" class="layui-btn layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>
+                        <button id="logBtnDelAll" class="layui-btn layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>清空日志</button>
                     </div>
                 </div>
             </div>
@@ -140,6 +141,38 @@
             } 
         });
 
+        // 清空日志按钮点击事件
+        $('#logBtnDelAll').click(function () {
+            //选中事件
+            var checkStatus = table.checkStatus('logTable')
+            //得到选择长度
+            dataLength = checkStatus.data.length
+            data = checkStatus.data;
+            var ids = [];
+
+            layer.confirm('确定删除所有日志记录？',{icon: 3, title: '警告', shadeClose: true},
+            function (i) {
+                layer.close(i);
+                layer.load(2);
+
+                $.ajax({ 
+                        url : "cron/log/delall",
+                        type: 'POST', 
+                        dataType : "json", 
+                        data: {'ids':0, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                        success : function(d) { 
+                            layer.closeAll('loading');
+                            if (d.code == 1) {
+                                table.reload('logTable', {});
+                                layer.msg(d.msg, {icon: 1});
+                            } else {
+                                layer.msg(d.msg, {icon: 2});
+                            }
+                        } 
+                }); 
+            });
+            
+        });
 
         // 监听enter键，光标在搜索框
         $('#logSearchValue').keydown(function (event) {

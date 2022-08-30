@@ -625,3 +625,21 @@ class LogDelView(LoginRequiredMixin,TemplateView):
 
 
         return JsonResponse(response_data)
+    
+class LogDelAllView(LoginRequiredMixin,TemplateView):
+    """
+    删除所有日志
+    """
+    def post(self, request, *args, **kwargs):
+        """
+        数据提交
+        """
+
+        Log.objects.all().delete()
+
+        #Site.objects.filter(id=i).delete()
+
+        response_data={"code":1,"msg":"操作成功"}
+
+
+        return JsonResponse(response_data)
