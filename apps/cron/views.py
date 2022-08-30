@@ -261,8 +261,8 @@ class JobAddView(LoginRequiredMixin,TemplateView):
             crontab_time = '*/%s * * * *' % minute
             
             
-
-        crontab_id = uuid.uuid1()
+        #转换uuid为字符串
+        crontab_id = str(uuid.uuid1())
         
         try:
             ormdata = Job.objects.create(name=name,
@@ -290,7 +290,9 @@ class JobAddView(LoginRequiredMixin,TemplateView):
             
         except:
             ex_type, ex_val, ex_stack = sys.exc_info()
-
+            
+            logger.error(str(ex_val))
+            
             if 'UNIQUE' in str(ex_val):
                 response_data={"code":0,"msg":"存在相同记录"}
             else:
@@ -382,8 +384,6 @@ class JobEditView(LoginRequiredMixin,TemplateView):
         notifys = request.POST.getlist('notifys[]')
         crontab_id = request.POST.get("crontab_id")
         
-        print(sites)
-
         if crontab_time_type == 'day':
             #每天几点几分运行
             crontab_time =  '%s %s * * *' % (str(minute), str(hour))
@@ -443,9 +443,13 @@ class JobDelView(LoginRequiredMixin,TemplateView):
         ids = request.POST.getlist("ids[]")
         #print("ids====>",ids)
 
-        Job.objects.filter(id__in=ids).delete()
+        ormdata = Job.objects.filter(id__in=ids)
 
-        #Site.objects.filter(id=i).delete()
+        #删除任务
+        for i in ormdata:
+            my_scheduler(crontab_id=i.crontab_id, action='del')
+        
+        Job.objects.filter(id__in=ids).delete()
 
         response_data={"code":1,"msg":"操作成功"}
 
