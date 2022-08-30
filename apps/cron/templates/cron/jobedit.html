@@ -1,6 +1,8 @@
 <!-- 表单弹窗 -->
-<form id="jobAddForm" lay-filter="jobAddForm" class="layui-form model-form" method="POST">{% csrf_token %}
-
+<form id="jobEditForm" lay-filter="jobEditForm" class="layui-form model-form" method="POST">{% csrf_token %}
+    <input name="id" type="hidden" value="{{id}}"/>
+    <input name="crontab_id" type="hidden" value="{{crontab_id}}"/>
+    
     <div class="layui-form-item">
             <label class="layui-form-label layui-form-required">任务类型</label>
             <div class="layui-input-block">
@@ -11,7 +13,7 @@
     <div class="layui-form-item">
             <label class="layui-form-label layui-form-required">任务名称</label>
             <div class="layui-input-block">
-                <input name="name" type="text" class="layui-input" maxlength="30" lay-verify="required" required/>
+                <input name="name" type="text" class="layui-input" maxlength="30" lay-verify="required" value="{{name}}" required/>
             </div>
         </div>
 
@@ -29,8 +31,13 @@
         <div class="layui-form-item">
             <label class="layui-form-label">任务状态</label>
             <div class="layui-input-block">
+                {% if crontab_status == 1 %}
                 <input type="radio" name="crontab_status" value="1" title="激活" checked/>
                 <input type="radio" name="crontab_status" value="0" title="禁用"/>
+                {% else %}
+                <input type="radio" name="crontab_status" value="1" title="激活"/>
+                <input type="radio" name="crontab_status" value="0" title="禁用" checked/>
+                {% endif %}
             </div>
         </div>
 
@@ -41,7 +48,6 @@
                 {{ sites|safe }}
 
             </div>
-
             <div class="layui-input-block">
                 <br><span class="layui-badge layui-badge-red"><h2>全选和不选为所有站点,签到重试忽略站点选择</h2></span>&nbsp;
             </div>
@@ -62,7 +68,7 @@
 
     <div class="layui-form-item text-right">
         <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
-        <button class="layui-btn" lay-filter="jobAddForm-submit" lay-submit>保存</button>
+        <button class="layui-btn" lay-filter="jobEditForm-submit" lay-submit>保存</button>
     </div>
 </form>
 
@@ -92,10 +98,11 @@
 
         form.render('radio');
         form.render('checkbox');
-        form.render('select', 'jobAddForm');
+        form.render('select', 'jobEditForm');
 
-          // 渲染多选下拉框
-          var insSel = xmSelect.render({
+        var job_type_id = "{{type_id}}";
+        // 渲染多选下拉框
+        var insSel = xmSelect.render({
             el: '#job_type',
             name: 'job_type',
             prop: {
@@ -105,20 +112,12 @@
             layVerify: 'required',
             radio: true,
 	        clickClose: true,
-            data: [],
-            on: function(data){
-                //isAdd, 此次操作是新增还是删除
-		        var isAdd = data.isAdd;
-
-                //点击获取数组对象
-                //console.log(data.arr)
-                // if (isAdd){
-                //     crontab_sel_action(data.arr[0].value)
-                // }else{
-                //     crontab_sel_action('')
-                // }
-
-            }
+            //禁止编辑
+            disabled: true,
+            theme: {
+                color: '#8799a3',
+            },
+            data: []
         });
 
         /* 获取所有记录类型 */
@@ -127,7 +126,12 @@
             layer.close(loadIndex);
             if (0 === res.code) {
                 $.each(res.data, function (index, item) {
-                    jobTypeList.push({name: item.name, value: item.type_id});
+                    //整形转字符串
+                    if ( item.type_id.toString() === job_type_id ){
+                        jobTypeList.push({name: item.name, value: item.type_id,selected: true});
+                    } else {
+                        jobTypeList.push({name: item.name, value: item.type_id});
+                    }
                 });
                 insSel.update({
                     data: jobTypeList,
@@ -138,6 +142,8 @@
             }
         });
 
+        var cronTimeType = [];
+        var crontab_time_type = "{{crontab_time_type}}";
         var crontab_time = xmSelect.render({
             el: '#crontab_time', 
             radio: true,
@@ -146,12 +152,9 @@
             theme: {
                 color: '#0081ff',
             },
-            data: [
-                {name: '每小时', value: "hour"},
-                {name: '每天', value: "day"},
-                {name: 'N分钟', value: "minute_n"}
-            ],
+            data: [],
             on: function(data){
+
                 //isAdd, 此次操作是新增还是删除
 		        var isAdd = data.isAdd;
 
@@ -166,9 +169,32 @@
             }
         })
 
-        form.on('submit(jobAddForm-submit)', function (data) {
+        /* 获取所有记录类型 */
+        var loadIndex = layer.load(2);
+        admin.req('cron/jobtimetype/list', function (res) {
+            layer.close(loadIndex);
+            if (0 === res.code) {
+                $.each(res.data, function (index, item) {
+                    //整形转字符串
+                    if ( item.value === crontab_time_type ){
+                        cronTimeType.push({name: item.name, value: item.value,selected: true});
+                    } else {
+                        cronTimeType.push({name: item.name, value: item.value});
+                    }
+                });
+                crontab_time.update({
+                    data: cronTimeType,
+                    autoRow: true,
+                })
+                crontab_where_sel_action(crontab_time_type)
+            } else {
+                layer.msg(res.msg, {icon: 2});
+            }
+        });
+
+        form.on('submit(jobEditForm-submit)', function (data) {
             layer.load(2);
-            
+
             //将页面全部复选框选中的值拼接到一个数组中
             var notifys_box = [];
             $('input[name="notifys"]:checked').each(function() {
@@ -182,19 +208,20 @@
             });
             data.field.sites = sites_box
 
-            admin.req('cron/job/add', data.field, function (data) {
+            admin.req('cron/job/edit', data.field, function (data) {
                 layer.closeAll('loading');
                 if (data.code == 1) {
                     layer.msg(data.msg, {icon: 1});
                     table.reload('jobTable', {});
-                    admin.closeDialog('#jobAddForm');
+                    admin.closeDialog('#jobEditForm');
                 } else {
                     layer.msg(data.msg, {icon: 2});
                 }
-            }, $('#jobAddForm').attr('method'));
+            }, $('#jobEditForm').attr('method'));
             return false;
         });
 
+        
         
         /**
          * 任务周期选择框
@@ -216,6 +243,7 @@
             return ;
         }
         laytpl(getTpl).render(rule, function(html) {
+            
             view.innerHTML = html//.replace("#HOUR#", "{{hour}}").replace("#MINUTE#", "{{minute}}");
             if(document.getElementById("hour")!=null) {
                 document.getElementById("hour").value = "{{hour}}"
@@ -227,6 +255,7 @@
             if(document.getElementById("day")!=null) {
                 document.getElementById("day").value = "{{day}}"
             }
+
         });
         form.render();
         };

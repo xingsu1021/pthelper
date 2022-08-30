@@ -567,7 +567,7 @@ def send_telegram(tg_chat_id,tg_token,send_data = [] ,isTest=False):
                 parse_mode=telegram.ParseMode.HTML)
         else:
             bot.send_message(chat_id=tg_chat_id,
-                text='<b>%s</b><i><b>\r\n%s</b></i>' % (time,"\r\n".join(send_data)),
+                text='<b>%s</b><i><b>\r\n%s</b></i>' % (time,"\r\n".join(send_data).replace('font','a')),
                 parse_mode=telegram.ParseMode.HTML)
     
     except:

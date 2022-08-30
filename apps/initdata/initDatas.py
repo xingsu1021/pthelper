@@ -75,6 +75,8 @@ def init_datas():
                   {'name':'joyhd','name_cn':'开心','index_url':'https://www.joyhd.net','sign_type':'nosign'},
                   {'name':'carpt','name_cn':'车PT','index_url':'https://carpt.net','sign_type':'general'},
                   {'name':'piggo','name_cn':'猪猪网','index_url':'https://piggo.me','sign_type':'general'},
+                  {'name':'wintersakura','name_cn':'冬樱','index_url':'https://wintersakura.net','sign_type':'general'},
+                  {'name':'hdpt','name_cn':'明教','index_url':'https://hdpt.xyz','sign_type':'general'},                  
                   ]
     
     for site in sites_data:

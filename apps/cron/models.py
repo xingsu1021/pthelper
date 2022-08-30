@@ -19,12 +19,12 @@ class Job(models.Model):
     crontab_time = models.CharField('执行周期,* * * * *',max_length=100,null=True)
     crontab_id = models.CharField('执行ID',max_length=64)
     crontab_status = models.BooleanField('任务状态,运行,禁用',default=True)
-    week = models.IntegerField('周',default=0)
-    day = models.IntegerField('天',default=0)
-    hour = models.IntegerField('时',default=0)
-    minute = models.IntegerField('分',default=0)
-    second = models.IntegerField('秒',default=0)
-    sites = models.CharField('站点,使用,号分割',max_length=300,null=True)
+    week = models.CharField('周', max_length=50, default="*")
+    day = models.CharField('天', max_length=50, default="*")
+    hour = models.CharField('时', max_length=50, default="*")
+    minute = models.CharField('分', max_length=50, default="*")
+    second = models.CharField('秒', max_length=50, default="*")
+    sites = models.CharField('站点,使用,号分割',max_length=800,null=True)
     notifys = models.CharField('通知类型,使用,号分割',max_length=100,null=True)
     
     

@@ -14,6 +14,7 @@ urlpatterns = [
     path('jobtype/del', views.JobTypeDelView.as_view()),
     path('jobtype/list', views_request.jobtype),
     path('jobtypeinfo/list', views_request.jobtypeinfo),
+    path('jobtimetype/list', views_request.jobtimetype),
     
     #任务
     path('job', views.JobListView.as_view()),

@@ -943,7 +943,7 @@ def ttg(site_name, site_name_cn, site_url, site_cookie):
                     #msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
                     msg = "%s(%s) %s" % (site_name,site_name_cn, msg_reok)
                 else:
-                    msg = "%s(%s) %s" % (site_name,site_name_cn, response_msg)
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
                 
             except:
                 msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
@@ -1006,7 +1006,7 @@ def pt52(site_name, site_name_cn, site_url, site_cookie):
             if len(font) != 0:
                 sign_msg = font[0].get_text().strip()
 
-                msg = "%s(%s) %s" % (site_name,site_name_cn,sign_msg )
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok )
             else:
                 #msg = "%s(%s) 未知错误" % (site_name,site_name_cn)
                 msg = "%s(%s) %s" % (site_name,site_name_cn, msg_unknow)
@@ -1292,9 +1292,12 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                         return False, msg  
                 else:
                     #存在获取数据失败
-                    time.sleep(5)
-                    continue
-                    
+                    #超过2次退出
+                    if i > 2:
+                        return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn)
+                    else:
+                        continue
+    
             else:
                 msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
                 logger.error('--------------%s----------------' % site_name)

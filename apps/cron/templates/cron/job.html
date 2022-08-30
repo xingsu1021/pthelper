@@ -113,7 +113,7 @@
             var index = admin.open({
                 title: title,
                 maxmin: true,
-                area:['70%','80%'],
+                area:['80%','80%'],
                 url: 'cron/job/add',
                 restore:function(){//最大化回调方法
                     $('.layui-layer-min').attr('style','display:inline- block;')
@@ -132,10 +132,16 @@
             var title = '编辑';
             admin.open({
                 title: title,
+                maxmin: true,
                 //area: ['600px', '500px'],
+                area:['80%','80%'],
                 url: 'cron/job/edit?id='+data.id,
+                restore:function(){//最大化回调方法
+                    $('.layui-layer-min').attr('style','display:inline- block;')
+                },
                 success: function (layero, index) {
                     $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                    $(layero).find('.layui-layer-min').remove(); //去掉最小化按钮
                 }
             });
         };

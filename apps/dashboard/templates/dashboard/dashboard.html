@@ -21,20 +21,106 @@
     background-color: #0c64eb;
     box-shadow: 0 0 0 2px rgba(12, 100, 235, .3);
 }
+
+    /** 统计快捷方式样式 */
+    .console-link-block {
+        font-size: 16px;
+        padding: 20px 20px;
+        border-radius: 4px;
+        background-color: #40D4B0;
+        color: #FFFFFF !important;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, .05);
+        position: relative;
+        overflow: hidden;
+        display: block;
+    }
+
+    .console-link-block .console-link-block-num {
+        font-size: 40px;
+        margin-bottom: 5px;
+        opacity: .9;
+    }
+
+    .console-link-block .console-link-block-text {
+        opacity: .8;
+    }
+
+    .console-link-block .console-link-block-icon {
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 50px;
+        line-height: 50px;
+        margin-top: -25px;
+        color: #FFFFFF;
+        opacity: .8;
+    }
+
+    .console-link-block .console-link-block-band {
+        color: #fff;
+        width: 100px;
+        font-size: 12px;
+        padding: 2px 0 3px 0;
+        background-color: #E32A16;
+        line-height: inherit;
+        text-align: center;
+        position: absolute;
+        top: 8px;
+        right: -30px;
+        transform-origin: center;
+        transform: rotate(45deg) scale(.8);
+        opacity: .95;
+        z-index: 2;
+    }
+
+    /** //统计快捷方式样式 */
+
+    /** 设置每个快捷块的颜色 */
+    .layui-row > div:nth-child(2) .console-link-block {
+        background-color: #55A5EA;
+    }
+
+    .layui-row > div:nth-child(3) .console-link-block {
+        background-color: #9DAFFF;
+    }
+
+    .layui-row > div:nth-child(4) .console-link-block {
+        background-color: #F591A2;
+    }
+
+    .layui-row > div:nth-child(5) .console-link-block {
+        background-color: #FEAA4F;
+    }
+
+    .layui-row > div:last-child .console-link-block {
+        background-color: #9BC539;
+    }
 </style>
 
 <!-- 正文开始 -->
 <div class="layui-fluid ew-console-wrapper">
     <div class="layui-row layui-col-space15">
-        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+        <div class="layui-col-md2 layui-col-sm2 layui-col-xs5">
+            <div class="console-link-block">
+                <div class="console-link-block-num">{{sites_num}}</div>
+                <div class="console-link-block-text">PT站数量</div>
+                <i class="console-link-block-icon layui-icon layui-icon-list"
+                   style="font-size: 62px;padding-right: 5px;"></i>
+
+            </div>
+        </div>
+
+        <div class="layui-col-sm9">
             <div class="layui-card">
-                <div class="layui-card-header">
-                    PT站数量<span class="layui-badge layui-badge-green pull-right">个</span>
-                </div>
+                <div class="layui-card-header">今日签到失败信息</div>
                 <div class="layui-card-body">
-                    <p class="lay-big-font">{{sites_num}}</p>
+                    <table class="layui-table" id="signFailTable" lay-filter="signFailTable"></table>
+
                 </div>
             </div>
+
         </div>
         <!--
         <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
@@ -73,34 +159,24 @@
 
     <div class="layui-row layui-col-space15">
 
-        <div class="layui-col-sm6">
+        <div>
             <div class="layui-card">
-                <div class="layui-card-header">今日签到失败信息</div>
-                <div class="layui-card-body">
-                    <table class="layui-table" id="signFailTable" lay-filter="signFailTable"></table>
-
-                </div>
-            </div>
-
-        </div>
-
-        <div class="layui-col-md6">
-            <div class="layui-card">
-                <div class="layui-card-header">已知问题</div>
-                <div class="layui-card-body dynamic-card-body mini-bar" style="height: 265px;">
+                <div class="layui-card-header">用户信息</div>
+                <div class="layui-card-body dynamic-card-body mini-bar" style="height: 100%;">
                     <ul class="layui-timeline layui-timeline-dynamic">
                         <li class="layui-timeline-item">
                             <i class="layui-icon layui-timeline-axis"></i>
                             <div class="layui-timeline-content layui-text">
-                                <div class="layui-timeline-title">学校由于CF干扰，需要同一浏览器访问后在执行补签
+                                <div class="layui-timeline-title">编辑中
                             </div>
                         </li>
                         <li class="layui-timeline-item">
                             <i class="layui-icon layui-timeline-axis active"></i>
                             <div class="layui-timeline-content layui-text">
-                                <div class="layui-timeline-title">暂不支持全站备份和恢复
+                                <div class="layui-timeline-title">编辑中
                             </div>
                         </li>
+                        
                     </ul>
                 </div>
             </div>

@@ -30,9 +30,9 @@ def jobtype(request):
     #得到排序字段
     sort = request.GET.get('sort','id')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
@@ -88,9 +88,9 @@ def job(request):
     #得到排序字段
     sort = request.GET.get('sort','id')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
@@ -149,9 +149,9 @@ def log(request):
     #得到排序字段
     sort = request.GET.get('sort','id')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
@@ -208,35 +208,56 @@ def jobtypeinfo(request):
     #得到排序字段
     sort = request.GET.get('sort','type_id')
     #得到排序规则
-    order_by_type = request.GET.get('order','desc')
+    order_by_type = request.GET.get('order','')
     
-    if order_by_type == 'desc':
+    if order_by_type == 'asc':
         order_by = sort
     else:
         order_by = '-' + sort
-        
-    #获取任务信息中是否配置了签到
-    qiandao_count = Job.objects.filter(jobtype_id=1000).count()
-    
+
     #获取所有记录
     data['count'] = JobType.objects.count()
 
     ormdata = JobType.objects.order_by(order_by).all()
 
     for i in ormdata:
-        if qiandao_count == 0:
-            
-            data['data'].append({
-                             "name":i.name,
-                             "type_id":i.type_id
-                             })
-        else:
-            if i.type_id != 1000:
-                
-                data['data'].append({
-                                 "name":i.name,
-                                 "type_id":i.type_id
-                                 })            
+
+        data['data'].append({
+                         "name":i.name,
+                         "type_id":i.type_id
+                         })
+   
+
+    return JsonResponse(data)
+
+@login_required
+def jobtimetype(request):
+    """ 
+    任务类型
+    xmSelect
+    """
+
+    data = {}
+    data['code'] = 0
+    data['msg'] = ""
+    data['data'] = []
+
+    cron_time_data = [
+            {"name": '每小时', "value": "hour"},
+            {"name": '每天', "value": "day"},
+            {"name": 'N分钟', "value": "minute_n"}
+
+            ]
+    #获取所有记录
+    data['count'] = 7
+
+    for i in cron_time_data:
+
+        data['data'].append({
+                         "name":i['name'],
+                         "value":i['value']
+                         })
+   
 
     return JsonResponse(data)
 
@@ -259,9 +280,9 @@ def loginfo(request):
         #得到排序字段
         sort = request.GET.get('sort','created_at')
         #得到排序规则
-        order_by_type = request.GET.get('order','desc')
+        order_by_type = request.GET.get('order','')
         
-        if order_by_type == 'desc':
+        if order_by_type == 'asc':
             order_by = sort
         else:
             order_by = '-' + sort
