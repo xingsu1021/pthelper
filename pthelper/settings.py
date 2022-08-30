@@ -176,8 +176,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #模板使用变量
 SITE_NAME = 'PT助手'
-SITE_URL = 'https://www.baidu.com'
-SITE_VERSION = 'Version 1.0.0'
+SITE_URL = 'https://github.com/xingsu1021/pthelper'
+SITE_VERSION = 'Version 2.0.1'
 SITE_COPYRIGHT = 'copyright © 2022'
 SITE_NAME_COPYRIGHT = 'copyright © 2022 PT助手'
 

@@ -3,6 +3,7 @@
 
 由于涉及ocr本地验证，因此docker镜像相对比较大。
 
+
 docker部署
 
 ```shell
@@ -17,6 +18,22 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 
 默认账号:admin
 默认密码:123456
+
+
+# 在线升级说明
+
+```shell
+  1、在线git升级
+  ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
+  2、由于可能涉及表结构变更，因此建议更新后重启docker
+```
+
+# v2.0.1 说明
+
+```shell
+  1、开放计划任务配置
+  2、支持签到失败重试(忽略cookie失效站点),建议失败重试时间设置5分钟以上
+```
 
 # v2.0 说明
 
