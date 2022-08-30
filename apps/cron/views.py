@@ -8,7 +8,7 @@ import sys
 from .models import JobType, Job
 from notify.models import NotifyConfig
 from sites.models import SiteInfo,SiteConfig
-from cron.models import Job
+from cron.models import Job,Log
 from .crontabs import my_scheduler
 
 import logging
