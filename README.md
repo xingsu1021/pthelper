@@ -23,9 +23,9 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 # 在线升级说明
 
 ```shell
-  1、在线git升级
-  ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
-  2、由于可能涉及表结构变更，因此建议更新后重启docker
+1、在线git升级
+![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
+2、由于可能涉及表结构变更，因此建议更新后重启docker
 ```
 
 # v2.0.1 说明
