@@ -100,6 +100,7 @@ def init_datas():
     jobtypes_data = [{'name':'签到','type_id':1000},
                      {'name':'辅种','type_id':1001},
                      {'name':'刷流','type_id':1002},
+                     {'name':'签到重试','type_id':1003},
                      ]
     
     for jobtype in jobtypes_data:
