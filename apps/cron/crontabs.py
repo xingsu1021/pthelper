@@ -63,7 +63,7 @@ scheduler.start()
     ## 有错误就停止定时器
     #scheduler.shutdown()
     
-def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", jobtype_id=1000):
+def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", jobtype_id=1000, action='add'):
     """计划任务调度
     crontab_id 任务ID
     crontab_status 任务状态(配置状态非任务本身状态),bool
@@ -76,6 +76,10 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
 
     if isJob != None:
 
+        #删除job
+        if action=='del':
+            scheduler.remove_job(crontab_id)
+            
         #激活
         if crontab_status:
             #已经存在的任务不能做时间修改，必须删除在添加
