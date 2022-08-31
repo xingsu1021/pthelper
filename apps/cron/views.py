@@ -582,6 +582,7 @@ class SignJobView(LoginRequiredMixin,TemplateView):
 
         return JsonResponse(response_data)
     
+    
 #===================================================================
 class LogListView(LoginRequiredMixin,TemplateView):
     """

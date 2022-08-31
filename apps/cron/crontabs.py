@@ -79,6 +79,12 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
         #删除job
         if action=='del':
             scheduler.remove_job(crontab_id)
+            return True
+            
+        #立刻执行任务
+        if action == 'now' and jobtype_id == 1000:
+            scheduler.add_job(sign, 'interval', trigger='date', next_run_time=datetime.datetime.now(), id=crontab_id)
+            return True
             
         #激活
         if crontab_status:
@@ -103,7 +109,14 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
             if jobtype_id == 1000:
                 scheduler.add_job(sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
             elif jobtype_id == 1003:
-                scheduler.add_job(re_fail_sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])            
+                scheduler.add_job(re_fail_sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
+        else:
+            #无状态任务处理(常规为立刻执行任务)
+            #立刻执行签到任务
+            if action == 'now' and jobtype_id == 1000:
+                #只执行一次
+                scheduler.add_job(signonekey, trigger='date', next_run_time=datetime.datetime.now(), id=crontab_id)
+                return True            
             
     return True
             
@@ -116,7 +129,7 @@ def sign(crontab_id):
     """
 
     #获取任务ID对应的站点
-    job_sites = list(Job.objects.filter(crontab_id=crontab_id).values_list('sites',flat=True))
+    job_sites = list(Job.objects.filter(crontab_id=crontab_id).values_list('sites',flat=True))[0]
     
     #保存最后发送的结果
     send_data = []
@@ -161,6 +174,60 @@ def sign(crontab_id):
     
     return
 
+
+def signonekey():
+    """
+    一键执行签到
+    参数：
+      crontab_id：执行任务的ID
+    """
+
+    #获取任务ID对应的站点
+    job_sites = list(Job.objects.filter(jobtype_id=1000).values_list('sites',flat=True))[0]
+    crontab_id = list(Job.objects.filter(jobtype_id=1000).values_list('crontab_id',flat=True))[0]
+    
+    #保存最后发送的结果
+    send_data = []
+    site_count = SiteInfo.objects.count()
+    if site_count == 0:
+        send_data.append('未配置任何站点')
+    else:
+        if len(job_sites) == 0:
+            #获取所有已经配置的站点
+            sites = SiteInfo.objects.all()
+        else:
+            sites = SiteInfo.objects.filter(siteconfig_name__in=job_sites)
+            
+        for i in sites:
+            site_name = i.siteconfig_name
+            site_cookie = i.cookie
+            #获取站点配置信息
+            site_config = SiteConfig.objects.get(name=site_name)
+            site_url = site_config.index_url
+            site_name_cn = site_config.name_cn
+            site_sign_type = site_config.sign_type
+     
+            #headers = {
+                #'user-agent': user_agent,
+                #'referer': site_url,
+                #'cookie': site_cookie
+            #}
+            #统一签到入口
+            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type) 
+            
+            try:
+                Log.objects.create(name = '签到',type_id = 1000, crontab_id = crontab_id, site_name=site_name, message = data, status = flag)
+            except:
+                logger.error("%s(%s)数据返回出错" % (site_name, site_name_cn))
+                #防止返回数据错误导致异常退出
+                continue
+
+            send_data.append(data)
+            
+    #发送消息
+    send_msg(crontab_id, send_data)
+    
+    return
 
 def re_fail_sign(crontab_id):
     """

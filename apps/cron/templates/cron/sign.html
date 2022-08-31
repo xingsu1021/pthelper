@@ -73,6 +73,7 @@
                 <div class="layui-form-item">
                     <div class="layui-input-block">
                         <button class="layui-btn" lay-filter="signSubmit" lay-submit>&emsp;提交&emsp;</button>
+                        <button class="layui-btn" lay-filter="signOneKeySubmit" lay-submit>&emsp;一键签到&emsp;</button>
 
                     </div>
                 </div>
@@ -136,6 +137,20 @@
             data.field.notifys = arr_box
 
             admin.req('cron/sign', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#signForm').attr('method'));
+            return false;
+        });
+
+        form.on('submit(signOneKeySubmit)', function (data) {
+            layer.load(2);
+
+            admin.req('cron/signonekey', data.field, function (data) {
                 layer.closeAll('loading');
                 if (data.code == 1) {
                     layer.msg(data.msg, {icon: 1});

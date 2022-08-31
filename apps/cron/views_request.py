@@ -4,7 +4,8 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 import datetime
 from .models import JobType, Job, Log
-
+import uuid
+from .crontabs import my_scheduler
 
 #直接使用检查是否管理员
 #from django.contrib.auth.decorators import user_passes_test
@@ -329,4 +330,26 @@ def loginfo(request):
     
         return JsonResponse(data)        
 
-    
+
+#------------------------------
+@login_required
+def signonekey(request):
+    """
+    一键签到
+    """
+
+    if request.method == "POST":
+        """
+        数据提交
+        """
+
+
+        crontab_id = str(uuid.uuid1())
+
+        # 创建任务
+        my_scheduler(crontab_id, jobtype_id=1000, action="now")
+
+
+        response_data={"code":1,"msg":"添加成功"}
+
+        return JsonResponse(response_data)

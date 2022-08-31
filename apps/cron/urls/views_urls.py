@@ -24,6 +24,7 @@ urlpatterns = [
     path('job/list', views_request.job),
     #签到任务
     path('sign', views.SignJobView.as_view()),
+    path('signonekey', views_request.signonekey),
     #日志
     path('log', views.LogListView.as_view()),
     path('log/del', views.LogDelView.as_view()),
