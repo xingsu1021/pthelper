@@ -104,19 +104,20 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
             #scheduler.pause_job(crontab_id)
 
     else:
+        #无状态任务处理(常规为立刻执行任务)
+        #立刻执行签到任务
+        if action == 'now' and jobtype_id == 1000:
+            #只执行一次
+            scheduler.add_job(signonekey, trigger='date', next_run_time=datetime.datetime.now(), id=crontab_id)
+            return True 
+        
         #启用添加，禁用忽略
         if crontab_status:
             if jobtype_id == 1000:
                 scheduler.add_job(sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
             elif jobtype_id == 1003:
                 scheduler.add_job(re_fail_sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
-        else:
-            #无状态任务处理(常规为立刻执行任务)
-            #立刻执行签到任务
-            if action == 'now' and jobtype_id == 1000:
-                #只执行一次
-                scheduler.add_job(signonekey, trigger='date', next_run_time=datetime.datetime.now(), id=crontab_id)
-                return True            
+           
             
     return True
             
@@ -129,7 +130,7 @@ def sign(crontab_id):
     """
 
     #获取任务ID对应的站点
-    job_sites = list(Job.objects.filter(crontab_id=crontab_id).values_list('sites',flat=True))[0]
+    job_sites = list(Job.objects.filter(crontab_id=crontab_id).values_list('sites',flat=True))
     
     #保存最后发送的结果
     send_data = []
@@ -137,10 +138,12 @@ def sign(crontab_id):
     if site_count == 0:
         send_data.append('未配置任何站点')
     else:
-        if len(job_sites) == 0:
+        if len(job_sites[0]) == 0:
             #获取所有已经配置的站点
             sites = SiteInfo.objects.all()
         else:
+            #将站点字符串塞进list
+            job_sites = [x for x in job_sites[0].split(',')]
             sites = SiteInfo.objects.filter(siteconfig_name__in=job_sites)
             
         for i in sites:
@@ -183,7 +186,7 @@ def signonekey():
     """
 
     #获取任务ID对应的站点
-    job_sites = list(Job.objects.filter(jobtype_id=1000).values_list('sites',flat=True))[0]
+    job_sites = list(Job.objects.filter(jobtype_id=1000).values_list('sites',flat=True))
     crontab_id = list(Job.objects.filter(jobtype_id=1000).values_list('crontab_id',flat=True))[0]
     
     #保存最后发送的结果
@@ -192,10 +195,12 @@ def signonekey():
     if site_count == 0:
         send_data.append('未配置任何站点')
     else:
-        if len(job_sites) == 0:
+        if len(job_sites[0]) == 0:
             #获取所有已经配置的站点
             sites = SiteInfo.objects.all()
         else:
+            #将站点字符串塞进list
+            job_sites = [x for x in job_sites[0].split(',')]            
             sites = SiteInfo.objects.filter(siteconfig_name__in=job_sites)
             
         for i in sites:
