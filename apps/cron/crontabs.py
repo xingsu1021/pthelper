@@ -138,7 +138,7 @@ def sign(crontab_id):
     if site_count == 0:
         send_data.append('未配置任何站点')
     else:
-        if len(job_sites[0]) == 0:
+        if job_sites[0] == None or len(job_sites[0]) == 0:
             #获取所有已经配置的站点
             sites = SiteInfo.objects.all()
         else:
@@ -195,7 +195,7 @@ def signonekey():
     if site_count == 0:
         send_data.append('未配置任何站点')
     else:
-        if len(job_sites[0]) == 0:
+        if job_sites[0] == None or len(job_sites[0]) == 0:
             #获取所有已经配置的站点
             sites = SiteInfo.objects.all()
         else:
