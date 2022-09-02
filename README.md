@@ -46,6 +46,9 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
   5、简化签到结果显示
 ```
 
+v2.0 签到截图
+![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/iyuu2.png)
+
 # v1.0 说明
 
 1、支持签到功能
