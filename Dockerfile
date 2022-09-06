@@ -33,10 +33,11 @@ RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.
 RUN pip install --no-cache-dir https://paddle-wheel.bj.bcebos.com/2.3.2/linux/linux-cpu-mkl-noavx/paddlepaddle-2.3.2-cp38-cp38-linux_x86_64.whl -i https://mirror.baidu.com/pypi/simple
 
 #容器报错ImportError: libGL.so.1: cannot open shared object file: No such file or dir
-RUN pip uninstall opencv-python -y
-RUN pip install --no-cache-dir opencv-contrib-python==4.4.0.46 opencv-python-headless==4.4.0.46 -i https://pypi.mirrors.ustc.edu.cn/simple/ --force
-#RUN pip install --no-cache-dir opencv-contrib-python==4.4.0.46 -i https://pypi.mirrors.ustc.edu.cn/simple/
-#RUN pip install --no-cache-dir opencv-python-headless==4.4.0.46 -i https://pypi.mirrors.ustc.edu.cn/simple/
+RUN pip uninstall opencv-python opencv-contrib-python opencv-python-headless -y
+#RUN pip install --no-cache-dir opencv-contrib-python==4.4.0.46 opencv-python-headless==4.4.0.46 -i https://pypi.mirrors.ustc.edu.cn/simple/ --force
+RUN pip install --no-cache-dir opencv-contrib-python==4.4.0.46 -i https://pypi.mirrors.ustc.edu.cn/simple/
+RUN pip install --no-cache-dir opencv-python-headless==4.4.0.46 -i https://pypi.mirrors.ustc.edu.cn/simple/
+
 
 
 COPY start.sh /usr/local/bin/start.sh
