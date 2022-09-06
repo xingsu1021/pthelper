@@ -1131,6 +1131,12 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     )
 
     try:
+        #校验确认是否已经签到
+        response = requests.get("https://open.cd/index.php", headers=headers, timeout=10)
+        if '查看簽到記錄' in response.text:
+            msg = "%s(%s) %s" % (site_name,site_name_cn, msg_reok)
+            return True, msg
+        
         #验证码签到执行3次验证
         for i in range(3):
             #验证成功退出
