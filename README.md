@@ -30,6 +30,13 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 ```
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
 
+# v2.1.0 说明
+
+```shell
+  1、优化企业微信提示
+  2、ocr使用飞浆，并使用自己的学习模块
+  3、此版本为独立，建议升级替换。(在原镜像上升级也可以使用)
+```
 
 # v2.0.1 说明
 
