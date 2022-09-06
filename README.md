@@ -8,6 +8,8 @@ docker部署
 
 ```shell
 docker pull xingsu1021/pthelper
+
+仓库地址: https://hub.docker.com/repository/docker/xingsu1021/pthelper
 ```
 
 本地部署需要Python3.9+

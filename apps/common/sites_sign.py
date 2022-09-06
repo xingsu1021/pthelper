@@ -8,7 +8,7 @@ import simplejson as json
 import re
 import time
 from .utils import getSiteUrl
-import ddddocr
+#import ddddocr
 from paddleocr import PaddleOCR
 from thefuzz import fuzz
 from thefuzz import process
@@ -411,8 +411,11 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
                     #msg = "%s(%s) 签到成功,连续签到%s,今日签到得%s积分" % (site_name,site_name_cn,str(days),str(points))
                     msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
                 else:
-                    #msg = "%s(%s) 提示：%s" % (site_name,site_name_cn,response_msg['msg'])
-                    msg = "%s(%s) %s%s%s" % (site_name,site_name_cn, msg_err_start, response_msg['msg'], msg_err_end)
+                    if '已经签到' in response_msg['msg']:
+                        msg = "%s(%s) %s " % (site_name,site_name_cn, msg_reok)
+                    else:                    
+                        #msg = "%s(%s) 提示：%s" % (site_name,site_name_cn,response_msg['msg'])
+                        msg = "%s(%s) %s%s%s" % (site_name,site_name_cn, msg_err_start, response_msg['msg'], msg_err_end)
 
                 return True, msg
             except:
@@ -1120,7 +1123,13 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
     
     logger.info('--------------%s开始签到----------------' % site_name)
     
-    ocr = ddddocr.DdddOcr(show_ad=False,old=True)
+    ocr = PaddleOCR(use_gpu = False, 
+                    show_log=False, 
+                    rec_model_dir=os.path.join(settings.BASE_DIR, 'paddleocr', 'captcha_rec_model'),
+                    rec_char_dict_path = os.path.join(settings.BASE_DIR, 'paddleocr', 'captcha_rec_model_dic.txt'),
+                    use_angle_cls=True
+                    )
+
     try:
         #验证码签到执行3次验证
         for i in range(3):
@@ -1147,10 +1156,8 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     with open(image_code_name, "wb") as fp:
                         fp.write(response.content)
                     
-                    with open(image_code_name, 'rb') as f:
-                        image = f.read()              
-                        
-                    data_ocr = ocr.classification(image)
+                    data_ocr = ocr.ocr(image_code_name, det=False, rec=True, cls=True)[0][0]
+
                     logger.info(data_ocr)
                     
                     #验证码不足6未跳过
@@ -1221,8 +1228,13 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
     
     logger.info('--------------%s开始签到----------------' % site_name)
  
-    ocr = ddddocr.DdddOcr(show_ad=False,old=True)
-    #ocr = ddddocr.DdddOcr(show_ad=False)
+    #ocr = ddddocr.DdddOcr(show_ad=False,old=True)
+    ocr = PaddleOCR(use_gpu = False, 
+                    show_log=False, 
+                    rec_model_dir=os.path.join(settings.BASE_DIR, 'paddleocr', 'captcha_rec_model'),
+                    rec_char_dict_path = os.path.join(settings.BASE_DIR, 'paddleocr', 'captcha_rec_model_dic.txt'),
+                    use_angle_cls=True
+                    )
     try:
         #验证码签到执行3次验证
         for i in range(3):
@@ -1244,11 +1256,14 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     with open(image_code_name, "wb") as fp:
                         fp.write(response.content)
                     
-                    with open(image_code_name, 'rb') as f:
-                        image = f.read()              
+                    #with open(image_code_name, 'rb') as f:
+                        #image = f.read()              
                         
-                    data_ocr = ocr.classification(image)
+                    #data_ocr = ocr.classification(image)
+                    
+                    data_ocr = ocr.ocr(image_code_name, det=False, rec=True, cls=True)[0][0]
                     logger.info(data_ocr)
+                    
                     #验证码不足6未跳过
                     if len(data_ocr) < 6 :
                         continue

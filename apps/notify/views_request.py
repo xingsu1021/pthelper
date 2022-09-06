@@ -10,7 +10,7 @@ from urllib import parse
 import simplejson as json
 import telegram
 import sys
-from common.utils import send_email, EnWechat
+from common.utils import send_email, send_enwechat
 
 #直接使用检查是否管理员
 #from django.contrib.auth.decorators import user_passes_test
@@ -26,7 +26,7 @@ def iyuutest(request):
 
     if _id == '':
         
-        response_data={"code":0,"msg":"请先配置IYUU令牌"}
+        response_data={"code":0,"msg":"请先配置IYUU令牌或刷新页面"}
 
     else:
         
@@ -67,7 +67,7 @@ def telegramtest(request):
 
     if _id == '':
         
-        response_data={"code":0,"msg":"请先配置Telegram"}
+        response_data={"code":0,"msg":"请先配置Telegram或刷新页面"}
 
     else:
         
@@ -110,7 +110,7 @@ def emailtest(request):
 
     if _id == '':
         
-        response_data={"code":0,"msg":"请先配置邮箱"}
+        response_data={"code":0,"msg":"请先配置邮箱或刷新页面"}
 
     else:
         
@@ -150,7 +150,7 @@ def enwechattest(request):
 
     if _id == '':
         
-        response_data={"code":0,"msg":"请先配置企业微信"}
+        response_data={"code":0,"msg":"请先配置企业微信或刷新页面"}
 
     else:
         
@@ -164,17 +164,9 @@ def enwechattest(request):
         for i in receive_user.split(","):
             receiver_users.append(i)
 
-        now = datetime.datetime.now()
-        time = now.strftime("%Y-%m-%d %H:%M:%S")
-
         try:
-            weclient = EnWechat(corp_id=enwechat_corp_id, agent_id=enwechat_agent_id, agent_secret=enwechat_agent_secret)
-                        
-            sendata="""<font color="#4CAF50">%s [测试]</font>""" % time
-            
-            flag,response = weclient.send_markdown(receiver_users,sendata)
+            flag,response = send_enwechat(corp_id=enwechat_corp_id, agent_id=enwechat_agent_id, agent_secret=enwechat_agent_secret,user_ids=receiver_users, isTest=True)
 
-            #response_msg = json.loads(response)
             response_data={"code":1,"msg":response}
         except Exception as e:
             response_data={"code":0,"msg":str(e) }

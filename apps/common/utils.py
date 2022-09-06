@@ -26,8 +26,8 @@ from email.header import Header
 import telegram
 from urllib import parse
 from wechatpy.enterprise import WeChatClient
-#from PIL import Image
-#from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
+import re
 
 logger = logging.getLogger('django')
 
@@ -619,6 +619,41 @@ def send_iyuu(iyuu_key,send_data = [] ,isTest=False):
         
     return True,"发送成功"
 
+def send_enwechat(corp_id = None, agent_id = None, agent_secret = None, user_ids = [], send_data = [] ,isTest=False):
+    """发送企业微信消息"""
+    
+    weclient = EnWechat(corp_id=corp_id, agent_id=agent_id, agent_secret=agent_secret)
+    
+    now = datetime.datetime.now()
+    time = now.strftime("%Y-%m-%d %H:%M:%S")
+    
+    if isTest:
+        #发送测试消息
+        text = '<div class="highlight">测试 %s</div>'  % time
+        flag, response = weclient.send_text(user_ids, text)
+        if flag:
+            msg = "发送成功"
+            return True, msg
+        else:
+            msg = response["errmsg"]
+            return False, msg
+        
+    else:
+        #生成图片
+        image_file_path = create_image(send_data)
+        #上传图片
+        flag, response = weclient.upload_image(image_file_path)
+        if flag:
+            #发送文本卡片
+            flag, response = weclient.send_text_card(user_ids, response)
+            if flag:
+                return True, "发送成功"
+            else:
+                return False, response
+        else:
+            return False, response
+            
+        
 def getSiteUrl(url):
     """
     获取官网url
@@ -631,7 +666,7 @@ def getSiteUrl(url):
 def parseUrl(url):
     """
     拆解url
-    #scheme='https', netloc='tr.ikaixin.win:10443', path='/', params='', query='', fragment=''
+    #scheme='https', netloc='127.0.0.1:8080', path='/', params='', query='', fragment=''
     """
     data = {}
     u = urlparse(url)
@@ -647,24 +682,55 @@ def parseUrl(url):
     
     return data
 
-#def deal_img(img_name):
-    #'''图片进行预处理，并返回bytes类型数据'''
-    #img = Image.open(img_name)
-    #buf = BytesIO()
-    ## 将图片转化为灰度图像
-    #image = img.convert('L')
-    ## 设置默认的阈值(可以根据阈值得到更加清晰的验证码图)
-    #threshold = 128
-    #table = []
-    #for i in range(256):
-        #if i < threshold:
-            #table.append(0)
-        #else:
-            #table.append(1)
-    ## 图片的像素点什么的
-    #image = image.point(table,'1')
-    #image.save(buf,'png')
-    #return buf.getvalue()
+def create_image(msg_content = []):
+    """
+    图片生成
+    msg 生成图片的文字
+    """
+    
+    #f = open("e:/test/test.txt","r",encoding='utf-8').readlines()
+     
+    if sys.platform == "win32":
+        # 设置字体及字号,加载宋体,否则中文乱码
+        font = ImageFont.truetype("simsun.ttc", 20, encoding="unic") 
+    else:
+        #linux加载目录下字体
+        font = ImageFont.truetype(os.path.join(settings.BASE_DIR, "fonts", "simsun.ttc"), 20, encoding="unic") 
+        
+    #图片宽度
+    image_width = 500
+    #图片高度,可以通过font.getbbox(line)[3]获取字体高度 21
+    image_high = len(msg_content) * 25
+    
+    # 设置画布大小及背景色(白色)
+    image = Image.new('RGB', (image_width, image_high), (255,255,255))     
+    
+    draw = ImageDraw.Draw(image)
+    
+    x = 10
+    y = 5
+    
+    for line in msg_content:
+        #print(line)
+        if '成功' in line:
+            fill='green'
+        else:
+            fill='red'
+        #替换掉<>间的内容
+        line = re.sub(re.compile('<.*?>') , '', line)
+        #通过x,y坐标循环写入
+        draw.text((x, y), line, font=font, fill=fill)
+        #print (font.getbbox(line))
+        #获取行的字体高度
+        y += font.getbbox(line)[3]
+    
+    del draw 
+    
+    image_file_name = os.path.join(settings.TMP_LOG_DIR, "msg.png")
+    image.save(image_file_name,"PNG") # 保存图片
+    
+    return image_file_name
+
 
 def cookie_parse(cookie_str):
     cookie_dict = {}
@@ -709,13 +775,15 @@ class EnWechat:
             
     def send_text(self, user_ids = [], msg = None):
         """发送文本消息
+        返回
+        {'errcode': 0, 'errmsg': 'ok', 'msgid': 'fcLc6UhB2absSaoEDgOVFJc7rUS6HAUpkVR6y2ltzLhzzjUH_WfDNW5dVl7nScRT2AG7lQ475r8M9qyISlX9BQ'}
         """
-        return True, self.client.message.send_text(self.agent_id, user_ids, msg)
-        #try:
-            
-            #return True, self.client.message.send_text(self.agent_id, user_ids, msg)
-        #except Exception as e:
-            #return False, str(e)
+        r = self.client.message.send_text(self.agent_id, user_ids, msg)
+        if r['errcode'] == 0:
+            return True, r['msgid']
+        else:
+            return True, r['errmsg']
+
         
     def send_markdown(self, user_ids = [], msg = None):
         """发送markdown消息
@@ -726,3 +794,68 @@ class EnWechat:
             #return True, self.client.message.send_markdown(self.agent_id, user_ids, msg)
         #except Exception as e:
             #return False, str(e)
+            
+    def send_image(self, user_ids = [], media_id = None):
+        """发送图片消息
+        """
+        
+        return True, self.client.message.send_image(self.agent_id, user_ids, media_id)
+    
+    def send_text_card(self, user_ids = [], url = None):
+        """发送文本卡片消息
+        url为上传微信的素材地址
+        """
+        now = datetime.datetime.now()
+        time = now.strftime("%Y-%m-%d %H:%M:%S")
+        description = '<div class="gray">' + time + '</div>'
+        title = '签到通知'
+        
+        return True, self.client.message.send_text_card(self.agent_id, user_ids, title, description, url)
+    
+    def upload_image(self, image_file_path = None):
+        """
+        上传图片素材(永久,url限制微信使用)
+        image_file_path 要上传的本地图片路径
+        
+        返回 url地址
+        {'errcode': 0, 'errmsg': 'ok', 'url': 'https://wework.qpic.cn/wwpic/592170_HhXMIUytR62CdSy_1662426978/0'}
+        """
+        
+        with open(image_file_path, 'rb') as f:
+            image = f.read()        
+        #上传图片
+        reponse = self.client.media.upload_img(image)
+
+        if reponse['errcode'] == 0:
+            url = reponse['url']
+            
+            return True, url
+        else:
+            msg = reponse['errmsg']
+            
+            return False, msg
+            
+    def upload(self, media_type = "image", media_file = None):
+        """
+        上传临时素材(保留3天)
+        media_type 媒体文件类型，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb）
+        media_file – 要上传的文件，一个 File-object
+        
+        返回 media_id
+        {"errcode": 0, "errmsg": "ok", "type": "image", "media_id": "3Y7qMZUYZvhZG13oNoKMKMWaxtNupLKIR4lgUsDc0abqicTjGnuE9APt-NiivZ3tg", "created_at": "1662427932"}
+        """
+        
+        with open(media_file, 'rb') as f:
+            file_content = f.read()
+            
+        #上传
+        reponse = self.client.media.upload(media_type, file_content)
+        
+        if reponse['errcode'] == 0:
+            media_id = reponse['media_id']
+            
+            return True, media_id
+        else:
+            msg = reponse['errmsg']
+            
+            return False, msg        

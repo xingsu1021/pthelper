@@ -9,10 +9,14 @@ lxml >= 4.7.1
 beautifulsoup4 >= 4.10.0
 wechatpy >= 1.8.18
 cryptography
-ddddocr
+Pillow
+#ddddocr
 typing_extensions
 GitPython
 thefuzz
+opencv-contrib-python==4.4.0.46
+opencv-python-headless==4.4.0.46
+opencv_python==4.4.0.46
 #thefuzz[speedup]
 #paddlepaddle
 paddleocr
