@@ -96,8 +96,9 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
     
     try:
         
+        session = requests.session()
         #请求首页获取csrf
-        response = requests.get(site_url, headers=headers, timeout=10)
+        response = session.get(site_url, headers=headers, timeout=10)
         
         soup = BeautifulSoup(response.text, "lxml")
         csrf = soup.find('meta',{'name':'x-csrf'})
@@ -108,7 +109,7 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
             #'csrf': 'e3a2895bb529c567fb2aae3723a97ba9144c1c5c'
         }
         
-        response = requests.post(sign_url, headers=headers, data=data) 
+        response = session.post(sign_url, headers=headers, data=data) 
         logger.info(response.text)
         if response.status_code == 200:
             try:
@@ -400,6 +401,7 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
                 
                 #正确请求，得到json字符串
                 response_msg = json.loads(response.text)
+                logger.info(response_msg)
                 if response_msg['code'] == '0':
                     sign_data = response_msg['datas']
                     uid = sign_data['uid']
@@ -721,9 +723,6 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie):
                             answer_data_result = f
                             ratio = num
                         elif num >= 45 and ratio <= 45:
-                            answer_data_result = f   
-                            ratio = num
-                        elif num >= 10 and ratio == 0:
                             answer_data_result = f   
                             ratio = num
                                                                         
@@ -1131,8 +1130,10 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     )
 
     try:
+        session = requests.session()
+        
         #校验确认是否已经签到
-        response = requests.get("https://open.cd/index.php", headers=headers, timeout=10)
+        response = session.get("https://open.cd/index.php", headers=headers, timeout=10)
         if '查看簽到記錄' in response.text:
             msg = "%s(%s) %s" % (site_name,site_name_cn, msg_reok)
             return True, msg
@@ -1143,7 +1144,7 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
             if i > 2:
                 return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn) 
             
-            response = requests.get("https://open.cd/plugin_sign-in.php", headers=headers, timeout=10)
+            response = session.get("https://open.cd/plugin_sign-in.php", headers=headers, timeout=10)
             if response.status_code == 200:
                 html = response.text
                 #print(html)
@@ -1156,7 +1157,7 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     img_url = "https://open.cd/image.php?action=regimage&imagehash=" + imagehash
                     logger.info(img_url)
                     
-                    response = requests.get(img_url, headers=headers, timeout=10)
+                    response = session.get(img_url, headers=headers, timeout=10)
                     #获取文件内容 #text（字符串） content（二进制） json（对象）
                     #image_data = response.content
                     with open(image_code_name, "wb") as fp:
@@ -1173,7 +1174,7 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     data = {'imagehash': imagehash,
                             'imagestring': data_ocr
                             }
-                    response = requests.post("https://open.cd/plugin_sign-in.php?cmd=signin", headers=headers, data=data, timeout=10)
+                    response = session.post("https://open.cd/plugin_sign-in.php?cmd=signin", headers=headers, data=data, timeout=10)
                     logger.info(response.text)
                     
                     result = json.loads(response.text)
@@ -1242,6 +1243,9 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     use_angle_cls=True
                     )
     try:
+        
+        session = requests.session()
+        
         #验证码签到执行3次验证
         for i in range(3):
             logger.info('开始循环%s--------->' % str(i))
@@ -1250,7 +1254,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                 #print('i--------->',i)
                 return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn)
             
-            response = requests.post(sign_url, headers=headers, data=data, timeout=10)
+            response = session.post(sign_url, headers=headers, data=data, timeout=10)
             logger.info(response.text)
             if response.status_code == 200:
                 result = json.loads(response.text)
@@ -1258,7 +1262,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     code = result['code']
                     #拼接验证码图片
                     hdsky_image_url = 'https://hdsky.me/image.php?action=regimage&imagehash=' + code
-                    response = requests.get(hdsky_image_url, headers=headers, timeout=10)
+                    response = session.get(hdsky_image_url, headers=headers, timeout=10)
                     with open(image_code_name, "wb") as fp:
                         fp.write(response.content)
                     
@@ -1278,7 +1282,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                             'imagehash': code,
                             'imagestring': data_ocr
                             }
-                    response = requests.post("https://hdsky.me/showup.php", headers=headers, data=data, timeout=10)
+                    response = session.post("https://hdsky.me/showup.php", headers=headers, data=data, timeout=10)
                     logger.info(response.text)
                     try:
                         result = json.loads(response.text)
@@ -1352,7 +1356,9 @@ def haidan(site_name, site_name_cn, site_url, site_cookie):
     
     try:
         
-        response = requests.get(url, headers=headers, timeout=10)
+        session = requests.session()
+        
+        response = session.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             html = response.text
             soup = BeautifulSoup(html, "lxml")
