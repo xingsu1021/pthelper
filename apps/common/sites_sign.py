@@ -379,6 +379,8 @@ def btschool(site_name, site_name_cn, site_url, site_cookie):
 def hares(site_name, site_name_cn, site_url, site_cookie):
     """
     白兔签到
+    {'code': 0, 'msg': '签到成功', 'count': '1', 
+    'datas': {'id': 1361, 'uid': 1505, 'added': '2022-09-08 05:30:15', 'points': 175, 'total_points': 9010, 'days': 34, 'total_days': 305, 'added_time': '05:30:15', 'is_updated': 1}}
     """
     
     headers = {
@@ -402,7 +404,7 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
                 #正确请求，得到json字符串
                 response_msg = json.loads(response.text)
                 logger.info(response_msg)
-                if response_msg['code'] == '0':
+                if response_msg['code'] == 0:
                     sign_data = response_msg['datas']
                     uid = sign_data['uid']
                     #签到魔力
