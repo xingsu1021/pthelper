@@ -45,6 +45,7 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
   1、优化企业微信提示
   2、ocr使用飞浆，并使用自己的学习模块
   3、此版本为独立，建议升级替换。(在原镜像上升级也可以使用)
+  4、由于某些站点rss访问频率限制，因此在多个同站点规则的情况下，最好时间分开或阅读相关站点说明，防止封号
 ```
 
 # v2.0.1 说明
