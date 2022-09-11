@@ -221,7 +221,7 @@ class RssRuleAddView(LoginRequiredMixin,TemplateView):
         refresh_time = request.POST.get("refresh_time",'')
         notifys = request.POST.getlist("notifys[]")
         rate = request.POST.get("rate").strip()
-        is_paused = request.POST.get("rate")
+        is_paused = request.POST.get("is_paused")
 
         ormdata_config = Config.objects.get(id=int(config_id))
         ormdata_tools = Tools.objects.get(id=int(tools_id))
