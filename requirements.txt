@@ -19,6 +19,7 @@ thefuzz
 paddleocr
 transmission-rpc
 qbittorrent-api
+feedparser
 #本地测试使用
 #PyMySQL >= 1.0.2
 #使用后台运行
