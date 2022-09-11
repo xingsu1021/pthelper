@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 
 from .models import SiteConfig, SiteRank, SiteInfo
+from rss.models import Config
 import simplejson as json
 import io
 from urllib import parse
@@ -178,19 +179,19 @@ def siteinfo(request):
             ormdata = SiteInfo.objects.order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
     else:
 
-        data['count'] = SiteInfo.objects.filter(Q(siteconfig_name__icontains=searchValue)).count()
+        data['count'] = SiteInfo.objects.filter(Q(siteconfig_name__icontains=searchValue)|Q(siteconfig_name_cn__icontains=searchValue)).count()
         if pageIndex == 1:
-            ormdata = SiteInfo.objects.filter(Q(siteconfig_name__icontains=searchValue)).order_by(order_by)[:pageSize] #offset:limit
+            ormdata = SiteInfo.objects.filter(Q(siteconfig_name__icontains=searchValue)|Q(siteconfig_name_cn__icontains=searchValue)).order_by(order_by)[:pageSize] #offset:limit
         else:
-            ormdata = SiteInfo.objects.filter(Q(siteconfig_name__icontains=searchValue)).order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
+            ormdata = SiteInfo.objects.filter(Q(siteconfig_name__icontains=searchValue)|Q(siteconfig_name_cn__icontains=searchValue)).order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
 
     for i in ormdata:
         
-        siteconfig_ormdata = SiteConfig.objects.get(name=i.siteconfig_name)
+        #siteconfig_ormdata = SiteConfig.objects.get(name=i.siteconfig_name)
         
         data['data'].append({"id":i.id,
                          "siteconfig_name":i.siteconfig_name,
-                         'siteconfig_name_cn':siteconfig_ormdata.name_cn,
+                         'siteconfig_name_cn':i.siteconfig_name_cn,
                          "cookie":i.cookie,
                          "passkey":i.passkey,
                          })
@@ -392,6 +393,7 @@ def siteinfoImport(request):
 
     return JsonResponse(response_data)
 
+
 #==================
 @login_required
 def siteconfigname(request):
@@ -405,6 +407,9 @@ def siteconfigname(request):
     data['msg'] = ""
     data['data'] = []
 
+    #获取数据标志 1 返回所有 其它返回未配置站点
+    flag = request.GET.get('flag', 0)
+    
     #得到排序字段
     sort = request.GET.get('sort','name')
     #得到排序规则
@@ -419,22 +424,29 @@ def siteconfigname(request):
     data['count'] = SiteConfig.objects.count()
 
     ormdata = SiteConfig.objects.order_by(order_by).all()
- 
+    
+    if int(flag) == 0:
+        #获取siteinfo中配置的站点名
+        ormdata_siteinfo = list(SiteInfo.objects.values_list('siteconfig_name', flat=True))
+    else:
+        ormdata_siteinfo = []
 
     for i in ormdata:
-        
-        data['data'].append({
-                         "name":i.name,
-                         "name_en_cn":i.name + "(" + i.name_cn + ")"
-                         })
+        #忽略已经配置的站点
+        if i.name not in ormdata_siteinfo:
+            data['data'].append({
+                             "name":i.name,
+                             "name_en_cn":i.name + "(" + i.name_cn + ")"
+                             })
 
     return JsonResponse(data)
 
+
 #==================
 @login_required
-def siteconfigname2siteinfo(request):
+def select_siteinfo(request):
     """ 
-    网站集合,去掉已经创建的站点名称
+    RSS订阅
     xmSelect
     """
 
@@ -443,8 +455,11 @@ def siteconfigname2siteinfo(request):
     data['msg'] = ""
     data['data'] = []
 
+    #获取数据标志 1 返回所有 其它返回未配置站点
+    flag = request.GET.get('flag', 0)
+    
     #得到排序字段
-    sort = request.GET.get('sort','name')
+    sort = request.GET.get('sort','id')
     #得到排序规则
     order_by_type = request.GET.get('order','')
     
@@ -454,19 +469,22 @@ def siteconfigname2siteinfo(request):
         order_by = '-' + sort
         
     #获取所有记录
-    data['count'] = SiteConfig.objects.count()
+    data['count'] = SiteInfo.objects.count()
 
-    ormdata = SiteConfig.objects.order_by(order_by).all()
+    ormdata = SiteInfo.objects.order_by(order_by).all()
  
-    #获取siteinfo中配置的站点名
-    ormdata_siteinfo = list(SiteInfo.objects.values_list('siteconfig_name', flat=True))
+    if int(flag) == 0:
+        #获取RSS配置的站点ID
+        ormdata_config = list(Config.objects.values_list('siteinfo_id', flat=True))
+    else:
+        ormdata_config = []
 
     for i in ormdata:
-        #忽略已经配置的站点
-        if i.name not in ormdata_siteinfo:
+        #只返回未配置rss的站点
+        if i.id not in ormdata_config:
             data['data'].append({
-                             "name":i.name,
-                             "name_en_cn":i.name + "(" + i.name_cn + ")"
+                             "id":i.id,
+                             "name":i.siteconfig_name + "(" + i.siteconfig_name_cn + ")"
                              })
 
     return JsonResponse(data)

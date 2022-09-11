@@ -30,6 +30,15 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 ```
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
 
+# v2.2.0 说明
+
+```shell
+  1、新增RSS订阅功能。
+  2、新增RSS订阅后直接发送TR下载,(QB未测试但已集成)。
+  3、此版本不支持在线升级使用。
+```
+![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/rss.png)
+
 # v2.1.0 说明
 
 ```shell

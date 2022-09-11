@@ -23,37 +23,37 @@ def iyuutest(request):
     """
 
     _id = request.POST.get('id','')
-
-    if _id == '':
+    iyuu_key = request.POST.get('iyuu_key').strip()
+    #if _id == '':
         
-        response_data={"code":0,"msg":"请先配置IYUU令牌或刷新页面"}
+        #response_data={"code":0,"msg":"请先配置IYUU令牌或刷新页面"}
 
+    #else:
+        
+        #ormdata = NotifyConfig.objects.get(id=_id)
+        #iyuu_key = ormdata.iyuu_key
+        
+        
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
+    
+    now = datetime.datetime.now()
+    time = now.strftime("%Y-%m-%d %H:%M:%S")
+    headers = {
+        'user_agent': user_agent,
+        'Content-type': 'application/x-www-form-urlencoded'
+    }
+    
+    now_time = parse.quote('<center><b><font color="#55a7e3">') + parse.unquote(time) + parse.quote('</font></b></center><br>')
+    send_txts = parse.quote('<center><b><font color="#4CAF50">[测试]</font></b></center><br>')
+    api = 'https://iyuu.cn/' + iyuu_key + '.send'
+    sen_url = api + '?text='+ parse.quote('测试提示') + '&desp=' + now_time + send_txts
+    response = requests.get(sen_url, headers=headers ,verify=False)
+
+    response_msg = json.loads(response.text)
+    if response.status_code == 200 and response_msg['errcode'] == 0:
+        response_data={"code":1,"msg":"发送测试成功"}
     else:
-        
-        ormdata = NotifyConfig.objects.get(id=_id)
-        iyuu_key = ormdata.iyuu_key
-        
-        
-        user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
-        
-        now = datetime.datetime.now()
-        time = now.strftime("%Y-%m-%d %H:%M:%S")
-        headers = {
-            'user_agent': user_agent,
-            'Content-type': 'application/x-www-form-urlencoded'
-        }
-        
-        now_time = parse.quote('<center><b><font color="#55a7e3">') + parse.unquote(time) + parse.quote('</font></b></center><br>')
-        send_txts = parse.quote('<center><b><font color="#4CAF50">[测试]</font></b></center><br>')
-        api = 'https://iyuu.cn/' + iyuu_key + '.send'
-        sen_url = api + '?text='+ parse.quote('测试提示') + '&desp=' + now_time + send_txts
-        response = requests.get(sen_url, headers=headers ,verify=False)
-
-        response_msg = json.loads(response.text)
-        if response.status_code == 200 and response_msg['errcode'] == 0:
-            response_data={"code":1,"msg":"发送测试成功"}
-        else:
-            response_data={"code":0,"msg":"发送测试失败,%s" % response_msg['errmsg'] }
+        response_data={"code":0,"msg":"发送测试失败,%s" % response_msg['errmsg'] }
 
     return JsonResponse(response_data)
 

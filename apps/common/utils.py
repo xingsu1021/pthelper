@@ -121,8 +121,6 @@ def timesince(dt, since='', default="just now"):
 
 _STRPTIME_LOCK = threading.Lock()
 
-_GMT_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
-_ISO8601_FORMAT = "%Y-%m-%dT%H:%M:%S.000Z"
 
 def now_date():
     """当前时间"""
@@ -155,6 +153,7 @@ def http_to_unixtime(time_string):
 
     HTTP Date形如 `Sat, 05 Dec 2015 11:10:29 GMT` 。
     """
+    _GMT_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
     return to_unixtime(time_string, _GMT_FORMAT)
 
 def cst_to_unixtime(time_string):
@@ -166,6 +165,7 @@ def cst_to_unixtime(time_string):
 
 def iso8601_to_unixtime(time_string):
     """把ISO8601时间字符串（形如，2012-02-24T06:07:48.000Z）转换为UNIX时间，精确到秒。"""
+    _ISO8601_FORMAT = "%Y-%m-%dT%H:%M:%S.000Z"
     return to_unixtime(time_string, _ISO8601_FORMAT)
 
 def str2datetime(st, s_format='%Y-%m-%d %H:%M:%S'):
@@ -249,10 +249,7 @@ def capacity_convert(size, expect='auto', rate=1000):
     return expect_size, expect
 
 def filesizeformat(value, baseMB=False):
-    """Format the value like a 'human-readable' file size (i.e. 13 KB,
-    4.1 MB, 102 bytes, etc).  Per default decimal prefixes are used (mega,
-    giga etc.), if the second parameter is set to `True` the binary
-    prefixes are (mebi, gibi).
+    """将字节转换为 1.00KB 1.00Mb 1.00gb
     """
     try:
         bytes = float(value)
@@ -271,16 +268,16 @@ def filesizeformat(value, baseMB=False):
     if bytes < base:
         ret = '%d Bytes' % (bytes)
     elif bytes < base * base:
-        ret = '%d KB' % (bytes / base)
+        ret = '%.2f KB' % (bytes / base)
     elif bytes < base * base * base:
-        ret = '%d MB' % (bytes / (base * base))
+        ret = '%.2f MB' % (bytes / (base * base))
     elif bytes < base * base * base * base:
-        if bytes % (base * base * base) == 0:
-            ret = '%d GB' % (bytes / (base * base * base))
+        if bytes % (base * base * base) >= 0:
+            ret = '%.2f GB' % (bytes / (base * base * base))
         else:
-            ret = "%d MB" % (bytes / (base * base))
+            ret = "%.2f MB" % (bytes / (base * base))
     else:
-        ret = '%.1f TB' % (bytes / (base * base * base * base))
+        ret = '%.2f TB' % (bytes / (base * base * base * base))
 
     return ret
 

@@ -1,0 +1,241 @@
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline searchInput">
+                        <input id="rssruleSearchValue" class="layui-input" type="text" placeholder="输入关键字" />
+                    </div>
+                    <div class="layui-inline">
+                        <button id="rssruleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                        <button id="rssruleBtnAdd" class="layui-btn icon-btn"><i
+                                class="layui-icon">&#xe654;</i>添加</button>
+                        <button id="rssruleBtnDel" class="layui-btn layui-btn-danger icon-btn"><i
+                                class="layui-icon">&#xe640;</i>删除</button>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="rssruleTable" lay-filter="rssruleTable"></table>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="rssruleTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+{% verbatim myblock %}
+<!-- 表格状态列 -->
+<script type="text/html" id="rssruleTableState">
+    <input type="checkbox" lay-filter="RssRuleState" value="{{d.id}}" lay-skin="switch"
+           lay-text="启用|禁用" {{d.status==1?'checked':''}}/>
+</script>
+{% endverbatim myblock %}
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown', 'upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+        var upload = layui.upload;
+
+        form.render('select');
+        // 渲染表格
+        var insTb = tableX.render({
+            elem: '#rssruleTable',
+            url: setter.base_server + 'rss/rule/list',
+            method: 'GET',
+            page: true,
+            limit: 15,
+            limits: [15, 50, 100],
+            cols: [[
+                { type: 'checkbox' },
+                { field: 'id', title: 'ID', hide: true },
+                { field: 'name', sort: true, title: '名称', width: 120 },
+                { field: 'config_id', sort: true, title: '站点', width: 150 },
+                { field: 'tools_id', sort: true, title: '下载器', width: 200 },
+                { field: 'keyword', title: '关键字'},
+                { field: 'rate', title: '码率', width: 100},
+                { field: 'is_paused', title: '下载状态', width: 100, templet: function (d) {
+                                if (d.is_paused == 1){
+                                    return "下载";
+                                }else{
+                                    return "暂停";
+                                }
+                        }
+                },
+                { field: 'refresh_time', sort: true, title: '刷新间隔', width: 110 },
+                { field: 'status', templet: '#rssruleTableState', title: '状态', width: 80 },
+                { align: 'center', toolbar: '#rssruleTableBar', title: '操作', width: 120 }
+            ]]
+        });
+
+        // 添加按钮点击事件
+        $('#rssruleBtnAdd').click(function () {
+            showAddModel();
+        });
+
+        // 工具条点击事件
+        table.on('tool(rssruleTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'edit') { // 修改
+                showEditModel(data);
+            } else if (layEvent === 'del') {
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定删除此记录 ' + data.name + '？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        $.ajax({
+                            url: "rss/rule/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': [data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('rssruleTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    });
+            }
+        });
+
+        //显示表单弹窗
+        var showAddModel = function () {
+            var title = '添加';
+            admin.open({
+                title: title,
+                area: ['600px', '600px'],
+                url: 'rss/rule/add',
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+
+        var showEditModel = function (data) {
+            var title = '编辑';
+            admin.open({
+                title: title,
+                area: ['600px', '600px'],
+                url: 'rss/rule/edit?id=' + data.id,
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+        // 批量删除按钮点击事件
+        $('#rssruleBtnDel').click(function () {
+            //选中事件
+            var checkStatus = table.checkStatus('rssruleTable')
+            //得到选择长度
+            dataLength = checkStatus.data.length
+            data = checkStatus.data;
+            var ids = [];
+            if (dataLength == 0) {
+                //未选中
+                layer.msg("请选择需要删除的记录", { icon: 2 });
+            } else {
+                layer.confirm('确定删除选中的' + dataLength + '个记录？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        for (var i = 0; i < data.length; i++) {
+                            ids.push(data[i].id);
+                        }
+                        $.ajax({
+                            url: "rss/rule/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('rssruleTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    });
+            }
+        });
+
+        // 监听enter键，光标在搜索框
+        $('#rssruleSearchValue').keydown(function (event) {
+            if (event.keyCode === 13) {
+                var key = 'search';
+                var value = $('#rssruleSearchValue').val();
+
+                table.reload('rssruleTable', { where: { searchKey: key, searchValue: value } });
+            } else if (event.keyCode === 8 && !$psw.val()) {
+                $("#rssruleSearchValue").val('');
+                ptable();
+                if (event.preventDefault) event.preventDefault();
+                if (event.returnValue) event.returnValue = false;
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#rssruleBtnSearch').click(function () {
+            var key = 'search';
+            var value = $('#rssruleSearchValue').val();
+
+            table.reload('rssruleTable', { where: { searchKey: key, searchValue: value } });
+        });
+
+
+        // 修改规则状态
+        form.on('switch(RssRuleState)', function (obj) {
+            layer.load(2);
+            admin.req('rss/rule/checkbox/setstatus', {
+                id: obj.elem.value,
+                value: obj.elem.checked ? 1 : 0,
+                tag:'status'
+            }, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    //table.reload('table-user', {});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                    $(obj.elem).prop('checked', !obj.elem.checked);
+                    form.render('checkbox');
+                }
+            }, 'GET');
+        });
+
+    });
+</script>

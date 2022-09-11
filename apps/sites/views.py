@@ -370,9 +370,12 @@ class SiteInfoAddView(LoginRequiredMixin,TemplateView):
         cookie = request.POST.get("cookie").strip()
         passkey = request.POST.get("passkey").strip()
 
+        siteconfig_name_cn = list(SiteConfig.objects.filter(name=siteconfig_name).values_list('name_cn',flat=True))
+        
         ormdata = SiteInfo.objects.create(siteconfig_name=siteconfig_name,
                                             cookie=cookie,
                                             passkey=passkey,
+                                            siteconfig_name_cn = siteconfig_name_cn[0]
                                             )
 
         ormdata.save()
@@ -423,12 +426,14 @@ class SiteInfoEditView(LoginRequiredMixin,TemplateView):
 
         _id = request.POST.get('id')
 
+        siteconfig_name_cn = list(SiteConfig.objects.filter(name=siteconfig_name).values_list('name_cn',flat=True))
+        
         ormdata = SiteInfo.objects.get(id=_id)
 
         ormdata.siteconfig_name = siteconfig_name
         ormdata.cookie = cookie
         ormdata.passkey = passkey
-
+        ormdata.siteconfig_name_cn = siteconfig_name_cn[0]
 
         ormdata.save()
 

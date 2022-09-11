@@ -1,0 +1,217 @@
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline searchInput">
+                        <input id="rssseedinfoSearchValue" class="layui-input" type="text" placeholder="输入关键字" />
+                    </div>
+                    <div class="layui-inline">
+                        <button id="rssseedinfoBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                        <button id="rssseedinfoBtnDel" class="layui-btn layui-btn-danger icon-btn"><i
+                                class="layui-icon">&#xe640;</i>删除</button>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="rssseedinfoTable" lay-filter="rssseedinfoTable"></table>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="rssseedinfoTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="download">下载</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown', 'upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+        var upload = layui.upload;
+
+        form.render('select');
+        // 渲染表格
+        var insTb = tableX.render({
+            elem: '#rssseedinfoTable',
+            url: setter.base_server + 'rss/seedinfo/list',
+            method: 'GET',
+            page: true,
+            limit: 15,
+            limits: [15, 50, 100],
+            cols: [[
+                { type: 'checkbox' },
+                { field: 'id', title: 'ID', hide: true },
+                { field: 'siteinfo_id', sort: true, title: '站点', width: 150 },
+                { field: 'seed_details_link', title: '种子介绍页', hide: true },
+                { field: 'seed_name', title: '名称', templet: function (d) {
+                            return '<a href="' + d.seed_details_link +'" target="_blank" id="test'+d.id+'" onmouseover="show('+ d.id +')"; onmouseleave="closeTips();">' + d.seed_name + '</a>';
+                    }, unresize: true
+                },
+                { field: 'seed_type', sort: true, title: '类型', width: 150 },
+                { field: 'seed_published_time', title: '发布时间',sort: true, width: 170},
+                { field: 'seed_file_size', sort: true, title: '大小', width: 100},
+                { field: 'seed_status', title: '状态', width: 80, templet: function (d) {
+                        if (d.seed_status) {
+                            return '已下载';
+                        }else{
+                            return '未下载';
+                        }
+                    }
+                },
+                { align: 'center', toolbar: '#rssseedinfoTableBar', title: '操作', width: 120 }
+            ]]
+        });
+
+
+        // 工具条点击事件
+        table.on('tool(rssseedinfoTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'download') { // 下载
+                layer.confirm('确定下载 ' + data.seed_name + '？', { icon: 1, title: '提示', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        $.ajax({
+                            url: "rss/seedinfo/donwload",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'id': data.id, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('rssseedinfoTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    }
+                );
+            } else if (layEvent === 'del') {
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定删除此记录 ' + data.seed_name + '？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        $.ajax({
+                            url: "rss/seedinfo/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': [data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('rssseedinfoTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    }
+                );
+            }
+        });
+
+
+        // 批量删除按钮点击事件
+        $('#rssseedinfoBtnDel').click(function () {
+            //选中事件
+            var checkStatus = table.checkStatus('rssseedinfoTable')
+            //得到选择长度
+            dataLength = checkStatus.data.length
+            data = checkStatus.data;
+            var ids = [];
+            if (dataLength == 0) {
+                //未选中
+                layer.msg("请选择需要删除的记录", { icon: 2 });
+            } else {
+                layer.confirm('确定删除选中的' + dataLength + '个记录？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        for (var i = 0; i < data.length; i++) {
+                            ids.push(data[i].id);
+                        }
+                        $.ajax({
+                            url: "rss/seedinfo/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('rssseedinfoTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    });
+            }
+        });
+
+        // 监听enter键，光标在搜索框
+        $('#rssseedinfoSearchValue').keydown(function (event) {
+            if (event.keyCode === 13) {
+                var key = 'search';
+                var value = $('#rssseedinfoSearchValue').val();
+
+                table.reload('rssseedinfoTable', { where: { searchKey: key, searchValue: value } });
+            } else if (event.keyCode === 8 && !$psw.val()) {
+                $("#rssseedinfoSearchValue").val('');
+                ptable();
+                if (event.preventDefault) event.preventDefault();
+                if (event.returnValue) event.returnValue = false;
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#rssseedinfoBtnSearch').click(function () {
+            var key = 'search';
+            var value = $('#rssseedinfoSearchValue').val();
+
+            table.reload('rssseedinfoTable', { where: { searchKey: key, searchValue: value } });
+        });
+
+
+    });
+
+    //悬停显示
+    var tipsVal;
+    function show(obj) {
+        var node = "#test"+obj;
+        //options : tips的配置型，即位置[1上；2右；3下；4左, 字体颜色]
+        tipsVal=layer.tips("<div style='color:#000000;'>鼠标点击访问种子详情页</div>", node, {tips:[1,"#51a9e4"]});
+    }
+
+    function closeTips() {//关闭显示的信息
+        layer.close(tipsVal);
+    }
+</script>

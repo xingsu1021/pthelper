@@ -1,16 +1,17 @@
 from myauth.models import User
 from django.contrib.auth.hashers import  make_password
 
-from sites.models import SiteConfig
+from sites.models import SiteConfig, SiteInfo
 from cron.models import JobType
 from notify.models import MailType
+from rss.models import FilmCategory, FilmType
 
 def init_datas():
     """
     初始化数据库
     """
     print('开始初始化用户数据库...')
-    
+
     if User.objects.count() == 0:
         #添加管理员
         User.objects.create(name='admin',
@@ -24,7 +25,7 @@ def init_datas():
         print('初始化管理员成功.')
     else:
         print("管理员已经存在,忽略...")
-        
+
     print('开始初始化站点配置...')
     sites_data = [{'name':'hdfans','name_cn':'红豆饭','index_url':'https://hdfans.org','sign_type':'general'},
                   {'name':'1ptba','name_cn':'壹PT吧','index_url':'https://1ptba.com','sign_type':'general'},
@@ -78,7 +79,7 @@ def init_datas():
                   {'name':'wintersakura','name_cn':'冬樱','index_url':'https://wintersakura.net','sign_type':'general'},
                   {'name':'hdpt','name_cn':'明教','index_url':'https://hdpt.xyz','sign_type':'general'},                  
                   ]
-    
+
     for site in sites_data:
         get_site = SiteConfig.objects.filter(name=site['name']).count()
         if get_site == 0:
@@ -91,18 +92,25 @@ def init_datas():
         #else:
             ##更新站点配置
             #SiteConfig.objects.filter(name=site['name']).update(sign_type = site['sign_type'])
-            
+
             #print('站点 [%s] 更新成功' % site['name'])
             ##print('站点 [%s] 已经存在,忽略...' % site['name'])
-            
+
+    print('开始修复站点信息中文名称...')
+    ormdata_siteinfo = SiteInfo.objects.filter(siteconfig_name_cn='')
+    for siteinfo in ormdata_siteinfo:
         
+        siteconfig_name_cn = list(SiteConfig.objects.filter(name=siteinfo.siteconfig_name).values_list('name_cn',flat=True))
+        SiteInfo.objects.filter(siteconfig_name=siteinfo.siteconfig_name).update(siteconfig_name_cn = siteconfig_name_cn[0])
+
+
     print('开始初始化任务类型...')
     jobtypes_data = [{'name':'签到','type_id':1000},
                      {'name':'辅种','type_id':1001},
-                     {'name':'刷流','type_id':1002},
+                     {'name':'RSS订阅','type_id':1002},
                      {'name':'签到重试','type_id':1003},
                      ]
-    
+
     for jobtype in jobtypes_data:
         get_jobtype = JobType.objects.filter(name=jobtype['name']).count()
         if get_jobtype == 0:
@@ -111,14 +119,16 @@ def init_datas():
                                    )
             print('添加任务类型 [%s] 成功' % jobtype['name'])
         else:
+            #将原刷流更新为RSS订阅
+            JobType.objects.filter(type_id=1002).update(name = 'RSS订阅')
             print('任务类型 [%s] 已经存在,忽略...' % jobtype['name'])
-         
+
     print('开始初始化通知邮箱类型...')
     mailtypes_data = [{'name':'QQ邮箱','alias_name':'qq','smtp_server':'smtp.qq.com','smtp_port':465},
-                     {'name':'新浪邮箱(非vip)','alias_name':'sina','smtp_server':'smtp.sina.com','smtp_port':465},
-                     {'name':'网易163邮箱','alias_name':'163','smtp_server':'smtp.163.com','smtp_port':465},
+                      {'name':'新浪邮箱(非vip)','alias_name':'sina','smtp_server':'smtp.sina.com','smtp_port':465},
+                      {'name':'网易163邮箱','alias_name':'163','smtp_server':'smtp.163.com','smtp_port':465},
                      ]
-    
+
     for mailtype in mailtypes_data:
         get_mailtype = MailType.objects.filter(name=mailtype['name']).count()
         if get_mailtype == 0:
@@ -130,6 +140,62 @@ def init_datas():
             print('添加邮箱类型 [%s] 成功' % mailtype['name'])
         else:
             print('邮箱类型 [%s] 已经存在,忽略...' % mailtype['name'])
-            
+
+    filmcategorys_data = [{'name_en':'Movies','name_cn':'电影'},
+                          {'name_en':'TV Series','name_cn':'电视剧'},
+                     {'name_en':'Docs','name_cn':'纪录片'},
+                     {'name_en':'Animations','name_cn':'动画片'},
+                     {'name_en':'TV Shows','name_cn':'综艺'},
+                     {'name_en':'Sports','name_cn':'体育'},
+                     {'name_en':'MV','name_cn':'音乐视频'},
+                     {'name_en':'Music','name_cn':'音乐'},
+                     {'name_en':'Others','name_cn':'其他'},
+                     ]
+    for film_category in filmcategorys_data:
+        get_film_category = FilmCategory.objects.filter(name_en=film_category['name_en']).count()
+        if get_film_category == 0:
+            FilmCategory.objects.create(name_en = film_category['name_en'],
+                                        name_cn = film_category['name_cn']
+                                        )
+            print('添加影视类别 [%s] 成功' % film_category['name_en'])
+        else:
+            print('影视类别 [%s] 已经存在,忽略...' % film_category['name_en'])
+
+    filmtype_data = [{'name':'喜剧'},
+                     {'name':'爱情'},
+                 {'name':'动作'},
+                 {'name':'科幻'},
+                 {'name':'动画'},
+                 {'name':'悬疑'},
+                 {'name':'犯罪'},
+                 {'name':'惊悚'},
+                 {'name':'冒险'},
+                 {'name':'音乐'},
+                 {'name':'历史'},
+                 {'name':'奇幻'},
+                 {'name':'恐怖'},
+                 {'name':'战争'},
+                 {'name':'传记'},
+                 {'name':'歌舞'},
+                 {'name':'武侠'},
+                 {'name':'情色'},
+                 {'name':'灾难'},
+                 {'name':'西部'},
+                 {'name':'纪录片'},
+                 {'name':'短片'},
+                 {'name':'真人秀'},
+                 {'name':'脱口秀'},
+                 {'name':'古装'},
+                 {'name':'家庭'},
+                 {'name':'剧情'},
+                 ]
+
+    for film_type in filmtype_data:
+        get_film_type = FilmType.objects.filter(name=film_type['name']).count()
+        if get_film_type == 0:
+            FilmType.objects.create(name = film_type['name'])
+            print('添加影视类型 [%s] 成功' % film_type['name'])
+        else:
+            print('影视类型 [%s] 已经存在,忽略...' % film_type['name'])    
+
     print('初始化成功.')
-    

@@ -1,0 +1,203 @@
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline searchInput">
+                        <input id="rssconfigSearchValue" class="layui-input" type="text" placeholder="输入关键字" />
+                    </div>
+                    <div class="layui-inline">
+                        <button id="rssconfigBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                        <button id="rssconfigBtnAdd" class="layui-btn icon-btn"><i
+                                class="layui-icon">&#xe654;</i>添加</button>
+                        <button id="rssconfigBtnDel" class="layui-btn layui-btn-danger icon-btn"><i
+                                class="layui-icon">&#xe640;</i>删除</button>
+                        </button>
+                        此处仅配置不运行，需定制规则启动
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="rssconfigTable" lay-filter="rssconfigTable"></table>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="rssconfigTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown', 'upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+        var upload = layui.upload;
+
+        form.render('select');
+        // 渲染表格
+        var insTb = tableX.render({
+            elem: '#rssconfigTable',
+            url: setter.base_server + 'rss/config/list',
+            method: 'GET',
+            page: true,
+            limit: 15,
+            limits: [15, 50, 100],
+            cols: [[
+                { type: 'checkbox' },
+                { field: 'id', title: 'ID', hide: true },
+                { field: 'site_name', sort: true, title: '站点', width: 180 },
+                { field: 'url', sort: true, title: 'RSS地址' },
+                { align: 'center', toolbar: '#rssconfigTableBar', title: '操作', width: 150 }
+            ]]
+        });
+
+        // 添加按钮点击事件
+        $('#rssconfigBtnAdd').click(function () {
+            showAddModel();
+        });
+
+        // 工具条点击事件
+        table.on('tool(rssconfigTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'edit') { // 修改
+                showEditModel(data);
+            } else if (layEvent === 'del') {
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定删除此记录 ' + data.name + '？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        $.ajax({
+                            url: "rss/config/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': [data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('rssconfigTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    });
+            }
+        });
+
+        //显示表单弹窗
+        var showAddModel = function () {
+            var title = '添加RSS订阅';
+            admin.open({
+                title: title,
+                area: ['600px', '300px'],
+                url: 'rss/config/add',
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+
+        var showEditModel = function (data) {
+            var title = '编辑';
+            admin.open({
+                title: title,
+                area: ['600px', '300px'],
+                url: 'rss/config/edit?id=' + data.id,
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+        // 批量删除按钮点击事件
+        $('#rssconfigBtnDel').click(function () {
+            //选中事件
+            var checkStatus = table.checkStatus('rssconfigTable')
+            //得到选择长度
+            dataLength = checkStatus.data.length
+            data = checkStatus.data;
+            var ids = [];
+            if (dataLength == 0) {
+                //未选中
+                layer.msg("请选择需要删除的记录", { icon: 2 });
+            } else {
+                layer.confirm('确定删除选中的' + dataLength + '个记录？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        for (var i = 0; i < data.length; i++) {
+                            ids.push(data[i].id);
+                        }
+                        $.ajax({
+                            url: "rss/config/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('rssconfigTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    });
+            }
+        });
+
+        // 监听enter键，光标在搜索框
+        $('#rssconfigSearchValue').keydown(function (event) {
+            if (event.keyCode === 13) {
+                var key = 'search';
+                var value = $('#rssconfigSearchValue').val();
+
+                table.reload('rssconfigTable', { where: { searchKey: key, searchValue: value } });
+            } else if (event.keyCode === 8 && !$psw.val()) {
+                $("#rssconfigSearchValue").val('');
+                ptable();
+                if (event.preventDefault) event.preventDefault();
+                if (event.returnValue) event.returnValue = false;
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#rssconfigBtnSearch').click(function () {
+            var key = 'search';
+            var value = $('#rssconfigSearchValue').val();
+
+            table.reload('rssconfigTable', { where: { searchKey: key, searchValue: value } });
+        });
+
+
+
+    });
+</script>

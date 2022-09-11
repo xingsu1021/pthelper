@@ -1170,7 +1170,7 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     logger.info(data_ocr)
                     
                     #验证码不足6未跳过
-                    if len(data_ocr) < 6 :
+                    if len(data_ocr) != 6 :
                         continue
                     
                     data = {'imagehash': imagehash,
@@ -1246,7 +1246,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     )
     try:
         
-        session = requests.session()
+        #session = requests.session()
         
         #验证码签到执行3次验证
         for i in range(3):
@@ -1256,7 +1256,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                 #print('i--------->',i)
                 return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn)
             
-            response = session.post(sign_url, headers=headers, data=data, timeout=10)
+            response = requests.post(sign_url, headers=headers, data=data, timeout=10)
             logger.info(response.text)
             if response.status_code == 200:
                 result = json.loads(response.text)
@@ -1264,7 +1264,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     code = result['code']
                     #拼接验证码图片
                     hdsky_image_url = 'https://hdsky.me/image.php?action=regimage&imagehash=' + code
-                    response = session.get(hdsky_image_url, headers=headers, timeout=10)
+                    response = requests.get(hdsky_image_url, headers=headers, timeout=10)
                     with open(image_code_name, "wb") as fp:
                         fp.write(response.content)
                     
@@ -1277,14 +1277,14 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     logger.info(data_ocr)
                     
                     #验证码不足6未跳过
-                    if len(data_ocr) < 6 :
+                    if len(data_ocr) != 6 :
                         continue
                     
                     data = {'action': 'showup',
                             'imagehash': code,
                             'imagestring': data_ocr
                             }
-                    response = session.post("https://hdsky.me/showup.php", headers=headers, data=data, timeout=10)
+                    response = requests.post("https://hdsky.me/showup.php", headers=headers, data=data, timeout=10)
                     logger.info(response.text)
                     try:
                         result = json.loads(response.text)

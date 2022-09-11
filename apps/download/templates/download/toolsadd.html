@@ -1,0 +1,112 @@
+<!-- 表单弹窗 -->
+<form id="toolsAddForm" lay-filter="toolsAddForm" class="layui-form model-form" method="POST">{% csrf_token %}
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-block">
+            <input name="name" type="text" class="layui-input"  lay-verify="required" required />
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block">
+            <div id="typed"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">地址</label>
+                <div class="layui-input-block">
+                  <input name="url" type="text" class="layui-input"  lay-verify="required|urlX" required placeholder="如：http://1.1.1.1:9091" />
+                </div>
+              </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-block">
+                <input name="username" type="text" class="layui-input" lay-verify="required" required />
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码</label>
+            <div class="layui-input-block">
+                <input name="password" type="password" class="layui-input" lay-verify="required" required />
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">下载目录</label>
+            <div class="layui-input-block">
+                <input name="dirname" type="text" class="layui-input" />
+            </div>
+        </div>
+
+
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-normal" lay-filter="toolsTestForm-submit" lay-submit>测试连接</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="toolsAddForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+
+
+        form.render('select', 'toolsAddForm');
+
+        // 渲染多选下拉框
+        var insSel = xmSelect.render({
+          el: '#typed',
+          name: 'typed',
+          layVerify: 'required',
+          radio: true,
+          clickClose: true,
+          data: [
+            {name: 'Transmission', value: 'tr'},
+            {name: 'qBittorrent', value: 'qb'},
+          ]
+      });
+
+      form.on('submit(toolsTestForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('download/tools/test', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, 'POST');
+            return false;
+        });
+
+
+        form.on('submit(toolsAddForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('download/tools/add', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('toolsTable', {});
+                    admin.closeDialog('#toolsAddForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#toolsAddForm').attr('method'));
+            return false;
+        });
+    });
+
+</script>

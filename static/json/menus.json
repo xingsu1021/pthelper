@@ -50,6 +50,17 @@
       ]
     },
     {
+      "title": "下载工具管理",
+      "icon": "layui-icon layui-icon-set",
+      "path": "javascript:;",
+      "children": [
+        {
+          "title": "下载器配置",
+          "path": "#/download/tools"
+        }
+      ]
+    },
+    {
         "title": "消息推送配置",
         "icon": "layui-icon layui-icon-set",
         "path": "javascript:;",
@@ -69,6 +80,25 @@
           {
             "title": "企业微信",
             "path": "#/notify/enwechat"
+          }
+        ]
+      },
+      {
+        "title": "RSS订阅管理",
+        "icon": "layui-icon layui-icon-set",
+        "path": "javascript:;",
+        "children": [
+          {
+            "title": "RSS配置",
+            "path": "#/rss/config"
+          },
+          {
+            "title": "RSS规则",
+            "path": "#/rss/rule"
+          },
+          {
+            "title": "RSS种子详情",
+            "path": "#/rss/seedinfo"
           }
         ]
       },

@@ -1,0 +1,140 @@
+<style type="text/css">
+    #img {
+        width: 25px;
+        height: 15px;
+        position: absolute;
+        right: 5px;
+        margin-top: 12px;
+        top: 1px;
+        text-align: center;
+    }
+</style>
+
+<!-- 表单弹窗 -->
+<form id="toolsEditForm" lay-filter="toolsEditForm" class="layui-form model-form" method="POST">{% csrf_token %}
+    <input name="id" type="hidden" value="{{id}}"/>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">名称</label>
+        <div class="layui-input-block">
+        <input name="name" type="text" class="layui-input"  lay-verify="required" required value="{{name}}" />
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">类型</label>
+        <div class="layui-input-block">
+        <div id="typed"></div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">地址</label>
+            <div class="layui-input-block">
+              <input name="url" type="text" class="layui-input"  lay-verify="required|urlX" required value="{{url}}"/>
+            </div>
+          </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">用户名</label>
+        <div class="layui-input-block">
+            <input name="username" type="text" class="layui-input" lay-verify="required" required value="{{username}}"/>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-block">
+            <input name="password" id="password" type="password" class="layui-input" lay-verify="required" required value="{{password}}" onfocus="this.placeholder=''"
+            onblur="this.placeholder='密码'"/>
+            <!--在输入框后接img标签-->
+            <img id="img" onclick="hideShowPsw()"  src="static/assets/images/icon-visible.png">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">下载目录</label>
+        <div class="layui-input-block">
+            <input name="dirname" type="text" class="layui-input" value="{{dirname}}"/>
+        </div>
+    </div>
+
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-normal" lay-filter="toolsTestForm-submit" lay-submit>测试连接</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="toolsEditForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'xmSelect', 'table', 'admin','formX'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var xmSelect = layui.xmSelect;
+        var table = layui.table;
+        var admin = layui.admin;
+
+        var formX = layui.formX;
+
+        form.render('select',"toolsEditForm");
+
+        // 渲染多选下拉框
+        var insSel = xmSelect.render({
+            el: '#typed',
+            name: 'typed',
+            layVerify: 'required',
+            radio: true,
+            clickClose: true,
+            data: [
+              {name: 'Transmission', value: 'tr'},
+              {name: 'qBittorrent', value: 'qb'},
+            ]
+        });
+
+        insSel.setValue(["{{typed}}"]);
+
+        form.on('submit(toolsTestForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('download/tools/test', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, 'POST');
+            return false;
+        });
+
+        form.on('submit(toolsEditForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('download/tools/edit', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('toolsTable', {});
+                    admin.closeDialog('#toolsEditForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#toolsEditForm').attr('method'));
+            return false;
+        });
+    });
+
+    //隐藏text block，显示password block
+    var demoImg = document.getElementById("img");
+    var PWD = document.getElementById("password");
+ 
+    function hideShowPsw() {
+        if (PWD.type == "password") {
+            PWD.type = "text";
+            demoImg.src = "static/assets/images/icon-invisible.png"; //图片路径（闭眼图片）
+        } else {
+            PWD.type = "password";
+            demoImg.src = "static/assets/images/icon-visible.png"; // 图片路径（睁眼图片）
+ 
+        }
+    }
+</script>

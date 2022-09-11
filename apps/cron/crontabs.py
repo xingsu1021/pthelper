@@ -6,12 +6,18 @@ from urllib import parse
 import os
 import logging
 from bs4 import BeautifulSoup
+import feedparser
+from thefuzz import process
+from transmission_rpc import Client
+import qbittorrentapi
 
-from common.utils import send_email,send_telegram,send_iyuu, send_enwechat
+from common.utils import send_email,send_telegram,send_iyuu, send_enwechat, parseUrl
 from common.sites_sign import signIngress
 from sites.models import SiteConfig, SiteInfo
 from .models import Job, Log
 from notify.models import NotifyConfig
+from rss.models import Rule, SeedInfo
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from django_apscheduler.jobstores import DjangoJobStore, register_job
@@ -96,6 +102,9 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
             elif jobtype_id == 1003:
                 #重签
                 scheduler.add_job(re_fail_sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
+            elif jobtype_id == 1002:
+                #RSS订阅
+                scheduler.add_job(rss, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])            
 
         else:
             #禁用状态，直接删除任务
@@ -117,6 +126,8 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
                 scheduler.add_job(sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
             elif jobtype_id == 1003:
                 scheduler.add_job(re_fail_sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
+            elif jobtype_id == 1002:
+                scheduler.add_job(rss, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])            
            
             
     return True
@@ -337,5 +348,225 @@ def send_msg(crontab_id = None, send_data = []):
         
         logger.info("-------------enwechat-------------------")
         logger.info(msg)
+        
+    return
+
+#==========================================================================================================
+def rss(crontab_id):
+    """
+    执行订阅
+    参数：
+      crontab_id：执行任务的ID
+    """
+  
+    headers = {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36',
+        #'cookie': site_cookie,
+    }    
+    
+    #获取任务ID
+    job_id = Job.objects.get(crontab_id=crontab_id)    
+    ormdata_rule = Rule.objects.get(job_id = job_id.id)
+    #订阅地址
+    rss_url = ormdata_rule.config_id.url
+    #站点信息
+    siteinfo_id = ormdata_rule.config_id.siteinfo_id
+    site_name = siteinfo_id.siteconfig_name
+    site_name_cn = siteinfo_id.siteconfig_name_cn
+    #关键字
+    keyword = [x for x in ormdata_rule.keyword.split(',')]
+    #码率
+    rate = ormdata_rule.rate
+    
+    logger.info("-------------开始RSS订阅任务%s(%s)-------------------" % (site_name, site_name_cn))
+    
+    d = feedparser.parse(rss_url, request_headers=headers)
+    #未获取返回状态
+    if 'status' not in d:
+        logger.error('请求RSS地址失败')
+        return
+    
+    #匹配RSS过滤后发送
+    send_data = []
+    if d.status == 200:
+        #entries 电影内容
+        for i in d.entries:
+            #标题 [Movie][Back to 1942 2012 V2 2160p WEB-DL H265 AAC-LeagueWEB][一九四二/温故1942/1942 | 类型: 剧情/历史/战争/灾难 主演: 张国立/张默/徐帆 [国语/中英双语硬字] | *4K* *V2高码*][16.35 GB]
+            seed_name = i.title
+            #种子类型 Movie
+            seed_type = i.tags[0].term
+            #种子页地址 https://lemonhd.org/details_movie.php?id=327311
+            seed_link = i.link
+            #'links': [{'rel': 'alternate', 'type': 'text/html', 'href': 'https://lemonhd.org/details_tv.php?id=328435'}, 
+            #          {'length': '2543569030', 'type': 'application/x-bittorrent', 'href': 'https://lemonhd.org/download.php?id=328435&passkey=c1c6b3d5291bf330ffa9ad2872d52144', 
+            #          'rel': 'enclosure'}
+            #         ]
+            #种子下载地址
+            seed_download_url = i.links[1].href
+            #种子大小 字节数
+            seed_length = i.links[1].length
+            #发布时间 Wed, 07 Sep 2022 14:27:09 +0800
+            seed_published_time = i.published
+            _TIME_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
+            #将字符串转换成datetime在格式化成需要的 2022-09-07 09:26:22
+            seed_published_time = datetime.datetime.strptime(seed_published_time, _TIME_FORMAT).strftime('%Y-%m-%d %H:%M:%S') 
+            #种子ID afe783da83684e92f5ff6a4c42fd11da216b77a2
+            seed_hash_id = i.id
+            
+            seedinfo = None
+            #确认无重复，则添加
+            num = SeedInfo.objects.filter(seed_hash_id=seed_hash_id).filter(siteinfo_id=siteinfo_id).count()
+            if num == 0:
+                if keyword[0] == '':
+                    
+                    #未添加关键字则全部加入
+                    if rate == 'all':
+                        #码率为所有
+                        seedinfo = SeedInfo.objects.create(seed_name = seed_name,
+                                                seed_type = seed_type,
+                                                seed_details_link = seed_link,
+                                                seed_donwload_link = seed_download_url,
+                                                seed_file_size = seed_length,
+                                                seed_hash_id = seed_hash_id,
+                                                seed_published_time = seed_published_time,
+                                                siteinfo_id = siteinfo_id,
+                                                rule_id = ormdata_rule
+                                                )
+                    else:
+                        if rate in seed_name:
+                            seedinfo = SeedInfo.objects.create(seed_name = seed_name,
+                                                    seed_type = seed_type,
+                                                    seed_details_link = seed_link,
+                                                    seed_donwload_link = seed_download_url,
+                                                    seed_file_size = seed_length,
+                                                    seed_hash_id = seed_hash_id,
+                                                    seed_published_time = seed_published_time,
+                                                    siteinfo_id = siteinfo_id,
+                                                    rule_id = ormdata_rule
+                                                    )
+                    #发送下载器
+                    seed_download(seedinfo.id)
+                    #将电影名加入发送
+                    send_data.append(seed_name)
+                else:
+                    #通过匹配关键字添加
+                    _name, num=process.extractOne(seed_name, keyword)
+                    if num >= 50:
+                        #匹配度大于50添加
+                        if rate == 'all':
+                            #码率为所有
+                            seedinfo = SeedInfo.objects.create(seed_name = seed_name,
+                                                    seed_type = seed_type,
+                                                    seed_details_link = seed_link,
+                                                    seed_donwload_link = seed_download_url,
+                                                    seed_file_size = seed_length,
+                                                    seed_hash_id = seed_hash_id,
+                                                    seed_published_time = seed_published_time,
+                                                    siteinfo_id = siteinfo_id,
+                                                    rule_id = ormdata_rule
+                                                    )
+                        else:
+                            if rate in seed_name:
+                                seedinfo = SeedInfo.objects.create(seed_name = seed_name,
+                                                        seed_type = seed_type,
+                                                        seed_details_link = seed_link,
+                                                        seed_donwload_link = seed_download_url,
+                                                        seed_file_size = seed_length,
+                                                        seed_hash_id = seed_hash_id,
+                                                        seed_published_time = seed_published_time,
+                                                        siteinfo_id = siteinfo_id,
+                                                        rule_id = ormdata_rule
+                                                        )
+                        #发送下载器
+                        seed_download(seedinfo.id)
+                        #将电影名加入发送
+                        send_data.append(seed_name)
+                #发送通知
+                send_msg(crontab_id,send_data)
+ 
+    return
+
+def seed_download(seedinfo_id):
+    """
+    下载种子
+    参数
+    seedinfo_id rss订阅后存入数据库的id
+    """
+    
+    ormdata_seedinfo = SeedInfo.objects.get(id = seedinfo_id)
+    #下载连接
+    seed_donwload_link = ormdata_seedinfo.seed_donwload_link
+    #下载器类型
+    download_type = ormdata_seedinfo.rule_id.tools_id.typed
+    download_username = ormdata_seedinfo.rule_id.tools_id.username
+    download_password = ormdata_seedinfo.rule_id.tools_id.password
+    download_url = ormdata_seedinfo.rule_id.tools_id.url
+    #下载目录
+    download_dirname = ormdata_seedinfo.rule_id.tools_id.dirname
+    #加入下载器后是否立刻下载
+    is_paused = ormdata_seedinfo.rule_id.is_paused
+    
+    if download_dirname == "":
+        download_dirname = None
+        
+    url_data = parseUrl(download_url)
+    
+    #保存加入下载器后返回的ID
+    torrent_id = None
+    if download_type == 'tr':
+        try:
+            
+            c = Client(protocol= url_data['protocol'],
+                   host=url_data['host'], 
+                   port=url_data['port'], 
+                   username=download_username, 
+                   password=download_password, 
+                   timeout = 10
+                   )
+            
+            torrent = c.add_torrent(seed_donwload_link,
+                          timeout = 10,
+                          download_dir = download_dirname,
+                          #paused = is_paused, #立刻下载,需要下载器开启默认下载才有效
+                          )
+            #获取种子id
+            torrent_id = torrent.id
+            #如果启动则下载
+            if is_paused:
+                c.start_torrent(torrent_id)
+            
+            ormdata_seedinfo.seed_torrent_id = torrent_id
+            ormdata_seedinfo.seed_status = True
+            ormdata_seedinfo.save()
+        
+        except Exception as e:
+            print(e)
+
+    elif download_type == 'qb':
+        try:
+            
+            c = qbittorrentapi.Client(
+                host=url_data['host'],
+                port=url_data['port'],
+                username=download_username,
+                password=download_password,
+            )
+            
+            torrent = c.torrents_add(seed_donwload_link,
+                                     save_path=download_dirname,
+                                     #is_paused=is_paused, #立刻下载
+                                     )
+            #获取种子id
+            torrent_id = torrent.id
+            #如果启动则下载
+            if is_paused:
+                c.start_torrent(torrent_id)
+                
+            ormdata_seedinfo.seed_torrent_id = torrent_id
+            ormdata_seedinfo.seed_status = True
+            ormdata_seedinfo.save()
+            
+        except Exception as e:
+            print(e)         
         
     return

@@ -545,14 +545,14 @@ class SignJobView(LoginRequiredMixin,TemplateView):
         name = "签到"
         
         #未配置消息通知不予通过
-        if len(notifys) == 0:
-            response_data={"code":0,"msg":"请配置消息通知!"}
-            return JsonResponse(response_data)
+        #if len(notifys) == 0:
+            #response_data={"code":0,"msg":"请配置消息通知!"}
+            #return JsonResponse(response_data)
 
         data_count = Job.objects.filter(jobtype_id=1000).count()
         if data_count == 0:
             ormdata = Job.objects.create(name=name,
-                                         crontab_status=crontab_status,
+                                         crontab_status=int(crontab_status),
                                          hour=hour,
                                          minute=minute,
                                          jobtype_id=jobtype_id,
@@ -563,7 +563,7 @@ class SignJobView(LoginRequiredMixin,TemplateView):
                                          )
         else:
             ormdata = Job.objects.get(id=_id)
-            ormdata.crontab_status = crontab_status
+            ormdata.crontab_status = int(crontab_status)
             ormdata.hour = hour
             ormdata.minute = minute
             ormdata.crontab_time = crontab_time

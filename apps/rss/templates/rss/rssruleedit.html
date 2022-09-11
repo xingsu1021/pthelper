@@ -1,0 +1,222 @@
+<!-- 表单弹窗 -->
+<form id="rssruleEditForm" lay-filter="rssruleEditForm" class="layui-form model-form" method="POST">{% csrf_token %}
+    <input name="id" type="hidden" value="{{id}}"/>
+    <input name="crontab_id" type="hidden" value="{{crontab_id}}"/>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">名称</label>
+        <div class="layui-input-block">
+          <input name="name" type="text" class="layui-input"  lay-verify="required" value="{{name}}"/>
+        </div>
+      </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">RSS站点</label>
+        <div class="layui-input-block">
+            <div id="config_id"></div>
+        </div>
+    </div>
+    
+    <div class="layui-form-item">
+        <label class="layui-form-label">下载器</label>
+        <div class="layui-input-block">
+            <div id="tools_id"></div>
+        </div>
+    </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">关键字</label>
+            <div class="layui-input-block">
+                <input name="keyword" type="text" class="layui-input" maxlength="100" 
+                placeholder="用于匹配影视,多个使用逗号分隔,不写为全部" value="{{keyword}}"/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">刷新间隔</label>
+            <div class="layui-input-block">
+                <input name="refresh_time" type="text" class="layui-input inline-block" lay-verify="numberX" min="1" maxlength="5" 
+                style="width: 160px;" placeholder="默认5分钟" value="{{refresh_time}}" />
+                <span>&nbsp;&nbsp;分钟</span>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">立即下载</label>
+            <div class="layui-inline-block" style="margin: 10px;">
+                {% if is_paused %}
+                <input type="radio" name="is_paused" value="0" title="暂停"/>
+                <input type="radio" name="is_paused" value="1" title="下载" checked/>
+                {% else %}
+                <input type="radio" name="is_paused" value="0" title="暂停" checked/>
+                <input type="radio" name="is_paused" value="1" title="下载"/>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">码率</label>
+            <div class="layui-input-block">
+                <div id="rate"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-block">
+                {% if status == 1 %}
+                    <input type="checkbox" name="status" checked="" lay-skin="switch" lay-text="启用|禁用"/>
+                {% else %}
+                <input type="checkbox" name="status" lay-skin="switch" lay-text="启用|禁用"/>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">消息通知</label>
+
+            <div class="layui-inline-block" style="margin: 10px;">
+                {{ notifys|safe }}
+            </div>
+        </div>
+
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="rssruleEditForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'xmSelect', 'table', 'admin','formX'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var xmSelect = layui.xmSelect;
+        var table = layui.table;
+        var admin = layui.admin;
+
+        var formX = layui.formX;
+
+        form.render('checkbox', 'rssruleEditForm');
+        form.render('select',"rssruleEditForm");
+        form.render('radio');
+        
+        var siteInfoIDList = [];
+        // 渲染多选下拉框
+        var insSel = xmSelect.render({
+          el: '#config_id',
+          name: 'config_id',
+          prop: {
+              name: 'name',
+              value: 'value',
+          },
+          layVerify: 'required',
+          radio: true,
+          clickClose: true,
+          filterable: true, //开启搜索
+          data: []
+        });
+
+        /* 获取所有记录类型 */
+        var loadIndex = layer.load(2);
+        admin.req('rss/config/select/list', function (res) {
+            layer.close(loadIndex);
+            if (0 === res.code) {
+                $.each(res.data, function (index, item) {
+                    if ( item.id === {{config_id}} ){
+                        siteInfoIDList.push({name: item.name, value: item.id,selected: true});
+                    } else {
+                        siteInfoIDList.push({name: item.name, value: item.id});
+                    }
+                    
+                });
+                insSel.update({
+                    data: siteInfoIDList,
+                    autoRow: true,
+                })
+            } else {
+                layer.msg(res.msg, {icon: 2});
+            }
+        });
+
+        var toolsIDList = [];
+        // 渲染多选下拉框
+        var toolsSel = xmSelect.render({
+            el: '#tools_id',
+            name: 'tools_id',
+            prop: {
+                name: 'name',
+                value: 'value',
+            },
+            layVerify: 'required',
+            radio: true,
+            clickClose: true,
+            filterable: true, //开启搜索
+            data: []
+        });
+
+        /* 获取所有记录类型 */
+        var loadIndex = layer.load(2);
+        admin.req('download/tools/select/list', function (res) {
+            layer.close(loadIndex);
+            if (0 === res.code) {
+                $.each(res.data, function (index, item) {
+
+                    if ( item.id === {{tools_id}} ){
+                        toolsIDList.push({name: item.name, value: item.id,selected: true});
+                    } else {
+                        toolsIDList.push({name: item.name, value: item.id});
+                    }
+                    
+                });
+                toolsSel.update({
+                    data: toolsIDList,
+                    autoRow: true,
+                })
+            } else {
+                layer.msg(res.msg, {icon: 2});
+            }
+        });
+
+        // 渲染多选下拉框
+        var rateSel = xmSelect.render({
+            el: '#rate',
+            name: 'rate',
+            prop: {
+                name: 'name',
+                value: 'value',
+            },
+            layVerify: 'required',
+            radio: true,
+            clickClose: true,
+            data: [{'name':'all','value':'all'},
+                   {'name':'1080','value':'1080'},
+                   {'name':'2060','value':'2060'}
+                  ]
+        });
+        rateSel.setValue([ "{{rate}}" ])
+
+        form.on('submit(rssruleEditForm-submit)', function (data) {
+            layer.load(2);
+
+            //将页面全部复选框选中的值拼接到一个数组中
+            var notifys_box = [];
+            $('input[name="notifys"]:checked').each(function() {
+                notifys_box.push($(this).val());
+            });
+            data.field.notifys = notifys_box
+
+            admin.req('rss/rule/edit', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('rssruleTable', {});
+                    admin.closeDialog('#rssruleEditForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#rssruleEditForm').attr('method'));
+            return false;
+        });
+    });
+</script>

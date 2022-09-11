@@ -1,0 +1,235 @@
+
+<style>
+    #toolsTable + .layui-table-view .layui-table-body tbody > tr > td {
+        padding: 0;
+    }
+
+    #toolsTable + .layui-table-view .layui-table-body tbody > tr > td > .layui-table-cell {
+        height: 48px;
+        line-height: 48px;
+    }
+
+    .tb-img-circle {
+        width: 40px;
+        height: 40px;
+        cursor: zoom-in;
+        border-radius: 50%;
+        border: 2px solid #dddddd;
+    }
+</style>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline searchInput">
+                        <input id="toolsSearchValue" class="layui-input" type="text" placeholder="输入关键字" />
+                    </div>
+                    <div class="layui-inline">
+                        <button id="toolsBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                        <button id="toolsBtnAdd" class="layui-btn icon-btn"><i
+                                class="layui-icon">&#xe654;</i>添加</button>
+                        <button id="toolsBtnDel" class="layui-btn layui-btn-danger icon-btn"><i
+                                class="layui-icon">&#xe640;</i>删除</button>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="toolsTable" lay-filter="toolsTable"></table>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="toolsTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown', 'upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+        var xmSelect = layui.xmSelect;
+        var upload = layui.upload;
+
+        form.render('select');
+        // 渲染表格
+        var insTb = tableX.render({
+            elem: '#toolsTable',
+            url: setter.base_server + 'download/tools/list',
+            method: 'GET',
+            cellMinWidth: 100,
+            page: true,
+            limit: 15,
+            limits: [15, 50, 100],
+            cols: [[
+                { type: 'checkbox' },
+                { field: 'id', title: 'ID', hide: true },
+                { field: 'name', sort: true, title: '名称', width: 200 },
+                { field: 'typed', title: '类型', templet: function (d) {
+                        if (d.typed === 'tr') {
+                            return '<img src="static/assets/images/tr.png" class="tb-img-circle" tb-img alt=""/>';
+                        }else{
+                            return '<img src="static/assets/images/qb.png" class="tb-img-circle" tb-img alt=""/>';
+                        }
+                    }, align: 'center', width: 90, unresize: true
+                 },
+                { field: 'url', sort: true, title: '地址' },
+                { field: 'username', sort: true, title: '用户名', width: 150 },
+                { field: 'password', sort: true, title: '密码' , hide: true},
+                { field: 'dirname', sort: true, title: '下载目录' },
+                { align: 'center', toolbar: '#toolsTableBar', title: '操作', width: 150 }
+            ]]
+        });
+
+
+        // 添加按钮点击事件
+        $('#toolsBtnAdd').click(function () {
+            showAddModel();
+        });
+
+        // 工具条点击事件
+        table.on('tool(toolsTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'edit') { // 修改
+                showEditModel(data);
+            } else if (layEvent === 'del') {
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定删除此记录 ' + data.name + '？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        $.ajax({
+                            url: "download/tools/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': [data.id], csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('toolsTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    });
+            }
+        });
+
+        //显示表单弹窗
+        var showAddModel = function () {
+            var title = '添加下载器';
+            admin.open({
+                title: title,
+                area: ['600px', '500px'],
+                url: 'download/tools/add',
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+
+        var showEditModel = function (data) {
+            var title = '编辑下载器';
+            admin.open({
+                title: title,
+                area: ['600px', '500px'],
+                url: 'download/tools/edit?id=' + data.id,
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
+                }
+            });
+        };
+
+        // 批量删除按钮点击事件
+        $('#toolsBtnDel').click(function () {
+            //选中事件
+            var checkStatus = table.checkStatus('toolsTable')
+            //得到选择长度
+            dataLength = checkStatus.data.length
+            data = checkStatus.data;
+            var ids = [];
+            if (dataLength == 0) {
+                //未选中
+                layer.msg("请选择需要删除的记录", { icon: 2 });
+            } else {
+                layer.confirm('确定删除选中的' + dataLength + '个记录？', { icon: 3, title: '警告', shadeClose: true },
+                    function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        for (var i = 0; i < data.length; i++) {
+                            ids.push(data[i].id);
+                        }
+                        $.ajax({
+                            url: "download/tools/del",
+                            type: 'POST',
+                            dataType: "json",
+                            data: { 'ids': ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            success: function (d) {
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('toolsTable', {});
+                                    layer.msg(d.msg, { icon: 1 });
+                                } else {
+                                    layer.msg(d.msg, { icon: 2 });
+                                }
+                            }
+                        });
+                    });
+            }
+        });
+
+        // 监听enter键，光标在搜索框
+        $('#toolsSearchValue').keydown(function (event) {
+            if (event.keyCode === 13) {
+                var key = 'search';
+                var value = $('#toolsSearchValue').val();
+
+                table.reload('toolsTable', { where: { searchKey: key, searchValue: value } });
+            } else if (event.keyCode === 8 && !$psw.val()) {
+                $("#toolsSearchValue").val('');
+                ptable();
+                if (event.preventDefault) event.preventDefault();
+                if (event.returnValue) event.returnValue = false;
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#toolsBtnSearch').click(function () {
+            var key = 'search';
+            var value = $('#toolsSearchValue').val();
+
+            table.reload('toolsTable', { where: { searchKey: key, searchValue: value } });
+        });
+
+
+
+    });
+</script>

@@ -60,7 +60,7 @@
 
         /* 获取所有记录类型 */
         var loadIndex = layer.load(2);
-        admin.req('sites/siteconfigname/list', function (res) {
+        admin.req('sites/siteconfigname/list?flag=1', function (res) {
             layer.close(loadIndex);
             if (0 === res.code) {
                 $.each(res.data, function (index, item) {
