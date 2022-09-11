@@ -39,5 +39,9 @@ urlpatterns = [
     #消息通知
     path('notify/', include('notify.urls.views_urls')), 
     #通用配置
-    path('common/', include('common.urls.views_urls')),     
+    path('common/', include('common.urls.views_urls')), 
+    #RSS订阅
+    path('rss/', include('rss.urls.views_urls')),
+    #下载工具管理
+    path('download/', include('download.urls.views_urls')),        
 ]
