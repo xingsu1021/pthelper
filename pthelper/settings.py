@@ -53,9 +53,11 @@ INSTALLED_APPS = [
     'myauth',
     'index',
     'dashboard',
-    'sites',
+    'sites', #站点信息
     'cron',  #计划任务
     'notify', #消息通知
+    'rss', #RSS订阅
+    'download', #下载工具
     'initdata', #数据初始化
 ]
 
@@ -177,7 +179,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #模板使用变量
 SITE_NAME = 'PT助手'
 SITE_URL = 'https://github.com/xingsu1021/pthelper'
-SITE_VERSION = 'Version 2.1.0'
+SITE_VERSION = 'Version 2.2.0'
 SITE_COPYRIGHT = 'copyright © 2022'
 SITE_NAME_COPYRIGHT = 'copyright © 2022 PT助手'
 

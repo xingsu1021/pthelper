@@ -483,7 +483,7 @@ class ExcelStorage(FileSystemStorage):
         #调用父类方法  
         return super(ExcelStorage, self)._save(name, content)
 
-def send_email(mail_type,smtp_user,smtp_password,receiver_users = [],send_data = [] ,isTest=False):
+def send_email(mail_type,smtp_user,smtp_password,receiver_users = [],send_data = [] ,isTest=False, title='PT助手提示'):
     """
     发送邮件
     """
@@ -512,7 +512,7 @@ def send_email(mail_type,smtp_user,smtp_password,receiver_users = [],send_data =
         ''' % (time,"<br>".join(send_data))
         
         
-    title = "PT助手"
+    #title = "PT助手"
     #receiver = ["249545020@qq.com"]
     receiver = receiver_users
     msg = ''
@@ -549,7 +549,7 @@ def send_email(mail_type,smtp_user,smtp_password,receiver_users = [],send_data =
     
     return True,"发送成功"
 
-def send_telegram(tg_chat_id,tg_token,send_data = [] ,isTest=False):
+def send_telegram(tg_chat_id,tg_token,send_data = [] ,isTest=False, title='PT助手提示'):
     
 
     bot = telegram.Bot(token = tg_token)
@@ -582,7 +582,7 @@ def send_telegram(tg_chat_id,tg_token,send_data = [] ,isTest=False):
             
     return True,"发送成功"
 
-def send_iyuu(iyuu_key,send_data = [] ,isTest=False):
+def send_iyuu(iyuu_key,send_data = [] ,isTest=False, title='PT助手提示'):
     
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
     
@@ -600,7 +600,7 @@ def send_iyuu(iyuu_key,send_data = [] ,isTest=False):
         sen_url = api + '?text='+ parse.quote('测试提示') + '&desp=' + now_time + send_txts
     else:
         send_txts = parse.quote('<br>'.join(send_data))
-        sen_url = api + '?text='+ parse.quote('签到提示') + '&desp=' + now_time + send_txts
+        sen_url = api + '?text='+ parse.quote(title) + '&desp=' + now_time + send_txts
         
     try:
         response = requests.get(sen_url, headers=headers ,verify=False)
@@ -616,7 +616,7 @@ def send_iyuu(iyuu_key,send_data = [] ,isTest=False):
         
     return True,"发送成功"
 
-def send_enwechat(corp_id = None, agent_id = None, agent_secret = None, user_ids = [], send_data = [] ,isTest=False):
+def send_enwechat(corp_id = None, agent_id = None, agent_secret = None, user_ids = [], send_data = [] ,isTest=False, title='PT助手提示'):
     """发送企业微信消息"""
     
     weclient = EnWechat(corp_id=corp_id, agent_id=agent_id, agent_secret=agent_secret)

@@ -184,7 +184,7 @@ def sign(crontab_id):
             send_data.append(data)
             
     #发送消息
-    send_msg(crontab_id, send_data)
+    send_msg(crontab_id, send_data, title='签到提示')
     
     return
 
@@ -241,7 +241,7 @@ def signonekey():
             send_data.append(data)
             
     #发送消息
-    send_msg(crontab_id, send_data)
+    send_msg(crontab_id, send_data, title='签到提示')
     
     return
 
@@ -301,11 +301,11 @@ def re_fail_sign(crontab_id):
     if len(send_data) != 0:
         
         #发送消息
-        send_msg(crontab_id, send_data)
+        send_msg(crontab_id, send_data, title='补签提示')
     
     return
 
-def send_msg(crontab_id = None, send_data = []):
+def send_msg(crontab_id = None, send_data = [], title='PT助手提示'):
     """
     发送消息
     """
@@ -317,13 +317,13 @@ def send_msg(crontab_id = None, send_data = []):
         
         iyuu_ormdata = NotifyConfig.objects.get(name='iyuu')
         
-        flag,msg = send_iyuu(iyuu_ormdata.iyuu_key, send_data)
+        flag,msg = send_iyuu(iyuu_ormdata.iyuu_key, send_data, title = title)
         logger.info("-------------iyuu-------------------")
         logger.info(msg)
         
     if 'telegram' in notify_ormdata.notifys:
         tg_ormdata = NotifyConfig.objects.get(name='telegram')
-        flag,msg = send_telegram(tg_ormdata.tg_chat_id,tg_ormdata.tg_token,send_data)
+        flag,msg = send_telegram(tg_ormdata.tg_chat_id,tg_ormdata.tg_token,send_data, title = title)
         logger.info("-------------telegram-------------------")
         logger.info(msg)
         
@@ -331,7 +331,7 @@ def send_msg(crontab_id = None, send_data = []):
         email_ormdata = NotifyConfig.objects.get(name='email')
         
         receiver_users = [x for x in email_ormdata.receive_user.split(',')]
-        flag,msg = send_email(email_ormdata.mail_type,email_ormdata.smtp_user,email_ormdata.smtp_password,receiver_users,send_data)
+        flag,msg = send_email(email_ormdata.mail_type,email_ormdata.smtp_user,email_ormdata.smtp_password,receiver_users,send_data, title = title)
         logger.info("-------------email-------------------")
         logger.info(msg)   
         
@@ -343,7 +343,8 @@ def send_msg(crontab_id = None, send_data = []):
                                  agent_id=enwechat_ormdata.enwechat_agent_id, 
                                  agent_secret=enwechat_ormdata.enwechat_agent_secret,
                                  user_ids = receiver_users,
-                                 send_data = send_data
+                                 send_data = send_data,
+                                 title = title
                                  )
         
         logger.info("-------------enwechat-------------------")
@@ -482,7 +483,7 @@ def rss(crontab_id):
                         #将电影名加入发送
                         send_data.append(seed_name)
                 #发送通知
-                send_msg(crontab_id,send_data)
+                send_msg(crontab_id, send_data, title='RSS订阅提示')
  
     return
 
