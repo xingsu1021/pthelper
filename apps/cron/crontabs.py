@@ -309,6 +309,10 @@ def send_msg(crontab_id = None, send_data = [], title='PT助手提示'):
     """
     发送消息
     """
+    #消息为空则不发送
+    if send_data == []:
+        return
+    
     logger.info("-------------send_data-------------------")
     logger.info(",".join(send_data))
     #获取对应任务ID的记录详情
