@@ -486,8 +486,8 @@ def rss(crontab_id):
                         seed_download(seedinfo.id)
                         #将电影名加入发送
                         send_data.append(seed_name)
-                #发送通知
-                send_msg(crontab_id, send_data, title='RSS订阅提示')
+        #发送通知
+        send_msg(crontab_id, send_data, title='RSS订阅提示')
  
     return
 
