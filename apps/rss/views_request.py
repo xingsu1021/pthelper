@@ -312,7 +312,9 @@ def seed_download(request):
                           )
             #获取种子id
             torrent_id = torrent.id
-            
+
+            c.start_torrent(torrent_id)
+                
             ormdata_seedinfo.seed_torrent_id = torrent_id
             ormdata_seedinfo.seed_status = True
             ormdata_seedinfo.save()

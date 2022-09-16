@@ -28,6 +28,7 @@ from urllib import parse
 from wechatpy.enterprise import WeChatClient
 from PIL import Image, ImageDraw, ImageFont
 import re
+import random
 
 logger = logging.getLogger('django')
 
@@ -664,6 +665,7 @@ def parseUrl(url):
     """
     拆解url
     #scheme='https', netloc='127.0.0.1:8080', path='/', params='', query='', fragment=''
+    #{'protocol': '', 'url': '', 'host': '', 'port': None, 'path': 'userdetails.php', 'params': '', 'query': {'id': ['16465']}}
     """
     data = {}
     u = urlparse(url)
@@ -675,7 +677,8 @@ def parseUrl(url):
     data['port'] = u.port
     data['path'] = u.path
     data['params'] = u.params
-    data['query'] = u.query
+    #将查询字符串字典话
+    data['query'] = parse.parse_qs(u.query)
     
     return data
 
@@ -856,3 +859,20 @@ class EnWechat:
             msg = reponse['errmsg']
             
             return False, msg        
+        
+def Unicode():
+    """
+    随机产生汉字
+    """
+    val = random.randint(0x4e00, 0x9fbf)
+    return chr(val)
+
+def GBK2312():
+    """
+    随机产生汉字
+    """
+    head = random.randint(0xb0, 0xf7)
+    body = random.randint(0xa1, 0xfe)
+    val = f'{head:x} {body:x}'
+    str = bytes.fromhex(val).decode('gb2312')
+    return str

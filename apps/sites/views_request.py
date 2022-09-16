@@ -333,6 +333,7 @@ def siteinfoExport(request):
     for i in ormdata:
         
         data.append({"name":i.siteconfig_name,
+                     "name_cn":i.siteconfig_name_cn,
                     "cookie":i.cookie,
                     "passkey":i.passkey,
                     })
@@ -374,17 +375,20 @@ def siteinfoImport(request):
                 siteconfig_name = i['name']
                 cookie = i['cookie']
                 passkey = i['passkey']
+                siteconfig_name_cn = i['name_cn']
                 
                 get_site = SiteInfo.objects.filter(siteconfig_name=siteconfig_name).count()
                 if get_site == 0:
                     SiteInfo.objects.create(siteconfig_name = siteconfig_name,
                                             cookie = cookie,
                                             passkey = passkey,
+                                            siteconfig_name_cn = siteconfig_name_cn
                                             )
                 else:
                     #更新站点配置
                     SiteInfo.objects.filter(siteconfig_name=siteconfig_name).update(cookie = cookie,
                                                                         passkey=passkey,
+                                                                        siteconfig_name_cn=siteconfig_name_cn
                                                                         )
             response_data={"code":1,"msg":"更新成功"}
             

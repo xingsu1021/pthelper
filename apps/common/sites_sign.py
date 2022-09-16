@@ -12,6 +12,7 @@ from .utils import getSiteUrl
 from paddleocr import PaddleOCR
 from thefuzz import fuzz
 from thefuzz import process
+import random
 
 logger = logging.getLogger('sign')
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
@@ -75,7 +76,9 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
     elif sign_type == 'ptsbao':
         flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie)   
     elif sign_type == 'ssd':
-        flag, data = ssd(site_name, site_name_cn, site_url, site_cookie)     
+        flag, data = ssd(site_name, site_name_cn, site_url, site_cookie)   
+    elif sign_type == 'u2':
+        flag, data = u2(site_name, site_name_cn, site_url, site_cookie)          
     else:
         flag, data = (False,'%s 未匹配站点' % site_name) 
         
@@ -1556,6 +1559,90 @@ def ssd(site_name, site_name_cn, site_url, site_cookie):
             else:
                 msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                 return False, msg
+                
+        else:
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(msg)
+            
+            return False, msg
+            
+    except Exception as e:
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
+        logger.error('--------------%s----------------' % site_name)
+        logger.error(str(e))
+        
+        return False, msg    
+    
+def u2(site_name, site_name_cn, site_url, site_cookie):
+    """
+    签到 动漫花园
+    """
+    
+    headers = {
+        'user-agent': user_agent,
+        'cookie': site_cookie
+    }
+    
+    #获取网站url,不带/结尾
+    sign_url = getSiteUrl(site_url) + '/showup.php'
+    
+    logger.info('--------------%s开始签到----------------' % site_name)
+    
+    try:
+        session = requests.session()
+        response = session.get(sign_url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            #需要安装pip install lxml
+            soup = BeautifulSoup(response.text, "lxml")
+            
+            tables = soup.findAll('table', {'class':'captcha'})
+            #print(tables)
+            data = {}
+            captcha = []
+            data['message'] = '我就是来签到看看：）!!!'
+            if len(tables) != 0:
+                
+                #获取所有input
+                info = tables[0].findAll('input')
+                for i in info:
+                    #print(i)
+                    #获取input的名称,用于post使用
+                    name = i.attrs['name']
+                    if name == 'req':
+                        data['req'] = i.attrs['value']
+                    elif name == 'hash':
+                        data['hash'] = i.attrs['value']
+                    elif name == 'form':
+                        data['form'] = i.attrs['value']
+                    elif 'captcha' in name:
+                        captcha.append(i.attrs['value'])
+                        
+                #随机选择一个作为答案
+                data['captcha'] = random.choice(captcha)
+                #不返回任何消息
+                response = session.post("https://u2.dmhy.org/showup.php?action=show", headers=headers, data=data, timeout=10)
+                logger.info(data)
+                #确认是否签到成功
+                response = session.get(sign_url, headers=headers, timeout=10)
+                soup = BeautifulSoup(response.text, "lxml")
+                h3 = soup.findAll('h3', {'align':'center'})
+                if '今天已签到' in h3[0].get_text():
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok)
+                    return True, msg
+                else:
+                    msg = "%s(%s) %s" % (site_name,site_name_cn, msg_unknow)
+                    return False, msg
+                
+            else:
+                h3 = soup.findAll('h3', {'align':'center'})
+                if '今天已签到' in h3[0].get_text():
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
+                    return True, msg
+                else:
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
+                    return False, msg
                 
         else:
             msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)

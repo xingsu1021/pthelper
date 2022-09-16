@@ -122,62 +122,47 @@
             </div>
 
         </div>
-        <!--
-        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
-            <div class="layui-card">
-                <div class="layui-card-header">
-                    今日签到成功<span class="layui-badge layui-badge-blue pull-right">个</span>
-                </div>
-                <div class="layui-card-body">
-                    <p class="lay-big-font">1</p>
-                </div>
-            </div>
-        </div>
-        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
-            <div class="layui-card">
-                <div class="layui-card-header">
-                    今日签到失败<span class="layui-badge layui-badge-red pull-right">个</span>
-                </div>
-                <div class="layui-card-body">
-                    <p class="lay-big-font">1</p>
-                </div>
-            </div>
-        </div>
-        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
-            <div class="layui-card">
-                <div class="layui-card-header">
-                    总做种下载量<span class="layui-badge layui-badge-red pull-right">GB</span>
-                </div>
-                <div class="layui-card-body">
-                    <p>做种<span class="pull-right">1G</span></p>
-                    <p>下载<span class="pull-right">1G</span></p>
-                </div>
-            </div>
-        </div>
-        -->
     </div>
 
     <div class="layui-row layui-col-space15">
 
         <div>
             <div class="layui-card">
-                <div class="layui-card-header">用户信息</div>
-                <div class="layui-card-body dynamic-card-body mini-bar" style="height: 100%;">
-                    <ul class="layui-timeline layui-timeline-dynamic">
-                        <li class="layui-timeline-item">
-                            <i class="layui-icon layui-timeline-axis"></i>
-                            <div class="layui-timeline-content layui-text">
-                                <div class="layui-timeline-title">编辑中
-                            </div>
-                        </li>
-                        <li class="layui-timeline-item">
-                            <i class="layui-icon layui-timeline-axis active"></i>
-                            <div class="layui-timeline-content layui-text">
-                                <div class="layui-timeline-title">编辑中
-                            </div>
-                        </li>
-                        
-                    </ul>
+                <div class="layui-card-header">用户信息&emsp;&emsp;&emsp;
+                    <button class="layui-btn layui-btn-sm" lay-filter="updateuser-submit" lay-submit>更新数据</button>
+                </div>
+                <div class="layui-card-body">
+                    <table class="layui-table" lay-skin="line">
+                        <colgroup>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <td>站点</td>
+                            <td>用户名</td>
+                            <td>用户ID</td>
+                            <td>等级</td>
+                            <td align="center">分享率</td>
+                            <td>做种数</td>
+                            <td>做种体积</td>
+                            <td>魔力值</td>
+                            <td>积分</td>
+                            <td>入站时间</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {{ siteusers|safe }}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

@@ -179,7 +179,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #模板使用变量
 SITE_NAME = 'PT助手'
 SITE_URL = 'https://github.com/xingsu1021/pthelper'
-SITE_VERSION = 'Version 2.2.0'
+SITE_VERSION = 'Version 2.2.1'
 SITE_COPYRIGHT = 'copyright © 2022'
 SITE_NAME_COPYRIGHT = 'copyright © 2022 PT助手'
 
@@ -252,6 +252,15 @@ LOGGING = {
             'formatter': 'standard',        
             'encoding': 'utf-8',
         },
+        'user': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "user.log"),  # 日志文件
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 3,  # 最多备份几个
+            'formatter': 'standard',        
+            'encoding': 'utf-8',
+        },          
     },
     'loggers': {
        # 默认的logger应用如下配置
@@ -265,5 +274,10 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,  # 向不向更高级别的logger传递
         },
+        'user': { #记录站点用户日志
+            'handlers': ['user'], 
+            'level': 'INFO',
+            'propagate': True,  # 向不向更高级别的logger传递
+        },         
     },
 }

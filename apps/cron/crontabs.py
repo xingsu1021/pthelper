@@ -13,7 +13,8 @@ import qbittorrentapi
 
 from common.utils import send_email,send_telegram,send_iyuu, send_enwechat, parseUrl
 from common.sites_sign import signIngress
-from sites.models import SiteConfig, SiteInfo
+from common.sites_user import userIngress
+from sites.models import SiteConfig, SiteInfo, SiteUser
 from .models import Job, Log
 from notify.models import NotifyConfig
 from rss.models import Rule, SeedInfo
@@ -104,7 +105,10 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
                 scheduler.add_job(re_fail_sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
             elif jobtype_id == 1002:
                 #RSS订阅
-                scheduler.add_job(rss, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])            
+                scheduler.add_job(rss, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
+            elif jobtype_id == 1001:
+                #更新用户信息
+                scheduler.add_job(getUserInfo, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
 
         else:
             #禁用状态，直接删除任务
@@ -127,7 +131,9 @@ def my_scheduler(crontab_id=None, crontab_status=None, hour="*", minute="*", job
             elif jobtype_id == 1003:
                 scheduler.add_job(re_fail_sign, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
             elif jobtype_id == 1002:
-                scheduler.add_job(rss, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])            
+                scheduler.add_job(rss, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
+            elif jobtype_id == 1001:
+                scheduler.add_job(getUserInfo, 'cron', hour=hour, minute=minute, id=crontab_id, args=[crontab_id])
            
             
     return True
@@ -575,3 +581,68 @@ def seed_download(seedinfo_id):
             print(e)         
         
     return
+
+
+def getUserInfo(crontab_id):
+    """
+    更新用户信息
+    """
+
+    #保存最后发送的结果
+    send_data = []
+    count_siteinfo = SiteInfo.objects.count()
+    #未配置任何站点直接返回
+    if count_siteinfo == 0:
+        return
+        
+    _TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+    ormdata_siteinfo = SiteInfo.objects.all()
+    for i in ormdata_siteinfo:
+        #记录ID值
+        site_id = i.id
+        site_name = i.siteconfig_name
+        site_cookie = i.cookie
+        site_name_cn = i.siteconfig_name_cn
+        #获取站点配置信息
+        site_config = SiteConfig.objects.get(name=site_name)
+        site_url = site_config.index_url
+        site_sign_type = site_config.sign_type
+        
+        flag, data = userIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type)
+        if flag:
+            count_userinfo = SiteUser.objects.filter(siteinfo_id = site_id).count()
+            if count_userinfo == 0:
+                #无记录
+                SiteUser.objects.create(siteinfo_id=i,
+                                        username = data['user_name'],
+                                        uid = int(data['user_id']),
+                                        invite = int(data['invite']),
+                                        create_time = datetime.datetime.strptime(data['create_time'].strip(), _TIME_FORMAT).strftime('%Y-%m-%d %H:%M:%S'),
+                                        ratio = data['ratio'].strip(),
+                                        upload = data['upload'].strip(),
+                                        download = data['download'].strip(),
+                                        bonus = data['bonus'],
+                                        score = data['score'],
+                                        level = data['level'],
+                                        published_seed_num = int(data['published_seed_num']),
+                                        seed_num = int(data['seed_num']),
+                                        totle_seed_size = data['totle_seed_size']
+                                        )
+            else:
+                #已经存在
+                SiteUser.objects.filter(siteinfo_id=site_id).update(username = data['user_name'],
+                                                                    uid = int(data['user_id']),
+                                                                    invite = int(data['invite']),
+                                                                    ratio = data['ratio'].strip(),
+                                                                    upload = data['upload'].strip(),
+                                                                    download = data['download'].strip(),
+                                                                    bonus = data['bonus'],
+                                                                    score = data['score'],
+                                                                    level = data['level'],
+                                                                    published_seed_num = int(data['published_seed_num']),
+                                                                    seed_num = int(data['seed_num']),
+                                                                    totle_seed_size = data['totle_seed_size']
+                                                                    )
+    
+    return    

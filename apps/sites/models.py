@@ -40,3 +40,22 @@ class SiteInfo(models.Model):
     siteconfig_name_cn = models.CharField('网站名简称,中文', max_length=50, null=True)
     cookie = models.CharField("网站cookie信息", max_length=800)
     passkey = models.CharField("网站秘钥", max_length=200)
+    
+class SiteUser(models.Model):
+    """
+    站点用户信息
+    """
+    siteinfo_id = models.ForeignKey(SiteInfo, on_delete=models.CASCADE)
+    username= models.CharField('用户名', max_length=50)
+    uid = models.IntegerField('用户ID号')
+    invite = models.IntegerField('邀请数量',default=0)
+    create_time = models.DateTimeField('账号创建时间')
+    ratio = models.CharField('分享率', max_length=20)
+    upload = models.CharField('上传量', max_length=50)
+    download = models.CharField('下载量', max_length=50)
+    bonus = models.CharField('魔力值', max_length=50)
+    score = models.CharField('积分', max_length=50)
+    level = models.CharField('等级', max_length=20)
+    published_seed_num = models.IntegerField('发种数量')
+    seed_num = models.IntegerField('做种数量')
+    totle_seed_size = models.CharField('做种体积', max_length=20,default=0)

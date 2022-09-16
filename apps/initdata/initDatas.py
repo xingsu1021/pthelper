@@ -78,6 +78,7 @@ def init_datas():
                   {'name':'piggo','name_cn':'猪猪网','index_url':'https://piggo.me','sign_type':'general'},
                   {'name':'wintersakura','name_cn':'冬樱','index_url':'https://wintersakura.net','sign_type':'general'},
                   {'name':'hdpt','name_cn':'明教','index_url':'https://hdpt.xyz','sign_type':'general'},                  
+                  {'name':'u2','name_cn':'动漫花园','index_url':'https://u2.dmhy.org','sign_type':'u2'},
                   ]
 
     for site in sites_data:
@@ -106,7 +107,7 @@ def init_datas():
 
     print('开始初始化任务类型...')
     jobtypes_data = [{'name':'签到','type_id':1000},
-                     {'name':'辅种','type_id':1001},
+                     {'name':'用户信息','type_id':1001},
                      {'name':'RSS订阅','type_id':1002},
                      {'name':'签到重试','type_id':1003},
                      ]
@@ -121,6 +122,8 @@ def init_datas():
         else:
             #将原刷流更新为RSS订阅
             JobType.objects.filter(type_id=1002).update(name = 'RSS订阅')
+            #将原铺种更新为用户信息
+            JobType.objects.filter(type_id=1001).update(name = '用户信息')
             print('任务类型 [%s] 已经存在,忽略...' % jobtype['name'])
 
     print('开始初始化通知邮箱类型...')

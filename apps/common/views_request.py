@@ -67,7 +67,7 @@ def backupImport(request):
         backup_file = os.path.join(settings.BACKUP_DIR,'pthelper.json')
         logger.info("Starting load process.")    
         
-        call_command('loaddata', 'test_dump.json')
+        call_command('loaddata', backup_file)
         
         
 #==================
