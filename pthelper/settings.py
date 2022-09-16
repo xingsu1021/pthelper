@@ -260,7 +260,7 @@ LOGGING = {
             'backupCount': 3,  # 最多备份几个
             'formatter': 'standard',        
             'encoding': 'utf-8',
-        },          
+        },
     },
     'loggers': {
        # 默认的logger应用如下配置
@@ -278,6 +278,6 @@ LOGGING = {
             'handlers': ['user'], 
             'level': 'INFO',
             'propagate': True,  # 向不向更高级别的logger传递
-        },         
+        },
     },
 }
