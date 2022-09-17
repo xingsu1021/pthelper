@@ -261,6 +261,15 @@ LOGGING = {
             'formatter': 'standard',        
             'encoding': 'utf-8',
         },
+        'rss': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "rss.log"),  # 日志文件
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 3,  # 最多备份几个
+            'formatter': 'standard',        
+            'encoding': 'utf-8',
+        },        
     },
     'loggers': {
        # 默认的logger应用如下配置
@@ -279,5 +288,10 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,  # 向不向更高级别的logger传递
         },
+        'rss': { #记录站点用户日志
+            'handlers': ['user', 'error'], 
+            'level': 'INFO',
+            'propagate': True,  # 向不向更高级别的logger传递
+        },        
     },
 }

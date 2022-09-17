@@ -1601,7 +1601,7 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
             #print(tables)
             data = {}
             captcha = []
-            data['message'] = '我就是来签到看看：）!!!'
+            data['message'] = '6666666666666666'
             if len(tables) != 0:
                 
                 #获取所有input
