@@ -30,6 +30,12 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 ```
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
 
+# v2.2.1 说明
+
+```shell
+  1、新增U2签到。
+```
+
 # v2.2.0 说明
 
 ```shell

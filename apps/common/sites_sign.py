@@ -1601,7 +1601,7 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
             #print(tables)
             data = {}
             captcha = []
-            data['message'] = '6666666666666666'
+            data['message'] = '注意：回答按钮点击时即提交，手滑损失自负~'
             if len(tables) != 0:
                 
                 #获取所有input
@@ -1620,7 +1620,10 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
                         captcha.append(i.attrs['value'])
                         
                 #随机选择一个作为答案
-                data['captcha'] = random.choice(captcha)
+                answer = random.choice(captcha)
+                #取出键值对
+                key,value = answer.popitem()
+                data[key] = value
                 #不返回任何消息
                 response = session.post("https://u2.dmhy.org/showup.php?action=show", headers=headers, data=data, timeout=10)
                 logger.info(data)
