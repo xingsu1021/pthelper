@@ -531,28 +531,28 @@ def nosign(site_name, site_name_cn, site_url, site_cookie):
             if len(tables) != 0:
                 
                 #span获取有2个，一个为用户信息，一个为信箱信息
-                info = tables[0].findAll('span', {'class':'medium'})
-                user_info = info[0]
+                #info = tables[0].findAll('span', {'class':'medium'})
+                #user_info = info[0]
                 
-                #print(user_info)
-                #print("-------------")
-                #用户详情链接
-                user_info_link = user_info.a.attrs['href']
-                #用户名
-                user_name = user_info.a.get_text()
-                #魔力值
-                bonus = user_info.find('font',{'class':'color_bonus'}).nextSibling.nextSibling.nextSibling.get_text().replace(']:','')
-                #分享率
-                ratio = user_info.find('font',{'class':'color_ratio'}).nextSibling.get_text()
-                #上传量
-                uploaded = user_info.find('font',{'class':'color_uploaded'}).nextSibling.get_text()
-                #下载量
-                downloaded = user_info.find('font',{'class':'color_downloaded'}).nextSibling.get_text()
+                ##print(user_info)
+                ##print("-------------")
+                ##用户详情链接
+                #user_info_link = user_info.a.attrs['href']
+                ##用户名
+                #user_name = user_info.a.get_text()
+                ##魔力值
+                #bonus = user_info.find('font',{'class':'color_bonus'}).nextSibling.nextSibling.nextSibling.get_text().replace(']:','')
+                ##分享率
+                #ratio = user_info.find('font',{'class':'color_ratio'}).nextSibling.get_text()
+                ##上传量
+                #uploaded = user_info.find('font',{'class':'color_uploaded'}).nextSibling.get_text()
+                ##下载量
+                #downloaded = user_info.find('font',{'class':'color_downloaded'}).nextSibling.get_text()
                 
-                #print(user_info.find('font',{'class':'color_active'}).get_text(),user_info.find('img',{'class':'arrowup'}).nextSibling.get_text(),user_info.find('img',{'class':'arrowdown'}).nextSibling.get_text())
-                #print("-------------")
-                message_info = info[1]
-                new_message = message_info.a.nextSibling.get_text()
+                ##print(user_info.find('font',{'class':'color_active'}).get_text(),user_info.find('img',{'class':'arrowup'}).nextSibling.get_text(),user_info.find('img',{'class':'arrowdown'}).nextSibling.get_text())
+                ##print("-------------")
+                #message_info = info[1]
+                #new_message = message_info.a.nextSibling.get_text()
                 #print('用户详情链接:%s' % user_info_link)
                 #msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
                 msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
