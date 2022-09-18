@@ -80,6 +80,7 @@ def init_datas():
                   {'name':'hdpt','name_cn':'明教','index_url':'https://hdpt.xyz','sign_type':'general'},                  
                   {'name':'u2','name_cn':'动漫花园','index_url':'https://u2.dmhy.org','sign_type':'u2'},
                   {'name':'azusa','name_cn':'梓喵','index_url':'https://azusa.ru','sign_type':'general'},
+                  {'name':'kamept','name_cn':'KamePT','index_url':'https://kamept.com','sign_type':'general'},
                   ]
 
     for site in sites_data:
