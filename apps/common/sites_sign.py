@@ -7,14 +7,14 @@ import requests
 import simplejson as json
 import re
 import time
-from .utils import getSiteUrl
+from .utils import getSiteUrl, datetime2utc
 #import ddddocr
 from paddleocr import PaddleOCR
 from thefuzz import fuzz
 from thefuzz import process
 import random
 import datetime
-from cron.models import Log
+#from cron.models import Log
 
 
 logger = logging.getLogger('sign')
@@ -1591,7 +1591,14 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
     sign_url = getSiteUrl(site_url) + '/showup.php'
     
     logger.info('--------------%s开始签到----------------' % site_name)
-    
+    #u2以utc0为时区，因此签到时间按utc+8时区为早上8点
+    now = datetime.datetime.now()
+    utc_now = datetime2utc(now)
+    #判断北京日期和utc日期都为今天
+    if utc_now.day != now.day and utc_now.hour >= 0:
+        msg = "%s(%s) %s%s%s" % (site_name, site_name_cn, msg_err_start,'签到时间未到',msg_err_end)
+        return False, msg
+        
     try:
         session = requests.session()
         response = session.get(sign_url, headers=headers, timeout=10)
@@ -1644,17 +1651,18 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
                     return False, msg
                 
             else:
-                #u2存在24小时过期签到校验，通过日志确认是否签到过
+                #u2以utc0为时区，因此实际签到时间需要北京时间8点后才可以，通过日志确认是否签到过
                 #获取今天日期
-                today = datetime.datetime.today()                
-                num = Log.objects.filter(site_name='u2').filter(created_at__date=today).count()
+                #today = datetime.datetime.today()                
+                #num = Log.objects.filter(site_name='u2').filter(created_at__date=today).count()
                 h3 = soup.findAll('h3', {'align':'center'})
-                if '今天已签到' in h3[0].get_text() and num != 0:
+                #if '今天已签到' in h3[0].get_text() and num != 0:
+                if '今天已签到' in h3[0].get_text():
                     msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
                     return True, msg
-                elif '今天已签到' in h3[0].get_text() and num == 0:
-                    msg = "%s(%s) %s%s%s" % (site_name, site_name_cn, msg_err_start,'签到错误',msg_err_end)
-                    return False, msg                
+                #elif '今天已签到' in h3[0].get_text() and num == 0:
+                    #msg = "%s(%s) %s%s%s" % (site_name, site_name_cn, msg_err_start,'签到错误',msg_err_end)
+                    #return False, msg                
                 else:
                     msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                     return False, msg
