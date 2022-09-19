@@ -13,6 +13,9 @@ from paddleocr import PaddleOCR
 from thefuzz import fuzz
 from thefuzz import process
 import random
+import datetime
+from cron.models import Log
+
 
 logger = logging.getLogger('sign')
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
@@ -1627,6 +1630,8 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
                 #不返回任何消息
                 response = session.post("https://u2.dmhy.org/showup.php?action=show", headers=headers, data=data, timeout=10)
                 logger.info(data)
+                #暂停5秒
+                time.sleep(5)
                 #确认是否签到成功
                 response = session.get(sign_url, headers=headers, timeout=10)
                 soup = BeautifulSoup(response.text, "lxml")
@@ -1639,10 +1644,17 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
                     return False, msg
                 
             else:
+                #u2存在24小时过期签到校验，通过日志确认是否签到过
+                #获取今天日期
+                today = datetime.datetime.today()                
+                num = Log.objects.filter(site_name='u2').filter(created_at__date=today).count()
                 h3 = soup.findAll('h3', {'align':'center'})
-                if '今天已签到' in h3[0].get_text():
+                if '今天已签到' in h3[0].get_text() and num != 0:
                     msg = "%s(%s) %s" % (site_name, site_name_cn, msg_reok)
                     return True, msg
+                elif '今天已签到' in h3[0].get_text() and num == 0:
+                    msg = "%s(%s) %s%s%s" % (site_name, site_name_cn, msg_err_start,'签到错误',msg_err_end)
+                    return False, msg                
                 else:
                     msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
                     return False, msg
