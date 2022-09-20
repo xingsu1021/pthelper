@@ -81,6 +81,7 @@ def init_datas():
                   {'name':'u2','name_cn':'动漫花园','index_url':'https://u2.dmhy.org','sign_type':'u2'},
                   {'name':'azusa','name_cn':'梓喵','index_url':'https://azusa.ru','sign_type':'general'},
                   {'name':'kamept','name_cn':'KamePT','index_url':'https://kamept.com','sign_type':'general'},
+                  {'name':'hhanclub','name_cn':'憨憨PT','index_url':'https://hhanclub.top','sign_type':'general'},
                   ]
 
     for site in sites_data:
