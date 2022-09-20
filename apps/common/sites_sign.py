@@ -1627,7 +1627,7 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
                     elif name == 'form':
                         data['form'] = i.attrs['value']
                     elif 'captcha' in name:
-                        captcha.append(i.attrs['value'])
+                        captcha.append({i.attrs['name']:i.attrs['value']})
                         
                 #随机选择一个作为答案
                 answer = random.choice(captcha)
