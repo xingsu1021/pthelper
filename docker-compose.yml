@@ -1,12 +1,13 @@
 version: '3.7'
 services:
   flexget:
-    image: pthelper:v1.0
+    image: xingsu1021/pthelper:latest
     container_name: pthelper
     restart: always
     volumes:
       - 本地目录/db:/db
       - 本地目录/logs:/logs
       - 本地目录/backups:/backups
+      - 本地目录/conf:/conf
     ports:
-      - "58000:80"
+      - "本地端口:80"

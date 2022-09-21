@@ -13,19 +13,30 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 import os
 import sys
+# 引入environ
+import environ
+#使用pymysql代替mysqlclient
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+#读取环境变量
+env = environ.Env()
+APP_ENV = env.str('APP_ENV', 'dev')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
+# 读取相对应的env文件
+env_file = 'env.%s' % APP_ENV
+env = environ.Env()
+env.read_env(env_file=os.path.join(BASE_DIR, 'conf', env_file))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-j2in)-m(_2f7#o059j-of8ao^s6j07d1w9rx1#cxeh#f2&)b_3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', True)
 
 ALLOWED_HOSTS = ['*']
 
@@ -118,11 +129,42 @@ WSGI_APPLICATION = 'pthelper.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+#数据库目录
+# DB_DIR = os.path.join(BASE_DIR, "db")
+# if not os.path.exists(DB_DIR): os.mkdir(DB_DIR)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR,'db','pthelper.sqlite3'),
+#     }
+# }
+#mysql
+#DATABASES = {
+    #'default': {
+        #'ENGINE': 'django.db.backends.mysql',
+        ##'ENGINE': 'mysql.connector.django', #使用mysql官方连接模块https://dev.mysql.com/downloads/connector/python/
+        #'NAME': 'pthelper',
+        #'USER': 'root',
+        #'PASSWORD': '123456',
+        #'HOST': '127.0.0.1',
+        #'PORT': '3306',
+        #'CHARSET': 'utf8mb4',
+        #'COLLATION': 'utf8mb4_unicode_ci',
+        #'OPTIONS': {'sql_mode': 'TRADITIONAL', 'use_unicode': True, 'charset': 'utf8mb4'},
+        ##mysqlclient使用8.0(docker)
+        ##'OPTIONS': {'sql_mode': 'TRADITIONAL', 'use_unicode': True, 'charset': 'utf8mb4', 'ssl_mode': 'DISABLED'},
+    #}
+#}
+#使用环境变量模式,默认使用sqlite
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR,'db','pthelper.sqlite3'),
-    }
+
+    # 默认读取os.environ['DATABASE_URL'],不存在则使用sqlite
+    'default': env.db('DATABASE_URL', default="sqlite:///" + os.path.join(BASE_DIR,'db','pthelper.sqlite3')),
+    #'default': env.db(),
+
+    # read os.environ['SQLITE_URL']
+    #'extra': env.db('SQLITE_URL', default="sqlite:///" + os.path.join(BASE_DIR,'db','pthelper.sqlite3'))
+
 }
 
 
@@ -284,7 +326,7 @@ LOGGING = {
             'propagate': True,  # 向不向更高级别的logger传递
         },
         'user': { #记录站点用户日志
-            'handlers': ['user'], 
+            'handlers': ['user', 'error'], 
             'level': 'INFO',
             'propagate': True,  # 向不向更高级别的logger传递
         },

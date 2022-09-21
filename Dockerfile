@@ -1,5 +1,6 @@
 # pull official base image
-FROM python:3.8-slim-buster
+FROM python:3.8.14-slim
+#FROM python:3.8-slim-buster
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -50,7 +51,8 @@ RUN apt-get autoremove -y && \
 
 RUN ln -s /home/data/www/db /db && \
     ln -s /home/data/www/logs /logs && \
-    ln -s /home/data/www/backups /backups
+    ln -s /home/data/www/backups /backups && \
+    ln -s /home/data/www/conf /conf
 
 EXPOSE 80
 

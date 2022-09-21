@@ -12,7 +12,7 @@ docker pull xingsu1021/pthelper
 仓库地址: https://hub.docker.com/repository/docker/xingsu1021/pthelper
 ```
 
-本地部署需要Python3.9+
+本地部署需要Python3.9+(如果cpu不支持avx则使用3.8)
 
 ```shell
 pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
@@ -108,19 +108,48 @@ v2.0 签到截图
 
 # docker-compose.yml
 
+默认sqlite
 ```dockerfile
 version: '3.7'
 services:
-  flexget:
-    image: pthelper:v1.0
+  pthelper:
+    image: pthelper:latest
     container_name: pthelper
     restart: always
     volumes:
-      - /home/data/docker-compose/pthelper/db:/db
-      - /home/data/docker-compose/pthelper/logs:/logs
-      - /home/data/docker-compose/pthelper/backups:/backups
+      - 你的目录:/db
+      - 你的目录:/logs
+      - 你的目录:/backups
     ports:
-      - "58000:80"
+      - "你的端口:80"
+```
+Mysql需要修改config/env.prod中的mysql信息
+```dockerfile
+version: '3.7'
+services:
+  pthelper:
+    image: pthelper:latest
+    container_name: pthelper
+    restart: always
+    environment:
+      APP_ENV: prod
+    volumes:
+      - 你的目录:/db
+      - 你的目录:/logs
+      - 你的目录:/backups
+      - 你的目录:/conf
+    ports:
+      - "你的端口:80"
+```
+```shell
+APP_ENV: prod 指定使用env.prod配置文件
+
+DATABASE_URL=mysql://root:123456@127.0.0.1:3306/pthelper?charset=utf8mb4&use_unicode=true&ssl_disabled=true
+root       数据库用户名
+123456     数据库密码
+127.0.0.1  数据库地址
+3306       数据库端口
+pthelper   数据库名称
 ```
 
 ## 感谢
@@ -138,7 +167,7 @@ PTPP增强版：白大版PTPP@菩提蛋（没找到仓库：（）
 
 # 本地启动测试命令
 
-python manage.py runserver --settings=pthelper.local_settings
+APP_ENV=prod python manage.py runserver 0.0.0.0:80
 
 # 编译镜像
 

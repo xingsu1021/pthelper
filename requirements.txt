@@ -20,8 +20,8 @@ paddleocr
 transmission-rpc
 qbittorrent-api
 feedparser
-#本地测试使用
-#PyMySQL >= 1.0.2
+PyMySQL >= 1.0.2
+django-environ
 #使用后台运行
 #gunicorn
 
