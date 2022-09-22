@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -43,5 +45,9 @@ urlpatterns = [
     #RSS订阅
     path('rss/', include('rss.urls.views_urls')),
     #下载工具管理
-    path('download/', include('download.urls.views_urls')),        
-]
+    path('download/', include('download.urls.views_urls')),    
+    
+    
+] 
+#添加自定义静态目录地址
+urlpatterns += static(settings.BACKUP_URL, document_root=settings.BACKUP_DIR)
