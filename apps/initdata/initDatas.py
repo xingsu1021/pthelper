@@ -40,7 +40,7 @@ def init_datas():
                   {'name':'keepfrds','name_cn':'朋友','index_url':'https://pt.keepfrds.com','sign_type':'keepfrds'},
                   {'name':'tjupt','name_cn':'北洋园','index_url':'https://tjupt.org','sign_type':'tjupt'},
                   {'name':'itzmx','name_cn':'分享站','index_url':'https://pt.itzmx.com','sign_type':'nosign'},
-                  {'name':'greatposterwall','name_cn':'海豹','index_url':'https://greatposterwall.com','sign_type':'greatposterwall'},
+                  {'name':'greatposterwall','name_cn':'海豹','index_url':'https://greatposterwall.com','sign_type':'nosign'},
                   {'name':'hd','name_cn':'海带','index_url':'https://www.hd.ai','sign_type':'hd'},
                   {'name':'m-team','name_cn':'馒头','index_url':'https://kp.m-team.cc','sign_type':'nosign'},
                   {'name':'lemonhd','name_cn':'柠檬','index_url':'https://lemonhd.org','sign_type':'general'},
@@ -70,8 +70,8 @@ def init_datas():
                   {'name':'52pt','name_cn':'52PT','index_url':'https://52pt.site','sign_type':'pt52'},
                   {'name':'hdtime','name_cn':'高清时间','index_url':'https://hdtime.org','sign_type':'general'},
                   {'name':'asf','name_cn':'A-SOUL','index_url':'https://pt.asf.ink','sign_type':'general'},
-                  {'name':'ptsbao','name_cn':'烧包','index_url':'https://ptsbao.club','sign_type':'ptsbao'},
-                  {'name':'ssd','name_cn':'春天','index_url':'https://springsunday.net','sign_type':'ssd'},
+                  {'name':'ptsbao','name_cn':'烧包','index_url':'https://ptsbao.club','sign_type':'nosign'},
+                  {'name':'ssd','name_cn':'春天','index_url':'https://springsunday.net','sign_type':'nosign'},
                   {'name':'gainbound','name_cn':'丐帮','index_url':'https://gainbound.net','sign_type':'general'},
                   {'name':'joyhd','name_cn':'开心','index_url':'https://www.joyhd.net','sign_type':'nosign'},
                   {'name':'carpt','name_cn':'车PT','index_url':'https://carpt.net','sign_type':'general'},
@@ -99,6 +99,10 @@ def init_datas():
 
             #print('站点 [%s] 更新成功' % site['name'])
             ##print('站点 [%s] 已经存在,忽略...' % site['name'])
+    #更新站点签到类型
+    SiteConfig.objects.filter(name='keepfrds').update(sign_type = 'nosign')
+    SiteConfig.objects.filter(name='ptsbao').update(sign_type = 'nosign')
+    SiteConfig.objects.filter(name='ssd').update(sign_type = 'nosign')
 
     print('开始修复站点信息中文名称...')
     ormdata_siteinfo = SiteInfo.objects.filter(siteconfig_name_cn='')

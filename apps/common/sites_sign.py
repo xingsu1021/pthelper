@@ -1065,32 +1065,34 @@ def greatposterwall(site_name, site_name_cn, site_url, site_cookie):
             
             soup = BeautifulSoup(response.text, "lxml")
             #常规
-            ul1 = soup.findAll('ul', {'class':'Header-infoMiddle Header-stat'})
+            #ul1 = soup.findAll('ul', {'class':'Header-infoMiddle Header-stat'})
             #积分,用户链接
-            ul2 = soup.findAll('ul', {'class':'Header-infoRight Header-quickaction'})
+            #ul2 = soup.findAll('ul', {'class':'Header-infoRight Header-quickaction'})
+            #我的信箱
+            ul1 = soup.findAll('a', {'class':'DropdownMenu-item is-inbox'})
             
             
             if len(ul1) != 0:
                 
-                value = ul1[0].findAll('span',{'class':'Header-statValue'})
+                #value = ul1[0].findAll('span',{'class':'Header-statValue'})
         
-                #上传量
-                uploaded = value[0].get_text().strip()
-                #下载量
-                downloaded= value[1].get_text().strip()
-                #分享率
-                ratio = value[2].get_text().strip()
-                #合格分享率
-                required_ratio = value[3].get_text().strip()
-                #令牌
-                fl_token = value[4].get_text().strip()
-                #积分
-                value_bonus = ul2[0].findAll('a',{'class':'Header-quickactionLink tooltip'})
-                bonus = value_bonus[1].attrs['title'].replace("积分 ","").replace("(","").replace(")","")
+                ##上传量
+                #uploaded = value[0].get_text().strip()
+                ##下载量
+                #downloaded= value[1].get_text().strip()
+                ##分享率
+                #ratio = value[2].get_text().strip()
+                ##合格分享率
+                #required_ratio = value[3].get_text().strip()
+                ##令牌
+                #fl_token = value[4].get_text().strip()
+                ##积分
+                #value_bonus = ul2[0].findAll('a',{'class':'Header-quickactionLink tooltip'})
+                #bonus = value_bonus[1].attrs['title'].replace("积分 ","").replace("(","").replace(")","")
 
-                value_user_info_link = ul2[0].findAll('a',{'class':'Header-moreLink DropdownMenu-item is-profile'})
-                #用户链接
-                user_info_link = value_user_info_link[0].attrs['href']
+                #value_user_info_link = ul2[0].findAll('a',{'class':'Header-moreLink DropdownMenu-item is-profile'})
+                ##用户链接
+                #user_info_link = value_user_info_link[0].attrs['href']
                 #msg = "%s(%s) 积分:%s,分享率:%s,令牌:%s" % (site_name,site_name_cn, bonus,ratio,fl_token)
                 msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
                 
