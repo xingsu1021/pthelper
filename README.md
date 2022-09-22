@@ -30,6 +30,13 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 ```
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
 
+# v2.2.2 说明
+
+```shell
+  1、新增备份恢复功能。
+  2、支持mysql作为后端数据库
+```
+
 # v2.2.1 说明
 
 ```shell

@@ -140,6 +140,7 @@ WSGI_APPLICATION = 'pthelper.wsgi.application'
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': os.path.join(BASE_DIR,'db','pthelper.sqlite3'),
+#         'timeout': 20,
 #     }
 # }
 #mysql
@@ -225,7 +226,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #模板使用变量
 SITE_NAME = 'PT助手'
 SITE_URL = 'https://github.com/xingsu1021/pthelper'
-SITE_VERSION = 'Version 2.2.1'
+SITE_VERSION = '版本 2.2.2'
 SITE_COPYRIGHT = 'copyright © 2022'
 SITE_NAME_COPYRIGHT = 'copyright © 2022 PT助手'
 
