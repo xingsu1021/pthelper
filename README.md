@@ -35,6 +35,7 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 ```shell
   1、新增备份恢复功能。
   2、支持mysql作为后端数据库
+  3、此版本不支持在线升级使用。
 ```
 
 # v2.2.1 说明
