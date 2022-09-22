@@ -62,12 +62,14 @@ class RssConfigAddView(LoginRequiredMixin,TemplateView):
         """
         数据提交
         """
+        name = request.POST.get("name","").strip()
         siteinfo_id = request.POST.get("siteinfo_id").strip()
         url = request.POST.get("url").strip()
 
         ormdata_siteinfo = SiteInfo.objects.get(id=int(siteinfo_id))
         
-        ormdata = Config.objects.create(url=url,
+        ormdata = Config.objects.create(name=name,
+                                        url=url,
                                         siteinfo_id=ormdata_siteinfo
                                         )
 
@@ -101,6 +103,7 @@ class RssConfigEditView(LoginRequiredMixin,TemplateView):
 
         context = {
             'id': self._id,
+            'name': self.ormdata.name,
             'url': self.ormdata.url,
             'siteinfo_id': self.ormdata.siteinfo_id.id
         }
@@ -112,6 +115,7 @@ class RssConfigEditView(LoginRequiredMixin,TemplateView):
         """
         数据提交
         """
+        name = request.POST.get("name","").strip()
         url = request.POST.get("url").strip()
         siteinfo_id = request.POST.get("siteinfo_id").strip()
 
@@ -122,6 +126,7 @@ class RssConfigEditView(LoginRequiredMixin,TemplateView):
         ormdata = Config.objects.get(id=_id)
 
         ormdata.url = url
+        ormdata.name = name
         ormdata.siteinfo_id=ormdata_siteinfo
 
         ormdata.save()

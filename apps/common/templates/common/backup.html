@@ -1,73 +1,135 @@
-
 <!-- 正文开始 -->
 <div class="layui-fluid">
     <div class="layui-card">
         <div class="layui-card-body">
-            <!-- 表单开始 -->
-            <form class="layui-form" id="backuploadForm" lay-filter="backuploadForm"  method="POST">{% csrf_token %}
-                <input name="id" type="hidden" value="{{id}}"/>
 
+            <div class="layui-form toolbar">
                 <div class="layui-form-item">
-                    <div class="layui-input-block">
-                        <button class="layui-btn" lay-filter="backupSubmit" lay-submit>&emsp;备份&emsp;</button>
-                        <button class="layui-btn layui-btn-normal" lay-filter="loadSubmit" lay-submit>&emsp;恢复&emsp;</button>
+
+                    <div class="layui-inline">
+                        <button id="exportSubmit" class="layui-btn icon-btn"><i class="layui-icon layui-icon-export"></i>备份数据</button>
 
                     </div>
                 </div>
-            </form>
-            <!-- //表单结束 -->
-        </div>
-    </div>
+            </div>
 
-    <div class="layui-card">
-        <div class="layui-card-header">说明</div>
-        <div class="layui-card-body">
-            <blockquote class="layui-elem-quote layui-quote-nm">备份恢复数据
-            </blockquote>
+            <table class="layui-table" id="backuplistTable" lay-filter="backuplistTable"></table>
+
         </div>
     </div>
 </div>
 
+
+<!-- 表格操作列 -->
+<script type="text/html" id="backuplistTableBar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="import">恢复</a>
+</script>
+
 <!-- js部分 -->
 <script>
-        layui.use(['layer', 'form', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'xmSelect', 'formX', 'dropdown'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
         var util = layui.util;
         var admin = layui.admin;
         var formX = layui.formX;
         var setter = layui.setter;
         var xmSelect = layui.xmSelect;
 
-        form.on('submit(backupSubmit)', function (data) {
+        // 渲染表格
+        var insTb = tableX.render({
+            elem: '#backuplistTable',
+            url: setter.base_server + 'common/backup/list',
+            method: 'GET',
+            page: false,
+            cols: [[
+                {field: 'name', title: '文件名称', templet: function (d) {
+                        return '<a href="' + d.url + '" class="layui-table-link" lay-event="link" target="_blank">' + d.name + '</a>';
+                }
+                },
+                {align: 'center', toolbar: '#backuplistTableBar', title: '操作', width: 120}
+            ]]
+        });
+
+        
+        // 工具条点击事件
+        table.on('tool(backuplistTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'import') {
+                layer.confirm('确定恢复此备份文件 ' + data.name + '？',{icon: 3, title: '提示', shadeClose: true},
+                function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    $.ajax({ 
+                            url : "common/backup/import",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: {'name': data.name, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success : function(d) { 
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('backuplistTable', {});
+                                    layer.msg(d.msg, {icon: 1});
+                                } else {
+                                    layer.msg(d.msg, {icon: 2});
+                                }
+                            } 
+                    }); 
+                });
+            } else if(layEvent === 'del'){
+
+                //var csrftoken = getCookie('csrftoken');
+                layer.confirm('确定删除此备份文件 ' + data.name + '？',{icon: 3, title: '警告', shadeClose: true},
+                function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    $.ajax({ 
+                            url : "common/backup/del",
+                            type: 'POST', 
+                            dataType : "json", 
+                            data: {'name': data.name, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                            // beforeSend: function(request) {
+                            //     //django需要csrf验证,Forbidden (CSRF cookie not set.):
+                            //     request.setRequestHeader("X-CSRFToken", csrftoken);
+                            // },
+                            success : function(d) { 
+                                layer.closeAll('loading');
+                                if (d.code == 1) {
+                                    table.reload('backuplistTable', {});
+                                    layer.msg(d.msg, {icon: 1});
+                                } else {
+                                    layer.msg(d.msg, {icon: 2});
+                                }
+                            } 
+                    }); 
+                });
+            }
+        });
+
+        // 备份按钮点击事件
+        $('#exportSubmit').click(function () {
             layer.load(2);
-            admin.req('common/backup', {'action':'backup'}, function (data) {
+            admin.req('common/backup/export', function (data) {
                 layer.closeAll('loading');
                 if (data.code == 1) {
+                    table.reload('backuplistTable', {});
                     layer.msg(data.msg, {icon: 1});
                 } else {
                     layer.msg(data.msg, {icon: 2});
                 }
-            }, $('#backuploadForm').attr('method'));
+            }, 'POST');
             return false;
         });
-
-        // form.on('submit(backuploadcrtestSubmit)', function (data) {
-        //     layer.load(2);
-        //     admin.req('common/backuploadcrtest', data.field, function (data) {
-        //         layer.closeAll('loading');
-        //         if (data.code == 1) {
-        //             layer.msg(data.msg, {icon: 1});
-        //         } else {
-        //             layer.msg(data.msg, {icon: 2});
-        //         }
-        //     }, $('#backuploadcrForm').attr('method'));
-        //     return false;
-        // });
-
-
-
 
 
     });

@@ -61,7 +61,8 @@
                 { field: 'siteinfo_id', sort: true, title: '站点', width: 150 },
                 { field: 'seed_details_link', title: '种子介绍页', hide: true },
                 { field: 'seed_name', title: '名称', templet: function (d) {
-                            return '<a href="' + d.seed_details_link +'" target="_blank" id="test'+d.id+'" onmouseover="show('+ d.id +')"; onmouseleave="closeTips();">' + d.seed_name + '</a>';
+                            //return '<a href="' + d.seed_details_link +'" target="_blank" id="test'+d.id+'" onmouseover="show('+ d.id +')"; onmouseleave="closeTips();">' + d.seed_name + '</a>';
+                            return '<a href="' + d.seed_details_link +'" target="_blank" lay-direction="1" lay-tips="鼠标点击访问种子详情页<br>' + d.seed_name +'">' + d.seed_name + '</a>';
                     }, unresize: true
                 },
                 { field: 'seed_type', sort: true, title: '类型', width: 150 },

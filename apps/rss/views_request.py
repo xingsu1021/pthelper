@@ -54,17 +54,18 @@ def config(request):
             ormdata = Config.objects.order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
     else:
 
-        data['count'] = Config.objects.filter(Q(name__icontains=searchValue)|Q(name_cn__icontains=searchValue)).count()
+        data['count'] = Config.objects.filter(Q(name__icontains=searchValue)|Q(siteconfig_name_cn__icontains=searchValue)).count()
         if pageIndex == 1:
-            ormdata = Config.objects.filter(Q(name__icontains=searchValue)|Q(name_cn__icontains=searchValue)).order_by(order_by)[:pageSize] #offset:limit
+            ormdata = Config.objects.filter(Q(name__icontains=searchValue)|Q(siteconfig_name_cn__icontains=searchValue)).order_by(order_by)[:pageSize] #offset:limit
         else:
-            ormdata = Config.objects.filter(Q(name__icontains=searchValue)|Q(name_cn__icontains=searchValue)).order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
+            ormdata = Config.objects.filter(Q(name__icontains=searchValue)|Q(siteconfig_name_cn__icontains=searchValue)).order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
 
     for i in ormdata:
         
         data['data'].append({"id":i.id,
                          "site_name":i.siteinfo_id.siteconfig_name + '(' + i.siteinfo_id.siteconfig_name_cn + ')',
                          "url":i.url,
+                         "name":i.name,
                          })
     #返回json串
     #return HttpResponse(json.dumps(data,ensure_ascii = False), "application/json")
@@ -121,7 +122,7 @@ def rule(request):
     for i in ormdata:
         
         data['data'].append({"id":i.id,
-                         #"config_id":i.config_id.siteinfo_id.siteconfig_name_cn,
+                         "config_name":i.config_id.name,
                          "config_id":i.config_id.siteinfo_id.siteconfig_name + '(' + i.config_id.siteinfo_id.siteconfig_name_cn + ')',
                          "tools_id":i.tools_id.name,
                          "name":i.name,
@@ -263,7 +264,8 @@ def select_rssconfig(request):
     for i in ormdata:
         data['data'].append({
                              "id":i.id,
-                             "name":i.siteinfo_id.siteconfig_name + "(" + i.siteinfo_id.siteconfig_name_cn + ")"
+                             #"name":i.siteinfo_id.siteconfig_name + "(" + i.siteinfo_id.siteconfig_name_cn + ")"
+                             "name":i.name + "-----" +i.siteinfo_id.siteconfig_name + "(" + i.siteinfo_id.siteconfig_name_cn + ")"
                              })
 
     return JsonResponse(data)

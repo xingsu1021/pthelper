@@ -27,7 +27,8 @@ class FilmType(models.Model):
     
 class Config(models.Model):
     """RSS配置"""
-    url = models.URLField('RSS地址', blank=True, max_length=350)
+    name = models.CharField('自定义配置名称', max_length=50, null=True)
+    url = models.URLField('RSS地址', blank=True, max_length=350, unique=True)
     #site_name = models.CharField('网站名简称,英文', max_length=50, unique=True)
     #site_name_cn = models.CharField('网站名简称,中文', max_length=50, unique=True)
     #on_update 和 on_delete 后面可以跟的词语有四个

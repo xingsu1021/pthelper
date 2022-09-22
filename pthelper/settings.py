@@ -19,6 +19,10 @@ import environ
 import pymysql
 pymysql.install_as_MySQLdb()
 
+#在win下解决gbk问题（导出数据）
+import _locale
+_locale._getdefaultlocale = (lambda *args: ['en_US', 'utf8'])
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 #BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -233,6 +237,7 @@ APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds
 TMP_LOG_DIR = os.path.join(BASE_DIR, "tmp")
 if not os.path.exists(TMP_LOG_DIR): os.mkdir(TMP_LOG_DIR)
 
+BACKUP_URL = "backups/"
 BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
 if not os.path.exists(BACKUP_DIR): os.mkdir(BACKUP_DIR)
 
