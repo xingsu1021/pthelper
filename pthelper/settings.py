@@ -163,7 +163,7 @@ WSGI_APPLICATION = 'pthelper.wsgi.application'
 DATABASES = {
 
     # 默认读取os.environ['DATABASE_URL'],不存在则使用sqlite
-    'default': env.db('DATABASE_URL', default="sqlite:///" + os.path.join(BASE_DIR,'db','pthelper.sqlite3')),
+    'default': env.db('DATABASE_URL', default="sqlite:///" + os.path.join(BASE_DIR,'db','pthelper.sqlite3?timeout=20')),
     #'default': env.db(),
 
     # read os.environ['SQLITE_URL']
