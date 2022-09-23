@@ -31,6 +31,8 @@ urlpatterns = [
     path('siteinfo/export', views_request.siteinfoExport),
     path('siteinfo/import', views_request.siteinfoImport),
     path('siteinfo/select/list', views_request.select_siteinfo),
-
+    #用戶信息
+    path('siteuser', views_request.siteuser),
+    path('siteuser/update', views_request.getUserInfo),
 ]
 

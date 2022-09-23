@@ -25,8 +25,6 @@ from django_apscheduler.jobstores import DjangoJobStore, register_job
 
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
 
-logger = logging.getLogger('sign')
-
 executors = {
     # 执行器的线程与进程数
     'default': ThreadPoolExecutor(10),
@@ -145,6 +143,7 @@ def sign(crontab_id):
     参数：
       crontab_id：执行任务的ID
     """
+    logger = logging.getLogger('sign')
 
     #获取任务ID对应的站点
     job_sites = list(Job.objects.filter(crontab_id=crontab_id).values_list('sites',flat=True))
@@ -201,7 +200,8 @@ def signonekey():
     参数：
       crontab_id：执行任务的ID
     """
-
+    logger = logging.getLogger('sign')
+    
     #获取任务ID对应的站点
     job_sites = list(Job.objects.filter(jobtype_id=1000).values_list('sites',flat=True))
     crontab_id = list(Job.objects.filter(jobtype_id=1000).values_list('crontab_id',flat=True))[0]
@@ -255,6 +255,7 @@ def re_fail_sign(crontab_id):
     """
     重试签到失败
     """
+    logger = logging.getLogger('sign')
     
     #保存最后发送的结果
     send_data = []
@@ -315,6 +316,8 @@ def send_msg(crontab_id = None, send_data = [], title='PT助手提示'):
     """
     发送消息
     """
+    logger = logging.getLogger('sign')
+    
     #消息为空则不发送
     if send_data == []:
         return
@@ -369,6 +372,7 @@ def rss(crontab_id):
     参数：
       crontab_id：执行任务的ID
     """
+    logger = logging.getLogger('rss')
   
     headers = {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36',

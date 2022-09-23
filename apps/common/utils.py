@@ -213,11 +213,11 @@ def utc_to_local_unixtime(utc_time_str, utc_format='%Y-%m-%dT%H:%M:%SZ'):
     time_str = local_dt.strftime(local_format)
     return int(time.mktime(time.strptime(time_str, local_format)))
 
-def capacity_convert(size, expect='auto', rate=1000):
+def capacity_convert(size, expect='auto', rate=1024):
     """
     :param size: '100MB', '1G'
     :param expect: 'K, M, G, T
-    :param rate: Default 1000, may be 1024
+    :param rate: Default 1024
     :return:
     """
     rate_mapping = (

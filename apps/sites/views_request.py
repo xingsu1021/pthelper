@@ -2,13 +2,15 @@
 from django.http import JsonResponse, StreamingHttpResponse,HttpResponse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-
-from .models import SiteConfig, SiteRank, SiteInfo
-from rss.models import Config
 import simplejson as json
 import io
 from urllib import parse
 import tempfile
+import datetime
+
+from common.sites_user import userIngress
+from .models import SiteConfig, SiteRank, SiteInfo, SiteUser
+from rss.models import Config
 
 #直接使用检查是否管理员
 #from django.contrib.auth.decorators import user_passes_test
@@ -137,7 +139,7 @@ def siterankconfig(request):
     return JsonResponse(data)
 
 
-
+#===================================================================================================
 @login_required
 def siteinfo(request):
     """        
@@ -199,6 +201,67 @@ def siteinfo(request):
     #return HttpResponse(json.dumps(data,ensure_ascii = False), "application/json")
     return JsonResponse(data)
 
+#===================================================================================================
+@login_required
+def siteuser(request):
+    """        
+    提供相应的数据
+    """
+    
+    #得到排序字段
+    sort = request.GET.get('sort','id')
+    #得到排序规则
+    order_by_type = request.GET.get('order','')
+    
+    if order_by_type == 'asc':
+        order_by = sort
+    else:
+        order_by = '-' + sort
+
+    data = {}
+    data['code'] = 0
+    data['msg'] = ""
+    data['data'] = []
+
+    data['count'] = SiteConfig.objects.count()
+    ormdata = SiteUser.objects.order_by(order_by)
+
+    #已经配置的站点列表
+    siteconfig_names = list(SiteInfo.objects.all().values_list('siteconfig_name',flat=True))
+    
+    for i in ormdata:
+        ormdata_siteconfig = SiteConfig.objects.get(name=i.siteinfo_id.siteconfig_name)
+        data['data'].append({"id":i.id,
+                             "site_name":i.siteinfo_id.siteconfig_name + '(' + i.siteinfo_id.siteconfig_name_cn + ')',
+                             "site_url": ormdata_siteconfig.index_url,
+                             'username':i.username,
+                             "uid":i.uid,
+                             "ratio":i.ratio,
+                             "upload":i.upload,
+                             "download":i.download,
+                             "bonus":i.bonus,
+                             "score":i.score,
+                             "level":i.level,
+                             "published_seed_num":i.published_seed_num,
+                             "seed_num":i.seed_num,
+                             "totle_seed_size":i.totle_seed_size,
+                             "create_time":i.create_time,
+                             "invite":i.invite,
+                             })
+        #删除已经获取数据的
+        siteconfig_names.remove(i.siteinfo_id.siteconfig_name)
+        
+    for i in siteconfig_names:
+        ormdata_siteconfig = SiteConfig.objects.get(name=i)
+        data['data'].append({"site_name":ormdata_siteconfig.name + '(' + ormdata_siteconfig.name_cn + ')',
+                             "site_url": ormdata_siteconfig.index_url,
+                             'username':"无数据",
+                             })
+    #返回json串
+    #return HttpResponse(json.dumps(data,ensure_ascii = False), "application/json")
+    return JsonResponse(data)
+
+#=====================================================================================================================
 def get_stream(data):
     # 开始这里我用ByteIO流总是出错，但是后来参考廖雪峰网站用StringIO就没问题
     file = io.StringIO()
@@ -492,3 +555,71 @@ def select_siteinfo(request):
                              })
 
     return JsonResponse(data)
+
+
+#===============================================================================
+def getUserInfo(request):
+    """
+    更新用户信息
+    """
+
+    #保存最后发送的结果
+    send_data = []
+    count_siteinfo = SiteInfo.objects.count()
+    #未配置任何站点直接返回
+    if count_siteinfo == 0:
+        return
+        
+    _TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+    ormdata_siteinfo = SiteInfo.objects.all()
+    for i in ormdata_siteinfo:
+        #记录ID值
+        site_id = i.id
+        site_name = i.siteconfig_name
+        site_cookie = i.cookie
+        site_name_cn = i.siteconfig_name_cn
+        #获取站点配置信息
+        site_config = SiteConfig.objects.get(name=site_name)
+        site_url = site_config.index_url
+        site_sign_type = site_config.sign_type
+        
+        flag, data = userIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type)
+        if flag:
+            count_userinfo = SiteUser.objects.filter(siteinfo_id = site_id).count()
+            if count_userinfo == 0:
+                #无记录
+                SiteUser.objects.create(siteinfo_id=i,
+                                        username = data['user_name'],
+                                        uid = int(data['user_id']),
+                                        invite = int(data['invite']),
+                                        create_time = datetime.datetime.strptime(data['create_time'].strip(), _TIME_FORMAT).strftime('%Y-%m-%d %H:%M:%S'),
+                                        ratio = data['ratio'].strip(),
+                                        upload = data['upload'].strip(),
+                                        download = data['download'].strip(),
+                                        bonus = data['bonus'],
+                                        score = data['score'],
+                                        level = data['level'],
+                                        published_seed_num = int(data['published_seed_num']),
+                                        seed_num = int(data['seed_num']),
+                                        totle_seed_size = data['totle_seed_size']
+                                        )
+            else:
+                #已经存在
+                SiteUser.objects.filter(siteinfo_id=site_id).update(username = data['user_name'],
+                                                                    uid = int(data['user_id']),
+                                                                    invite = int(data['invite']),
+                                                                    ratio = data['ratio'].strip(),
+                                                                    upload = data['upload'].strip(),
+                                                                    download = data['download'].strip(),
+                                                                    bonus = data['bonus'],
+                                                                    score = data['score'],
+                                                                    level = data['level'],
+                                                                    published_seed_num = int(data['published_seed_num']),
+                                                                    seed_num = int(data['seed_num']),
+                                                                    totle_seed_size = data['totle_seed_size']
+                                                                    )
+    
+    response_data={"code":1,"msg":"更新成功"}
+
+    return JsonResponse(response_data)

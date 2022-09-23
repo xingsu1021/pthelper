@@ -126,43 +126,20 @@
 
     <div class="layui-row layui-col-space15">
 
-        <div>
+        <div class="layui-fluid">
             <div class="layui-card">
-                <div class="layui-card-header">用户信息&emsp;&emsp;&emsp;
-                    <button class="layui-btn layui-btn-sm" lay-filter="updateuser-submit" lay-submit>更新数据</button>
-                </div>
                 <div class="layui-card-body">
-                    <table class="layui-table" lay-skin="line">
-                        <colgroup>
-                            <col/>
-                            <col/>
-                            <col/>
-                            <col/>
-                            <col/>
-                            <col/>
-                            <col/>
-                            <col/>
-                            <col/>
-                            <col/>
-                        </colgroup>
-                        <thead>
-                        <tr>
-                            <td>站点</td>
-                            <td>用户名</td>
-                            <td>用户ID</td>
-                            <td>等级</td>
-                            <td align="center">分享率</td>
-                            <td>做种数</td>
-                            <td>做种体积</td>
-                            <td>魔力值</td>
-                            <td>积分</td>
-                            <td>入站时间</td>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            {{ siteusers|safe }}
-                        </tbody>
-                    </table>
+                
+                    <div class="layui-form toolbar">
+                        <div class="layui-form-item">
+
+                            <div class="layui-inline">
+                                <button id="updateuserBtn" class="layui-btn icon-btn layui-btn-sm"><i class="layui-icon layui-icon-refresh"></i>更新数据</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="layui-table" id="siteuserTable" lay-filter="siteuserTable"></table>
                 </div>
             </div>
         </div>
@@ -206,6 +183,37 @@
         ]]
     });
 
+    var siteuserTb = tableX.render({
+        elem: '#siteuserTable',
+        url: setter.base_server + 'sites/siteuser',
+        method: 'GET',
+        page: true,
+        skin: 'line', //不显示竖线 row不显示横线 nob （无边框风格）
+        even: true, //开启隔行背景
+        limit: 200,
+        limits:['全部'],
+        cols: [[
+            {field: 'id', title: 'ID',hide:true},
+            {field: 'site_url', title: 'site_url',hide:true},
+            {field: 'site_name', title: '站点', templet: function (d) {
+                    return '<a href="' + d.site_url +'" target="_blank" class="layui-table-link" >' + d.site_name + '</a>';
+                }, unresize: true
+            },
+            {field: 'username', title: '用戶名', width:110},
+            {field: 'uid', title: '用戶ID', width:80},
+            {field: 'level', title: '级别', width:120},
+            {field: 'ratio', sort: true, title: '分享率', width:100},
+            {field: 'upload', title: '上传'},
+            {field: 'download', title: '下载'},
+            {field: 'bonus', sort: true, title: '魔力值'},
+            {field: 'score', title: '积分'},
+            {field: 'published_seed_num', title: '发种数', width:75},
+            {field: 'seed_num', title: '做种数', sort: true, width:100},
+            {field: 'totle_seed_size', title: '做种体积'},
+            {field: 'invite', title: '邀请码',sort: true, width:100},
+        ]]
+    });
+
     // 工具条点击事件
     table.on('tool(signFailTable)', function (obj) {
         var data = obj.data;
@@ -241,5 +249,19 @@
         }
     });
     
+    // 更新数据按钮点击事件
+    $('#updateuserBtn').click(function () {
+        layer.load(2);
+        admin.req('sites/siteuser/update', function (data) {
+            layer.closeAll('loading');
+            if (data.code == 1) {
+                table.reload('siteuserTable', {});
+                layer.msg(data.msg, {icon: 1});
+            } else {
+                layer.msg(data.msg, {icon: 2});
+            }
+        }, 'POST');
+        return false;
+    });
 });
 </script>

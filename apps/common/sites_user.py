@@ -7,7 +7,7 @@ import requests
 import simplejson as json
 import re
 import time
-from .utils import getSiteUrl, parseUrl
+from .utils import getSiteUrl, parseUrl, capacity_convert, filesizeformat
 
 
 logger = logging.getLogger('user')
@@ -142,9 +142,9 @@ def general(site_name, site_name_cn, site_url, site_cookie):
                 data['create_time'] = create_time
                 
                 td = soup.findAll('td', string=["等级","等級"], limit=1)
-                level = re.sub("\(.*\)",'',td[0].nextSibling.get_text().strip())
-                if level == "":
-                    level = re.sub("\(.*\)",'',td[0].nextSibling.img.attrs['title'])
+                #level = re.sub("\(.*\)",'',td[0].nextSibling.get_text().strip())
+                #if level == "":
+                level = re.sub("\(.*\)",'',td[0].nextSibling.img.attrs['title'])
                 data['level'] = level
                 
                 td = soup.findAll('td', string=["邀请","邀請","剩余邀请量"], limit=1)
@@ -155,10 +155,10 @@ def general(site_name, site_name_cn, site_url, site_cookie):
                 else:
                     data['invite'] = 0         
                 
-                td = soup.findAll('td', string="做种积分", limit=1)
+                td = soup.findAll('td', string=["做种积分","做種積分"], limit=1)
                 try:
-                    score = re.sub("\(.*\)",'', td[0].nextSibling.get_text())
-                    score = re.sub("\[.*\]",'', score)
+                    score = re.sub("\(.*\)|\[.*\]|（.*）",'', td[0].nextSibling.get_text())
+                    #score = re.sub("\[.*\]",'', score)
                 except:
                     #无做种积分
                     score = '0'
@@ -188,8 +188,11 @@ def general(site_name, site_name_cn, site_url, site_cookie):
                     try:
                         upload = td[0].nextSibling.get_text()
                     except:
-                        td = soup.findAll('strong', string=["上传量","上傳量"], limit=1)
+                        td = soup.findAll('strong', string=["上传量","上傳量","总上传量/奖励上传量/纯上传量"], limit=1)
                         upload = re.sub("\(.*\)",'', td[0].nextSibling.get_text().split(':')[-1])
+                        #吐鲁番
+                        if '/' in upload:
+                            upload = upload.split('/')[0]
                     data['upload'] = upload.strip()
                     
                     td = soup.findAll('td', string=["下载量","下載量"], limit=1)
@@ -231,27 +234,76 @@ def general(site_name, site_name_cn, site_url, site_cookie):
                     else:
                         data['published_seed_num'] = 0
                         
-                td = soup.findAll('td', string=["当前做种","目前做種"], limit=1)
+                td = soup.findAll('td', string=["当前做种","目前做種","做种统计"], limit=1)
                 s = td[0].nextSibling.get_text()
-                if '个种子' in s or '记录' in s:
+                #if '个种子' in s or '记录' in s or '做种' in s:
+                if '个种子' in s or '做种' in s:
                     if '察看' in s:
                         data['seed_num'] = s.split('，')[0].split('(')[-1].replace('个种子','')
                         data['totle_seed_size'] = s.split('，')[-1].replace(')','').replace('共计','')
+                    elif '做种' in s:
+                        #柠檬,海棠(\xa0为html空格)
+                        data['seed_num'] = s.replace('\xa0',' ').split(' ')[1]
+                        data['totle_seed_size'] = s.split(':')[-1]
                     else:
+                        #提取数字
                         data['seed_num'] = re.sub(r'\D+', '', s)
                         data['totle_seed_size'] = 0
         
                 else:
-                    url = site_url +  "/getusertorrentlistajax.php?userid=%s&type=seeding" % data['user_id']
-                    response = session.get(url, headers=headers, timeout=10)
-                    soup1 = BeautifulSoup(response.text, "lxml")
-                    seed_num= soup1.find('b')
-                    if seed_num != None:
-                        data['seed_num'] = seed_num.get_text()
-                        data['totle_seed_size'] = seed_num.nextSibling.get_text().split('：')[-1]
+                    if 'pttime' in site_url:
+                        #<span class='ml10'><b>资源总大小：</b>8.452&nbsp;TB</span>
+                        url = site_url +  "/getusertorrentlist.php?userid=%s&type=seeding" % data['user_id']
+                        response = session.get(url, headers=headers, timeout=10)
+                        soup1 = BeautifulSoup(response.text, "lxml")
+                        b = soup1.findAll('b', string="资源总大小：", limit=1)
+                        data['totle_seed_size'] = b[0].nextSibling.get_text().replace('\xa0',' ')
+                        data['seed_num'] = re.sub(r'\D+', '', s)
                     else:
-                        data['seed_num'] = 0
-                        data['totle_seed_size'] = 0 
+                        url = site_url +  "/getusertorrentlistajax.php?userid=%s&type=seeding" % data['user_id']
+                        response = session.get(url, headers=headers, timeout=10)
+                        soup1 = BeautifulSoup(response.text, "lxml")
+                        seed_num= soup1.find('b')
+                        if seed_num != None:
+                            data['seed_num'] = seed_num.get_text()
+                            if '|' in seed_num.nextSibling.get_text():
+                                #条记录 | 总大小：1.349 TB
+                                totle_seed_size = re.sub("：|:","-",seed_num.nextSibling.get_text())
+                                data['totle_seed_size'] = totle_seed_size.split('-')[-1]
+                            else:
+                                #判断字符串中是否包含数字
+                                if bool(re.search(r'\d', seed_num.nextSibling.get_text())):
+                                    
+                                    if "條記錄" in seed_num.nextSibling.get_text():
+                                        #芒果
+                                        #條記錄718.99 GB
+                                        data['totle_seed_size'] = seed_num.nextSibling.get_text().replace('條記錄','')                                        
+                                    else:   
+                                        #条记录 Total: 1.890 TB
+                                        data['totle_seed_size'] = " ".join(seed_num.nextSibling.get_text().split(' ')[2:4])                                        
+                                        
+                                else:
+                                    table = soup1.findAll('table', limit=1)
+                                    total_size = 0
+                                    if table != []:
+                                        for index, tr in enumerate(table[0].find_all('tr')):
+                                            if index == 0:
+                                                continue
+                                            #获取所有td
+                                            tds = tr.find_all('td')
+                                            #获取种子大小 数字单位
+                                            seed_size = tds[2].get_text()
+                                            #转换为K
+                                            size, unit = capacity_convert(seed_size,'K')
+                                            total_size += size
+                                        #转换成字节在转成带单位的体积
+                                        data['totle_seed_size'] = filesizeformat(total_size*1024)
+                                    else:
+                                        data['totle_seed_size'] = 0 
+                        else:
+                            data['seed_num'] = 0
+                            data['totle_seed_size'] = 0 
+                print("--->", data)
                 return True, data                  
             else:
                 data['msg'] = "格式错误"
@@ -264,5 +316,5 @@ def general(site_name, site_name_cn, site_url, site_cookie):
             
     except:
         data['msg'] = "无法登录"
-        
+        print("err--->", data)
         return False, data    
