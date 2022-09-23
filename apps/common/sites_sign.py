@@ -689,6 +689,9 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie):
                     img = img_src.attrs['src']
                     logger.info(img)
                     
+                    if 'http' not in img:
+                        img = getSiteUrl(site_url) + img
+                    
                     #获取答案列表
                     img_data = tables[0].findAll('input',{'name':'answer'})
                     logger.info(img_data)
