@@ -688,7 +688,7 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie):
                     img_src = tables[0].find('img')
                     img = img_src.attrs['src']
                     logger.info(img)
-                    
+                    #图片不在使用豆瓣，因此拼接官网地址
                     if 'http' not in img:
                         img = getSiteUrl(site_url) + img
                     

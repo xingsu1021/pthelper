@@ -102,7 +102,6 @@ def init_datas():
     #更新站点签到类型
     SiteConfig.objects.filter(name='keepfrds').update(sign_type = 'nosign')
     SiteConfig.objects.filter(name='ptsbao').update(sign_type = 'nosign')
-    SiteConfig.objects.filter(name='ssd').update(sign_type = 'nosign')
 
     print('开始修复站点信息中文名称...')
     ormdata_siteinfo = SiteInfo.objects.filter(siteconfig_name_cn='')
