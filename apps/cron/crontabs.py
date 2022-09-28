@@ -459,10 +459,12 @@ def rss(crontab_id):
                                                     siteinfo_id = siteinfo_id,
                                                     rule_id = ormdata_rule
                                                     )
-                    #发送下载器
-                    seed_download(seedinfo.id, seed_name)
-                    #将电影名加入发送
-                    send_data.append(seed_name)
+                    if seedinfo != None:
+                        
+                        #发送下载器
+                        seed_download(seedinfo.id, seed_name)
+                        #将电影名加入发送
+                        send_data.append(seed_name)
                 else:
                     #通过匹配关键字添加
                     _name, num=process.extractOne(seed_name, keyword)
@@ -492,10 +494,11 @@ def rss(crontab_id):
                                                         siteinfo_id = siteinfo_id,
                                                         rule_id = ormdata_rule
                                                         )
-                        #发送下载器
-                        seed_download(seedinfo.id, seed_name)
-                        #将电影名加入发送
-                        send_data.append(seed_name)
+                        if seedinfo != None:
+                            #发送下载器
+                            seed_download(seedinfo.id, seed_name)
+                            #将电影名加入发送
+                            send_data.append(seed_name)
         #发送通知
         send_msg(crontab_id, send_data, title='RSS订阅提示')
  
@@ -547,11 +550,7 @@ def seed_download(seedinfo_id, seedname = ""):
                           download_dir = download_dirname,
                           #paused = is_paused, #立刻下载,需要下载器开启默认下载才有效
                           )
-            
-            if torrent == None:
-                logger.warn("种子 %s 已下载" % seedname)
-                return
-            
+                        
             #获取种子id
             torrent_id = torrent.id
 

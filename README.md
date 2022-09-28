@@ -152,7 +152,7 @@ services:
 ```shell
 APP_ENV: prod 指定使用env.prod配置文件
 
-DATABASE_URL=mysql://root:123456@127.0.0.1:3306/pthelper?charset=utf8mb4&use_unicode=true&ssl_disabled=true
+DATABASE_URL=mysql://root:123456@127.0.0.1:3306/pthelper?charset=utf8mb4&use_unicode=true&ssl_disabled=true&sql_mode=TRADITIONAL
 root       数据库用户名
 123456     数据库密码
 127.0.0.1  数据库地址
@@ -163,7 +163,11 @@ pthelper   数据库名称
 ```shell
 1、系统管理---》备份恢复，点击备份
 2、关闭docker
-3、修改conf下的env.prod，配置你使用的mysql,并创建你配置的数据库
+3、在conf目录下创建或修改env.prod，配置你使用的mysql,并创建你配置的数据库
+
+DEBUG=True
+DATABASE_URL=mysql://root:123456@127.0.0.1:3306/pthelper?charset=utf8mb4&use_unicode=true&ssl_disabled=true&sql_mode=TRADITIONAL
+
 4、启动docker
 5、系统管理---》备份恢复，选择要恢复的文件，然后点击恢复
 6、刷新页面，重新登录系统
