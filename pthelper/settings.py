@@ -337,7 +337,7 @@ LOGGING = {
             'propagate': True,  # 向不向更高级别的logger传递
         },
         'rss': { #记录站点用户日志
-            'handlers': ['user', 'error'], 
+            'handlers': ['rss', 'error'], 
             'level': 'INFO',
             'propagate': True,  # 向不向更高级别的logger传递
         },        
