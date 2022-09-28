@@ -460,7 +460,7 @@ def rss(crontab_id):
                                                     rule_id = ormdata_rule
                                                     )
                     #发送下载器
-                    seed_download(seedinfo.id)
+                    seed_download(seedinfo.id, seed_name)
                     #将电影名加入发送
                     send_data.append(seed_name)
                 else:
@@ -493,7 +493,7 @@ def rss(crontab_id):
                                                         rule_id = ormdata_rule
                                                         )
                         #发送下载器
-                        seed_download(seedinfo.id)
+                        seed_download(seedinfo.id, seed_name)
                         #将电影名加入发送
                         send_data.append(seed_name)
         #发送通知
@@ -501,12 +501,13 @@ def rss(crontab_id):
  
     return
 
-def seed_download(seedinfo_id):
+def seed_download(seedinfo_id, seedname = ""):
     """
     下载种子
     参数
     seedinfo_id rss订阅后存入数据库的id
     """
+    logger = logging.getLogger('rss')
     
     ormdata_seedinfo = SeedInfo.objects.get(id = seedinfo_id)
     #下载连接
@@ -526,6 +527,8 @@ def seed_download(seedinfo_id):
         
     url_data = parseUrl(download_url)
     
+    logger.info("开始下载,片名:%s, 地址:%s" % (seedname,seed_donwload_link))
+    
     #保存加入下载器后返回的ID
     torrent_id = None
     if download_type == 'tr':
@@ -544,8 +547,14 @@ def seed_download(seedinfo_id):
                           download_dir = download_dirname,
                           #paused = is_paused, #立刻下载,需要下载器开启默认下载才有效
                           )
+            
+            if torrent == None:
+                logger.warn("种子 %s 已下载" % seedname)
+                return
+            
             #获取种子id
             torrent_id = torrent.id
+
             #如果启动则下载
             if is_paused:
                 c.start_torrent(torrent_id)
@@ -555,7 +564,8 @@ def seed_download(seedinfo_id):
             ormdata_seedinfo.save()
         
         except Exception as e:
-            print(e)
+            logger.error("错误:" + str(e))
+            return
 
     elif download_type == 'qb':
         try:
