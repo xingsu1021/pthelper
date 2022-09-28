@@ -1,4 +1,6 @@
 /logs/*
 /db/*
 /backups/*
+/tmp/*
 *.pyc
+/conf/*
