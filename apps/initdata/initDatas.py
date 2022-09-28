@@ -82,6 +82,7 @@ def init_datas():
                   {'name':'azusa','name_cn':'梓喵','index_url':'https://azusa.ru','sign_type':'general'},
                   {'name':'kamept','name_cn':'KamePT','index_url':'https://kamept.com','sign_type':'general'},
                   {'name':'hhanclub','name_cn':'憨憨PT','index_url':'https://hhanclub.top','sign_type':'general'},
+                  {'name':'hdvideo','name_cn':'高清视频','index_url':'https://hdvideo.one','sign_type':'general'},
                   ]
 
     for site in sites_data:
