@@ -83,6 +83,7 @@ def init_datas():
                   {'name':'kamept','name_cn':'KamePT','index_url':'https://kamept.com','sign_type':'general'},
                   {'name':'hhanclub','name_cn':'憨憨PT','index_url':'https://hhanclub.top','sign_type':'general'},
                   {'name':'hdvideo','name_cn':'高清视频','index_url':'https://hdvideo.one','sign_type':'general'},
+                  {'name':'nanyang','name_cn':'南洋','index_url':'https://nanyangpt.com','sign_type':'nosign'},
                   ]
 
     for site in sites_data:
