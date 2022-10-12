@@ -46,7 +46,7 @@ class Rule(models.Model):
     tools_id = models.ForeignKey(Tools, on_delete=models.CASCADE, related_name='tools')
     status = models.BooleanField("状态启用，禁用",default=False)
     refresh_time = models.IntegerField('刷新间隔分钟', default=5)
-    rate = models.CharField('码率:all,1080,2060', max_length=10, default='all')
+    rate = models.CharField('码率:all,1080,2160', max_length=10, default='all')
     is_paused = models.BooleanField("是否立刻下载",default=False)
     
     job_id = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='job', null=True)
