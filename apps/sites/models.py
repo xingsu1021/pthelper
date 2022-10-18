@@ -38,7 +38,7 @@ class SiteInfo(models.Model):
     """
     siteconfig_name = models.CharField('网站名简称,英文', max_length=50, unique=True)
     siteconfig_name_cn = models.CharField('网站名简称,中文', max_length=50, null=True)
-    cookie = models.CharField("网站cookie信息", max_length=800)
+    cookie = models.CharField("网站cookie信息", max_length=1500)
     passkey = models.CharField("网站秘钥", max_length=200)
     
 class SiteUser(models.Model):
