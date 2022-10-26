@@ -371,9 +371,11 @@ class SiteInfoAddView(LoginRequiredMixin,TemplateView):
         passkey = request.POST.get("passkey").strip()
         #
         status = request.POST.get("status","none")
-        proxy_id = request.POST.get("proxy_id")
+        proxy_id = request.POST.get("proxy_id","")
         
-        
+        if status == 'on' and proxy_id == "":
+            response_data={"code":0,"msg":"请选择代理"}
+            return JsonResponse(response_data)
 
         siteconfig_name_cn = list(SiteConfig.objects.filter(name=siteconfig_name).values_list('name_cn',flat=True))
         
@@ -397,7 +399,6 @@ class SiteInfoAddView(LoginRequiredMixin,TemplateView):
         
         response_data={"code":1,"msg":"添加成功"}
         
-
         return JsonResponse(response_data)
     
 class SiteInfoEditView(LoginRequiredMixin,TemplateView):
@@ -447,7 +448,11 @@ class SiteInfoEditView(LoginRequiredMixin,TemplateView):
         passkey = request.POST.get("passkey").strip()
         #
         status = request.POST.get("status","none")
-        proxy_id = request.POST.get("proxy_id")
+        proxy_id = request.POST.get("proxy_id","")
+        
+        if status == 'on' and proxy_id == "":
+            response_data={"code":0,"msg":"请选择代理"}
+            return JsonResponse(response_data)
         
         _id = request.POST.get('id')
 
