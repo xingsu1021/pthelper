@@ -44,6 +44,10 @@
       "path": "javascript:;",
       "children": [
         {
+          "title": "代理配置",
+          "path": "#/sites/siteproxy"
+        },
+        {
           "title": "站点信息",
           "path": "#/sites/siteinfo"
         }
