@@ -29,65 +29,70 @@ msg_err_url = '<font color="#BF360C">[请求签到地址失败]</font>'
 msg_unknow = '<font color="#BF360C">[未知错误]</font>'
 msg_ok_visit = '<font color="#4CAF50">[模拟访问成功]</font>'
 
-def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type):
+def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type, proxies = {}):
     """
     签到站点匹配入口
+    proxies = {
+    'http': 'socks5://user:pass@host:port'
+    'https': 'socks5://user:pass@host:port'
+    'http': 'http://user:pass@10.10.1.10:3128/'
+    'https': 'http://10.10.1.10:1080'
+    'all': 'http://10.10.1.10:1080'
+    }
     """
+    session = requests.Session()
+    session.proxies = proxies    
     
     if sign_type == 'hdchina':
-        flag, data = hdchina(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = hdchina(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'general':
-        flag, data = general(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = general(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'pterclub':
-        flag, data = pterclub(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = pterclub(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'hdarea':
-        flag, data = hdarea(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = hdarea(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'hdcity':
-        flag, data = hdcity(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = hdcity(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'btschool':
-        flag, data = btschool(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = btschool(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'hares':
-        flag, data = hares(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = hares(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'ttg':
-        flag, data = ttg(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = ttg(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'pt52':
-        flag, data = pt52(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = pt52(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'nosign':
-        flag, data = nosign(site_name, site_name_cn, site_url, site_cookie)      
-    elif sign_type == 'keepfrds':
-        flag, data = keepfrds(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = nosign(site_name, site_name_cn, site_url, site_cookie, session)      
     elif sign_type == 'tjupt':
-        flag, data = tjupt(site_name, site_name_cn, site_url, site_cookie)
+        flag, data = tjupt(site_name, site_name_cn, site_url, site_cookie, session)
     elif sign_type == 'hd':
-        flag, data = hd(site_name, site_name_cn, site_url, site_cookie)    
+        flag, data = hd(site_name, site_name_cn, site_url, site_cookie, session)    
     elif sign_type == 'greatposterwall':
-        flag, data = greatposterwall(site_name, site_name_cn, site_url, site_cookie)  
+        flag, data = greatposterwall(site_name, site_name_cn, site_url, site_cookie, session)  
     elif sign_type == 'opencd':
         try:
-            flag, data = opencd(site_name, site_name_cn, site_url, site_cookie)
+            flag, data = opencd(site_name, site_name_cn, site_url, site_cookie, session)
         except Exception as e:
             logger.error(str(e))
             return False,'%s 数据异常' % site_name      
     elif sign_type == 'hdsky':
         try:
-            flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie)
+            flag, data = hdsky(site_name, site_name_cn, site_url, site_cookie, session)
         except Exception as e:
             logger.error(str(e))
             return False,'%s 数据异常' % site_name
     elif sign_type == 'haidan':
-        flag, data = haidan(site_name, site_name_cn, site_url, site_cookie)     
-    elif sign_type == 'ptsbao':
-        flag, data = ptsbao(site_name, site_name_cn, site_url, site_cookie)   
+        flag, data = haidan(site_name, site_name_cn, site_url, site_cookie, session)     
     elif sign_type == 'ssd':
-        flag, data = ssd(site_name, site_name_cn, site_url, site_cookie)   
+        flag, data = ssd(site_name, site_name_cn, site_url, site_cookie, session)   
     elif sign_type == 'u2':
-        flag, data = u2(site_name, site_name_cn, site_url, site_cookie)          
+        flag, data = u2(site_name, site_name_cn, site_url, site_cookie, session)          
     else:
         flag, data = (False,'%s 未匹配站点' % site_name) 
         
     return flag, data
 
-def hdchina(site_name, site_name_cn, site_url, site_cookie):
+def hdchina(site_name, site_name_cn, site_url, site_cookie, session):
     """
     瓷器签到
     """
@@ -101,14 +106,20 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        
-        session = requests.session()
+
         #请求首页获取csrf
         response = session.get(site_url, headers=headers, timeout=10)
         
         soup = BeautifulSoup(response.text, "lxml")
         csrf = soup.find('meta',{'name':'x-csrf'})
-        csrf = csrf.attrs['content']
+        try:
+            csrf = csrf.attrs['content']
+        except:
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(str(e))
+            
+            return False, msg            
         
         data = {  
             'csrf': csrf
@@ -160,7 +171,7 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg
         
-def hdarea(site_name, site_name_cn, site_url, site_cookie):
+def hdarea(site_name, site_name_cn, site_url, site_cookie, session):
     """
     高清视界签到
     """
@@ -178,7 +189,7 @@ def hdarea(site_name, site_name_cn, site_url, site_cookie):
             'action': 'sign_in'
         }
                 
-        response = requests.post(sign_url, headers=headers, data=data) 
+        response = session.post(sign_url, headers=headers, data=data) 
         
         if response.status_code == 200:
             try:
@@ -214,7 +225,7 @@ def hdarea(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg
 
-def pterclub(site_name, site_name_cn, site_url, site_cookie):
+def pterclub(site_name, site_name_cn, site_url, site_cookie, session):
     """
     猫站签到
     """
@@ -230,7 +241,7 @@ def pterclub(site_name, site_name_cn, site_url, site_cookie):
     
     try:
         
-        response = requests.get(sign_url, headers=headers) 
+        response = session.get(sign_url, headers=headers) 
         
         if response.status_code == 200:
             try:
@@ -264,7 +275,7 @@ def pterclub(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg
 
-def hdcity(site_name, site_name_cn, site_url, site_cookie):
+def hdcity(site_name, site_name_cn, site_url, site_cookie, session):
     """
     城市签到
     """
@@ -281,12 +292,12 @@ def hdcity(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             
             #二次请求
-            response = requests.get(sign_url, headers=headers, timeout=10)
+            response = session.get(sign_url, headers=headers, timeout=10)
             
             html = response.text
 
@@ -324,7 +335,7 @@ def hdcity(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg
         
-def btschool(site_name, site_name_cn, site_url, site_cookie):
+def btschool(site_name, site_name_cn, site_url, site_cookie, session):
     """
     学校签到
     """
@@ -339,13 +350,9 @@ def btschool(site_name, site_name_cn, site_url, site_cookie):
     sign_url = getSiteUrl(site_url) + '/index.php?action=addbonus'
     
     logger.info('--------------%s开始签到----------------' % site_name)
-    
-    #s = requests.session()
-    #cookie = cookie_parse(site_cookie)
-    #s.headers.update(headers)
-    #s.cookies.update(cookie)    
+       
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         #response = s.get(sign_url)
         #print(response.text)
         
@@ -382,7 +389,7 @@ def btschool(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg   
     
-def hares(site_name, site_name_cn, site_url, site_cookie):
+def hares(site_name, site_name_cn, site_url, site_cookie, session):
     """
     白兔签到
     {'code': 0, 'msg': '签到成功', 'count': '1', 
@@ -402,7 +409,7 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             try:
@@ -446,7 +453,7 @@ def hares(site_name, site_name_cn, site_url, site_cookie):
         return False, msg
     
 
-def general(site_name, site_name_cn, site_url, site_cookie):
+def general(site_name, site_name_cn, site_url, site_cookie, session):
     """
     常规签到
     """
@@ -463,7 +470,7 @@ def general(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             
@@ -507,7 +514,7 @@ def general(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg
         
-def nosign(site_name, site_name_cn, site_url, site_cookie):
+def nosign(site_name, site_name_cn, site_url, site_cookie, session):
     """
     无签到，直接访问
     """
@@ -523,7 +530,7 @@ def nosign(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             #需要安装pip install lxml
@@ -578,78 +585,8 @@ def nosign(site_name, site_name_cn, site_url, site_cookie):
         logger.error(str(e))
         
         return False, msg    
-    
-def keepfrds(site_name, site_name_cn, site_url, site_cookie):
-    """
-    keepfrds 朋友
-    """
-    
-    headers = {
-        'user-agent': user_agent,
-        'cookie': site_cookie
-    }
-    
-    #获取网站url,不带/结尾
-    sign_url = getSiteUrl(site_url) + '/index.php'
-    
-    logger.info('--------------%s开始签到----------------' % site_name)
-    
-    try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
         
-        if response.status_code == 200:
-            #需要安装pip install lxml
-            soup = BeautifulSoup(response.text, "lxml")
-            
-            tables = soup.findAll('table', {'id':'info_block'})
-        
-            if len(tables) != 0:
-                
-                #获取有3个，0:所有，1:为用户信息，2:为信箱信息
-                tds = tables[0].findAll('td')          
-                td1 = tds[1].findAll('span',{'class':'nowrap'})
-                            
-                #用户详情链接
-                user_info_link = td1[0].a.attrs['href']        
-                #用户名
-                user_name = td1[0].a.get_text()
-
-                #魔力值
-                bonus = tds[1].find('font',{'class':'color_bonus'}).nextSibling.nextSibling.nextSibling.get_text().replace(']:','')
-                #分享率
-                ratio =  tds[1].find('font',{'class':'color_ratio'}).nextSibling.get_text()
-                #上传量
-                uploaded =  tds[1].find('font',{'class':'color_uploaded'}).nextSibling.get_text()
-                #下载量
-                downloaded =  tds[1].find('font',{'class':'color_downloaded'}).nextSibling.get_text()
-                
-                message_info = tds[2]
-                new_message = message_info.a.get_text()
-                if new_message == "":
-                    new_message = 0
-                #msg = "%s(%s) 魔力:%s,分享率:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
-                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
-                
-                return True, msg
-            else:
-                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
-                return False, msg
-                
-        else:
-            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
-            logger.error('--------------%s----------------' % site_name)
-            logger.error(msg)
-            
-            return False, msg
-            
-    except Exception as e:
-        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
-        logger.error('--------------%s----------------' % site_name)
-        logger.error(str(e))
-        
-        return False, msg    
-    
-def tjupt(site_name, site_name_cn, site_url, site_cookie):
+def tjupt(site_name, site_name_cn, site_url, site_cookie, session):
     """
     tjupt 北洋园
     """
@@ -673,7 +610,7 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie):
             sign_url = getSiteUrl(site_url) + '/attendance.php'
             
             logger.info('--------------%s开始签到----------------' % site_name)        
-            response = requests.get(sign_url, headers=headers, timeout=10)
+            response = session.get(sign_url, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 #需要安装pip install lxml
@@ -744,7 +681,7 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie):
                                 'submit': "提交"
                                 }
                         
-                        response = requests.post("https://tjupt.org/attendance.php", headers=headers, data=data, timeout=10)
+                        response = session.post("https://tjupt.org/attendance.php", headers=headers, data=data, timeout=10)
                         if '签到成功' in response.text:
                             msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
                             return True, msg
@@ -779,74 +716,8 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg        
     
-def tjupt_old(site_name, site_name_cn, site_url, site_cookie):
-    """
-    tjupt 北洋园（废弃）
-    """
     
-    headers = {
-        'user-agent': user_agent,
-        'cookie': site_cookie
-    }
-    
-    #获取网站url,不带/结尾
-    sign_url = getSiteUrl(site_url) + '/index.php'
-    
-    logger.info('--------------%s开始签到----------------' % site_name)
-    
-    try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            #需要安装pip install lxml
-            soup = BeautifulSoup(response.text, "lxml")
-            
-            tables = soup.findAll('table', {'id':'info_block'})
-            if len(tables) != 0:
-                #获取有1个
-                tds = tables[0].findAll('td')
-                td1 = tds[1].findAll('span',{'class':'nowrap'})
-                
-                #用户详情链接
-                user_info_link = td1[0].a.attrs['href']        
-                #用户名
-                user_name = td1[0].a.get_text()
-        
-                #魔力值
-                bonus = tds[1].find('a',{'href':'mybonusapps.php'}).nextSibling.get_text().replace(']:','')
-        
-                #上传量
-                uploaded =  tds[1].find('font',{'class':'color_uploaded'}).nextSibling.get_text()
-                #HR积分
-                ratio =  tds[1].find('a',{'href':'/hnr_bonus.php'}).nextSibling.get_text().replace(']:','')
-        
-                new_message = tds[2].a.nextSibling.get_text()
-
-                if new_message == "":
-                    new_message = 0
-                msg = "%s(%s) 魔力:%s,HR积分:%s,新消息:%s" % (site_name,site_name_cn, bonus,ratio,new_message)
-                
-                return True, msg
-    
-            else:
-                msg = "%s(%s) 登录网站失败,cookie已经失效" % (site_name,site_name_cn)
-                return False, msg
-            
-        else:
-            msg = "%s(%s) 请求地址失败" % (site_name,site_name_cn)
-            logger.error('--------------%s----------------' % site_name)
-            logger.error(msg)
-            
-            return False, msg
-            
-    except Exception as e:
-        msg = "%s(%s) 请求失败" % (site_name,site_name_cn)
-        logger.error('--------------%s----------------' % site_name)
-        logger.error(str(e))
-        
-        return False, msg    
-    
-def hd(site_name, site_name_cn, site_url, site_cookie):
+def hd(site_name, site_name_cn, site_url, site_cookie, session):
     """
     海带，直接访问
     """
@@ -862,7 +733,7 @@ def hd(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             #需要安装pip install lxml
@@ -917,7 +788,7 @@ def hd(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
 
-def ttg(site_name, site_name_cn, site_url, site_cookie):
+def ttg(site_name, site_name_cn, site_url, site_cookie, session):
     """
     听听歌,签到
     """
@@ -935,7 +806,7 @@ def ttg(site_name, site_name_cn, site_url, site_cookie):
     
     try:
         #首先请求获取token
-        response = requests.get(site_url, headers=headers, timeout=10)
+        response = session.get(site_url, headers=headers, timeout=10)
         if response.status_code == 200:
             #TTG返回页面乱码，需要处理
             html = response.text.encode(response.encoding).decode('utf-8')
@@ -950,7 +821,7 @@ def ttg(site_name, site_name_cn, site_url, site_cookie):
                     'signed_token':signed_token
                 }
 
-                response = requests.post(sign_url, headers=headers, data=data)
+                response = session.post(sign_url, headers=headers, data=data)
                 response_msg = response.text.encode(response.encoding).decode('utf-8')
                 if '已签到过' in response_msg:
                     #msg = "%s(%s) 您今天已经签到过了，请勿重复签到" % (site_name,site_name_cn)
@@ -977,7 +848,7 @@ def ttg(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
 
-def pt52(site_name, site_name_cn, site_url, site_cookie):
+def pt52(site_name, site_name_cn, site_url, site_cookie, session):
     """
     52pt,签到
     """
@@ -995,7 +866,7 @@ def pt52(site_name, site_name_cn, site_url, site_cookie):
     
     try:
         #获取问题id
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         html = response.text
         
         soup = BeautifulSoup(html, "lxml")
@@ -1010,7 +881,7 @@ def pt52(site_name, site_name_cn, site_url, site_cookie):
                      'questionid': value
                     }
             #请求签到
-            response = requests.post(sign_url, headers=headers, data=data, timeout=10)
+            response = session.post(sign_url, headers=headers, data=data, timeout=10)
             
             html = response.text
             soup = BeautifulSoup(html, "lxml")
@@ -1046,7 +917,7 @@ def pt52(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
 
-def greatposterwall(site_name, site_name_cn, site_url, site_cookie):
+def greatposterwall(site_name, site_name_cn, site_url, site_cookie, session):
     """
     海豹，直接访问
     """
@@ -1062,7 +933,7 @@ def greatposterwall(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             
@@ -1119,7 +990,7 @@ def greatposterwall(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
     
-def opencd(site_name, site_name_cn, site_url, site_cookie):
+def opencd(site_name, site_name_cn, site_url, site_cookie, session):
     """
     皇后，签到
     """
@@ -1143,8 +1014,7 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
                     )
 
     try:
-        session = requests.session()
-        
+
         #校验确认是否已经签到
         response = session.get("https://open.cd/index.php", headers=headers, timeout=10)
         if '查看簽到記錄' in response.text:
@@ -1227,7 +1097,7 @@ def opencd(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
     
-def hdsky(site_name, site_name_cn, site_url, site_cookie):
+def hdsky(site_name, site_name_cn, site_url, site_cookie, session):
     """
     天空，签到
     """
@@ -1256,9 +1126,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     use_angle_cls=True
                     )
     try:
-        
-        #session = requests.session()
-        
+                
         #验证码签到执行3次验证
         for i in range(3):
             logger.info('开始循环%s--------->' % str(i))
@@ -1267,7 +1135,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                 #print('i--------->',i)
                 return False, "%s(%s) 错误:连续3次验证码失败" % (site_name,site_name_cn)
             
-            response = requests.post(sign_url, headers=headers, data=data, timeout=10)
+            response = session.post(sign_url, headers=headers, data=data, timeout=10)
             logger.info(response.text)
             if response.status_code == 200:
                 result = json.loads(response.text)
@@ -1275,7 +1143,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                     code = result['code']
                     #拼接验证码图片
                     hdsky_image_url = 'https://hdsky.me/image.php?action=regimage&imagehash=' + code
-                    response = requests.get(hdsky_image_url, headers=headers, timeout=10)
+                    response = session.get(hdsky_image_url, headers=headers, timeout=10)
                     with open(image_code_name, "wb") as fp:
                         fp.write(response.content)
                     
@@ -1295,7 +1163,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
                             'imagehash': code,
                             'imagestring': data_ocr
                             }
-                    response = requests.post("https://hdsky.me/showup.php", headers=headers, data=data, timeout=10)
+                    response = session.post("https://hdsky.me/showup.php", headers=headers, data=data, timeout=10)
                     logger.info(response.text)
                     try:
                         result = json.loads(response.text)
@@ -1350,7 +1218,7 @@ def hdsky(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
     
-def haidan(site_name, site_name_cn, site_url, site_cookie):
+def haidan(site_name, site_name_cn, site_url, site_cookie, session):
     """
     海胆，签到,由于海胆请求后返回登录页面，因此先验证数据
     """
@@ -1368,8 +1236,6 @@ def haidan(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        
-        session = requests.session()
         
         response = session.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
@@ -1410,7 +1276,7 @@ def haidan(site_name, site_name_cn, site_url, site_cookie):
 
                 if '已经' not in sign_status:
                     #开始签到
-                    response = requests.get(sign_url, headers=headers, timeout=10)
+                    response = session.get(sign_url, headers=headers, timeout=10)
                     
                     if response.status_code == 200:
 
@@ -1441,80 +1307,9 @@ def haidan(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
     
-def ptsbao(site_name, site_name_cn, site_url, site_cookie):
-    """
-    烧包签到
-    """
+
     
-    headers = {
-        'user-agent': user_agent,
-        'referer': site_url,
-        'cookie': site_cookie
-    }
-    
-    #获取网站url,不带/结尾
-    sign_url = getSiteUrl(site_url) + '/index.php'
-    
-    logger.info('--------------%s开始签到----------------' % site_name)
-    
-    try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            
-            html = response.text
-        
-            soup = BeautifulSoup(html, "lxml")
-            
-            tables = soup.findAll('table', {'id':'info_block'})
-        
-            if len(tables) != 0:
-                
-                info = tables[0].findAll('span', {'class':'medium'})
-                user_info = info[0]
-
-                #用户详情链接
-                user_info_link = user_info.a.attrs['href']
-                #用户名
-                user_name = user_info.a.get_text()
-
-                #魔力值
-                data = re.search(r']：(.*)<font class="color_bonus">',str(user_info)).group().strip()
-                bonus = data.split(' ')[0].replace(']：','')
-
-                #分享率
-                ratio = user_info.find('font',{'class':'color_ratio'}).nextSibling.get_text().strip()
-
-                #上传量
-                uploaded = user_info.find('font',{'class':'color_uploaded'}).nextSibling.get_text().strip()
-
-                #下载量
-                downloaded = user_info.find('font',{'class':'color_downloaded'}).nextSibling.get_text().strip()
-
-                message_info = info[1]
-                new_message = message_info.a.nextSibling.get_text().strip()
-                #print('用户详情链接:%s' % user_info_link)
-                #msg = "魔力:%s,分享率:%s,新消息:%s" % (bonus,ratio,new_message)
-                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
-                
-                return True, msg
-            else:
-                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
-                return False, msg
-        else:
-            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
-            logger.error('--------------%s----------------' % site_name)
-            logger.error(response.text)
-            
-            return False, msg
-                
-    except Exception as e:
-        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
-        logger.error(str(e))
-        
-        return False, msg
-    
-def ssd(site_name, site_name_cn, site_url, site_cookie):
+def ssd(site_name, site_name_cn, site_url, site_cookie, session):
     """
     无签到，春天cmct
     """
@@ -1530,7 +1325,7 @@ def ssd(site_name, site_name_cn, site_url, site_cookie):
     logger.info('--------------%s开始签到----------------' % site_name)
     
     try:
-        response = requests.get(sign_url, headers=headers, timeout=10)
+        response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             #需要安装pip install lxml
@@ -1582,7 +1377,7 @@ def ssd(site_name, site_name_cn, site_url, site_cookie):
         
         return False, msg    
     
-def u2(site_name, site_name_cn, site_url, site_cookie):
+def u2(site_name, site_name_cn, site_url, site_cookie, session):
     """
     签到 动漫花园
     """
@@ -1605,7 +1400,6 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
         return False, msg
         
     try:
-        session = requests.session()
         response = session.get(sign_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
@@ -1679,6 +1473,62 @@ def u2(site_name, site_name_cn, site_url, site_cookie):
             
             return False, msg
             
+    except Exception as e:
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
+        logger.error('--------------%s----------------' % site_name)
+        logger.error(str(e))
+        
+        return False, msg    
+    
+def monikadesign(site_name, site_name_cn, site_url, site_cookie, session):
+    """
+    麻豆宇宙，直接访问
+    """
+    
+    headers = {
+        'user-agent': user_agent,
+        'cookie': site_cookie
+    }
+    
+    #获取网站url,不带/结尾
+    sign_url = getSiteUrl(site_url) + '/index.php'
+    
+    logger.info('--------------%s开始签到----------------' % site_name)
+    
+    try:
+        try:
+            response = session.get(sign_url, headers=headers, timeout=10)
+        except:
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(str(e))
+            
+            return False, msg 
+        
+        if response.status_code == 200:
+            #需要安装pip install lxml
+            soup = BeautifulSoup(response.text, "lxml")
+            
+            navs = soup.findAll('nav', {'class':'top-nav'})
+        
+            if len(navs) != 0:
+                
+
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_ok_visit)
+                
+                return True, msg
+            else:
+                msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
+                return False, msg
+                
+        else:
+            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(msg)
+            
+            return False, msg
+            
+        
     except Exception as e:
         msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
         logger.error('--------------%s----------------' % site_name)

@@ -9,7 +9,7 @@ import tempfile
 import datetime
 
 from common.sites_user import userIngress
-from .models import SiteConfig, SiteRank, SiteInfo, SiteUser
+from .models import SiteConfig, SiteRank, SiteInfo, SiteUser, SiteProxy
 from rss.models import Config
 
 #直接使用检查是否管理员
@@ -190,12 +190,20 @@ def siteinfo(request):
     for i in ormdata:
         
         #siteconfig_ormdata = SiteConfig.objects.get(name=i.siteconfig_name)
-        
+        if i.siteproxy_id == None:
+            siteproxy_id = ""
+            siteproxy_name = ""
+        else:
+            siteproxy_name = i.siteproxy_id.name
+            siteproxy_id = i.siteproxy_id.id
+            
         data['data'].append({"id":i.id,
                          "siteconfig_name":i.siteconfig_name,
                          'siteconfig_name_cn':i.siteconfig_name_cn,
                          "cookie":i.cookie,
                          "passkey":i.passkey,
+                         "siteproxy_id":siteproxy_id,
+                         "siteproxy_name":siteproxy_name
                          })
     #返回json串
     #return HttpResponse(json.dumps(data,ensure_ascii = False), "application/json")
@@ -257,6 +265,68 @@ def siteuser(request):
                              "site_url": ormdata_siteconfig.index_url,
                              'username':"无数据",
                              })
+    #返回json串
+    #return HttpResponse(json.dumps(data,ensure_ascii = False), "application/json")
+    return JsonResponse(data)
+
+#=====================================================================================================================
+@login_required
+def siteproxy(request):
+    """        
+    提供相应的数据
+    """
+
+    #得到偏移量
+    pageIndex= int(request.GET.get('page',1))
+    #得到查询个数
+    pageSize = int(request.GET.get('limit',10))
+
+    #搜索字段
+    searchKey = request.GET.get('searchKey','')
+    searchValue = request.GET.get('searchValue','')
+    #去掉空格
+    searchValue = searchValue.strip()
+
+    #得到排序字段
+    sort = request.GET.get('sort','id')
+    #得到排序规则
+    order_by_type = request.GET.get('order','')
+    
+    if order_by_type == 'asc':
+        order_by = sort
+    else:
+        order_by = '-' + sort
+
+    data = {}
+    data['code'] = 0
+    data['msg'] = ""
+    data['data'] = []
+
+    if searchValue == '':
+
+        data['count'] = SiteProxy.objects.count()
+        if pageIndex == 1:
+            ormdata = SiteProxy.objects.order_by(order_by)[:pageSize] #offset:limit
+        else:
+            ormdata = SiteProxy.objects.order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
+    else:
+
+        data['count'] = SiteProxy.objects.filter(Q(name__icontains=searchValue)|Q(username__icontains=searchValue)).count()
+        if pageIndex == 1:
+            ormdata = SiteProxy.objects.filter(Q(name__icontains=searchValue)|Q(username__icontains=searchValue)).order_by(order_by)[:pageSize] #offset:limit
+        else:
+            ormdata = SiteProxy.objects.filter(Q(name__icontains=searchValue)|Q(username__icontains=searchValue)).order_by(order_by)[pageSize*(pageIndex-1):pageIndex * pageSize]
+
+    for i in ormdata:
+        
+        data['data'].append({"id":i.id,
+                         "name":i.name,
+                         "ptype":i.ptype,
+                         "port":i.port,
+                         "username":i.username,
+                         "userpassword":i.userpassword,
+                         "address":i.address
+                         })
     #返回json串
     #return HttpResponse(json.dumps(data,ensure_ascii = False), "application/json")
     return JsonResponse(data)
@@ -556,7 +626,42 @@ def select_siteinfo(request):
 
     return JsonResponse(data)
 
+#==================
+@login_required
+def select_siteproxy(request):
+    """ 
+    代理
+    xmSelect
+    """
 
+    data = {}
+    data['code'] = 0
+    data['msg'] = ""
+    data['data'] = []
+
+    
+    #得到排序字段
+    sort = request.GET.get('sort','id')
+    #得到排序规则
+    order_by_type = request.GET.get('order','')
+    
+    if order_by_type == 'asc':
+        order_by = sort
+    else:
+        order_by = '-' + sort
+        
+    #获取所有记录
+    data['count'] = SiteProxy.objects.count()
+
+    ormdata = SiteProxy.objects.order_by(order_by).all()
+ 
+    for i in ormdata:
+        data['data'].append({
+                         "id":i.id,
+                         "name":i.name
+                         })
+
+    return JsonResponse(data)
 #===============================================================================
 def getUserInfo(request):
     """

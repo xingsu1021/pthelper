@@ -1,0 +1,94 @@
+<!-- 表单弹窗 -->
+<form id="siteproxyEditForm" lay-filter="siteproxyEditForm" class="layui-form model-form" method="POST">{% csrf_token %}
+    <input name="id" type="hidden" value="{{id}}"/>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">名称</label>
+        <div class="layui-input-block">
+            <input name="name" type="text" class="layui-input" lay-verify="required" required maxlength="50" value="{{name}}" />
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">地址</label>
+        <div class="layui-input-block">
+            <input name="address" type="text" class="layui-input" maxlength="128" lay-verify="required" value="{{address}}"/>
+        </div>
+    </div>
+
+<div class="layui-form-item">
+        <label class="layui-form-label">类型</label>
+        <div class="layui-input-block">
+            <div id="ptype"></div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">端口</label>
+            <div class="layui-input-block">
+              <input name="port" type="number" class="layui-input"  lay-verify="required|numberX|h5" required min="1" max="65535" value="{{port}}"/>
+            </div>
+          </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">账号</label>
+        <div class="layui-input-block">
+            <input name="username" type="text" class="layui-input" lay-verify="required" required maxlength="50" value="{{username}}" />
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-block">
+            <input name="userpassword" type="text" class="layui-input" lay-verify="required" required maxlength="128" value="{{userpassword}}" />
+        </div>
+    </div>
+    
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="siteproxyEditForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'xmSelect', 'table', 'admin','formX'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var xmSelect = layui.xmSelect;
+        var table = layui.table;
+        var admin = layui.admin;
+
+        var formX = layui.formX;
+
+        form.render('select', 'siteproxyEditForm');
+        // 渲染多选下拉框
+        var insSel = xmSelect.render({
+            el: '#ptype',
+            name: 'ptype',
+            layVerify: 'required',
+            radio: true,
+            clickClose: true,
+            data: [
+              {name: 'http', value: 'http'},
+              {name: 'socks5', value: 'socks5'},
+            ]
+        });
+
+        insSel.setValue(["{{ptype}}"]);
+
+        form.on('submit(siteproxyEditForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('sites/siteproxy/edit', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('siteproxyTable', {});
+                    admin.closeDialog('#siteproxyEditForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#siteproxyEditForm').attr('method'));
+            return false;
+        });
+    });
+</script>

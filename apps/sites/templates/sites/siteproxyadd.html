@@ -1,0 +1,93 @@
+<!-- 表单弹窗 -->
+<form id="siteproxyAddForm" lay-filter="siteproxyAddForm" class="layui-form model-form" method="POST">{% csrf_token %}
+
+    <div class="layui-form-item">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-block">
+                <input name="name" type="text" class="layui-input" lay-verify="required" required maxlength="50" />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">地址</label>
+            <div class="layui-input-block">
+                <input name="address" type="text" class="layui-input" maxlength="128" lay-verify="required" required/>
+            </div>
+        </div>
+
+    <div class="layui-form-item">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block">
+                <div id="ptype"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">端口</label>
+                <div class="layui-input-block">
+                  <input name="port" type="number" class="layui-input"  lay-verify="required|numberX|h5" required min="1" max="65535"/>
+                </div>
+              </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">账号</label>
+            <div class="layui-input-block">
+                <input name="username" type="text" class="layui-input" lay-verify="required" required maxlength="50" />
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码</label>
+            <div class="layui-input-block">
+                <input name="userpassword" type="text" class="layui-input" lay-verify="required" required maxlength="128" />
+            </div>
+        </div>
+    <div class="layui-form-item text-right">
+        <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+        <button class="layui-btn" lay-filter="siteproxyAddForm-submit" lay-submit>保存</button>
+    </div>
+</form>
+
+<script>
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'formX', 'dropdown'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formX = layui.formX;
+        var setter = layui.setter;
+
+
+        form.render('select', 'siteproxyAddForm');
+
+        // 渲染多选下拉框
+        var insSel = xmSelect.render({
+          el: '#ptype',
+          name: 'ptype',
+          layVerify: 'required',
+          radio: true,
+          clickClose: true,
+          data: [
+            {name: 'http', value: 'http'},
+            {name: 'socks5', value: 'socks5'},
+          ]
+      });
+
+        form.on('submit(siteproxyAddForm-submit)', function (data) {
+            layer.load(2);
+            admin.req('sites/siteproxy/add', data.field, function (data) {
+                layer.closeAll('loading');
+                if (data.code == 1) {
+                    layer.msg(data.msg, {icon: 1});
+                    table.reload('siteproxyTable', {});
+                    admin.closeDialog('#siteproxyAddForm');
+                } else {
+                    layer.msg(data.msg, {icon: 2});
+                }
+            }, $('#siteproxyAddForm').attr('method'));
+            return false;
+        });
+    });
+</script>

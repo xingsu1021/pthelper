@@ -31,8 +31,16 @@ urlpatterns = [
     path('siteinfo/export', views_request.siteinfoExport),
     path('siteinfo/import', views_request.siteinfoImport),
     path('siteinfo/select/list', views_request.select_siteinfo),
+    #站点代理配置
+    path('siteproxy', views.SiteProxyListView.as_view()),
+    path('siteproxy/add', views.SiteProxyAddView.as_view()),
+    path('siteproxy/edit', views.SiteProxyEditView.as_view()),
+    path('siteproxy/del', views.SiteProxyDelView.as_view()),
+    path('siteproxy/list', views_request.siteproxy),
+    path('siteproxy/select/list', views_request.select_siteproxy),
     #用戶信息
     path('siteuser', views_request.siteuser),
     path('siteuser/update', views_request.getUserInfo),
+    
 ]
 

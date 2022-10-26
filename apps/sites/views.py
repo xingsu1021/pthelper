@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 
-from .models import SiteConfig, SiteRank, SiteInfo
+from .models import SiteConfig, SiteRank, SiteInfo, SiteProxy
 
 # Create your views here.
 class SiteConfigListView(LoginRequiredMixin,TemplateView):
@@ -369,14 +369,29 @@ class SiteInfoAddView(LoginRequiredMixin,TemplateView):
         siteconfig_name = request.POST.get("siteconfig_name").strip()
         cookie = request.POST.get("cookie").strip()
         passkey = request.POST.get("passkey").strip()
+        #
+        status = request.POST.get("status","none")
+        proxy_id = request.POST.get("proxy_id")
+        
+        
 
         siteconfig_name_cn = list(SiteConfig.objects.filter(name=siteconfig_name).values_list('name_cn',flat=True))
         
-        ormdata = SiteInfo.objects.create(siteconfig_name=siteconfig_name,
-                                            cookie=cookie,
-                                            passkey=passkey,
-                                            siteconfig_name_cn = siteconfig_name_cn[0]
-                                            )
+        if status == "none":
+            #不打开代理设置
+            ormdata = SiteInfo.objects.create(siteconfig_name=siteconfig_name,
+                                                cookie=cookie,
+                                                passkey=passkey,
+                                                siteconfig_name_cn = siteconfig_name_cn[0]
+                                                )
+        else:
+            ormdata_siteproxy = SiteProxy.objects.get(id=int(proxy_id))
+            ormdata = SiteInfo.objects.create(siteconfig_name=siteconfig_name,
+                                                cookie=cookie,
+                                                passkey=passkey,
+                                                siteconfig_name_cn = siteconfig_name_cn[0],
+                                                siteproxy_id = ormdata_siteproxy
+                                                )
 
         ormdata.save()
         
@@ -405,13 +420,20 @@ class SiteInfoEditView(LoginRequiredMixin,TemplateView):
 
     #显示编辑模板
     def get_context_data(self, **kwargs):
+        
+        if self.ormdata.siteproxy_id != None:
+            siteproxy_id = self.ormdata.siteproxy_id.id
+        else:
+            siteproxy_id = ""
 
         context = {
             'id': self._id,
             'siteconfig_name': self.ormdata.siteconfig_name,
             'cookie': self.ormdata.cookie,
             'passkey': self.ormdata.passkey,
+            'siteproxy_id': siteproxy_id,
         }
+
         kwargs.update(context)
         return super(SiteInfoEditView, self).get_context_data(**kwargs)
 
@@ -423,7 +445,10 @@ class SiteInfoEditView(LoginRequiredMixin,TemplateView):
         siteconfig_name = request.POST.get("siteconfig_name").strip()
         cookie = request.POST.get("cookie").strip()
         passkey = request.POST.get("passkey").strip()
-
+        #
+        status = request.POST.get("status","none")
+        proxy_id = request.POST.get("proxy_id")
+        
         _id = request.POST.get('id')
 
         siteconfig_name_cn = list(SiteConfig.objects.filter(name=siteconfig_name).values_list('name_cn',flat=True))
@@ -434,6 +459,11 @@ class SiteInfoEditView(LoginRequiredMixin,TemplateView):
         ormdata.cookie = cookie
         ormdata.passkey = passkey
         ormdata.siteconfig_name_cn = siteconfig_name_cn[0]
+        if status != "none":
+            ormdata_siteproxy = SiteProxy.objects.get(id=int(proxy_id))
+            ormdata.siteproxy_id = ormdata_siteproxy
+        else:
+            ormdata.siteproxy_id = None
 
         ormdata.save()
 
@@ -455,6 +485,162 @@ class SiteInfoDelView(LoginRequiredMixin,TemplateView):
         #print("ids====>",ids)
 
         SiteInfo.objects.filter(id__in=ids).delete()
+
+        #Site.objects.filter(id=i).delete()
+
+        response_data={"code":1,"msg":"操作成功"}
+
+
+        return JsonResponse(response_data)
+    
+#==========================================================================================
+class SiteProxyListView(LoginRequiredMixin,TemplateView):
+    """
+    显示
+    """
+    template_name = 'sites/siteproxy.html'
+
+    def get(self, request, *args, **kwargs):
+        """
+        
+        """
+        return super(SiteProxyListView, self).get(request, *args, **kwargs)
+
+    #显示编辑模板
+    def get_context_data(self, **kwargs):
+
+        context = {
+            # 'data': self.ormdata_game
+        }
+        kwargs.update(context)
+        return super(SiteProxyListView, self).get_context_data(**kwargs)
+    
+    
+class SiteProxyAddView(LoginRequiredMixin,TemplateView):
+    """
+    添加
+    """
+    template_name = 'sites/siteproxyadd.html'
+
+    #显示添加模板
+    def get(self, request, *args, **kwargs):
+        """
+        """
+        return super(SiteProxyAddView, self).get(request, *args, **kwargs)
+
+    #显示编辑模板
+    def get_context_data(self, **kwargs):
+
+        context = {
+        }
+        kwargs.update(context)
+        return super(SiteProxyAddView, self).get_context_data(**kwargs)
+
+
+    #数据提交接收方法
+    def post(self, request, *args, **kwargs):
+        """
+        数据提交
+        """
+        name = request.POST.get("name").strip()
+        address = request.POST.get("address").strip()
+        ptype = request.POST.get("ptype").strip()
+        port = request.POST.get("port")
+        username = request.POST.get("username").strip()
+        userpassword = request.POST.get("userpassword").strip()
+
+        ormdata = SiteProxy.objects.create(name=name,
+                                            address=address,
+                                            ptype=ptype,
+                                            port = port,
+                                            username = username,
+                                            userpassword = userpassword
+                                            )
+
+        ormdata.save()
+        
+        response_data={"code":1,"msg":"添加成功"}
+        
+
+        return JsonResponse(response_data)
+    
+class SiteProxyEditView(LoginRequiredMixin,TemplateView):
+    """
+    编辑域名
+    """
+    template_name = 'sites/siteproxyedit.html'
+
+    #显示添加模板
+    def get(self, request, *args, **kwargs):
+        """
+        得到
+        """
+
+        #记录ID
+        self._id = request.GET.get('id')
+        self.ormdata = SiteProxy.objects.get(id=self._id)
+
+        return super(SiteProxyEditView, self).get(request, *args, **kwargs)
+
+    #显示编辑模板
+    def get_context_data(self, **kwargs):
+
+        context = {
+            'id': self._id,
+            'name': self.ormdata.name,
+            'address': self.ormdata.address,
+            'ptype': self.ormdata.ptype,
+            'port':self.ormdata.port,
+            'username':self.ormdata.username,
+            'userpassword':self.ormdata.userpassword,
+
+        }
+        kwargs.update(context)
+        return super(SiteProxyEditView, self).get_context_data(**kwargs)
+
+    #数据提交接收方法
+    def post(self, request, *args, **kwargs):
+        """
+        数据提交
+        """
+        name = request.POST.get("name").strip()
+        address = request.POST.get("address").strip()
+        ptype = request.POST.get("ptype").strip()
+        port = request.POST.get("port")
+        username = request.POST.get("username").strip()
+        userpassword = request.POST.get("userpassword").strip()
+
+        _id = request.POST.get('id')
+
+        ormdata = SiteProxy.objects.get(id=_id)
+
+        ormdata.name = name
+        ormdata.address = address
+        ormdata.ptype = ptype
+        ormdata.port = port
+        ormdata.username = username
+        ormdata.userpassword = userpassword
+
+        ormdata.save()
+
+        response_data={"code":1,"msg":"添加成功"}
+
+        return JsonResponse(response_data)
+
+class SiteProxyDelView(LoginRequiredMixin,TemplateView):
+    """
+    删除
+    """
+    def post(self, request, *args, **kwargs):
+        """
+        数据提交
+        """
+
+        #得到批量或者单个要删除的id
+        ids = request.POST.getlist("ids[]")
+        #print("ids====>",ids)
+
+        SiteProxy.objects.filter(id__in=ids).delete()
 
         #Site.objects.filter(id=i).delete()
 

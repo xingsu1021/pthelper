@@ -72,6 +72,7 @@
                 { field: 'siteconfig_name_cn', sort: true, title: '中文' },
                 { field: 'cookie', title: 'Cookie' },
                 { field: 'passkey', title: 'Passkey' },
+                { field: 'siteproxy_name', title: '代理名' },
                 { align: 'center', toolbar: '#siteinfoTableBar', title: '操作' }
             ]]
         });
@@ -151,7 +152,7 @@
             var title = '添加站点';
             admin.open({
                 title: title,
-                area: ['650px', '300px'],
+                area: ['650px', '400px'],
                 url: 'sites/siteinfo/add',
                 success: function (layero, index) {
                     $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条
@@ -164,7 +165,7 @@
             var title = '编辑';
             admin.open({
                 title: title,
-                area: ['650px', '300px'],
+                area: ['650px', '400px'],
                 url: 'sites/siteinfo/edit?id=' + data.id,
                 success: function (layero, index) {
                     $(layero).children('.layui-layer-content').css('overflow', 'visible');  // 禁止出现滚动条

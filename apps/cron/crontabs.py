@@ -165,6 +165,13 @@ def sign(crontab_id):
         for i in sites:
             site_name = i.siteconfig_name
             site_cookie = i.cookie
+            if i.siteproxy_id == None:
+                proxies = {}
+            else:
+                #all代表http和https,如果分开根据请求url的http或https选择对于的代理地址
+                proxies = {'all':"%s://%s:%s@%s:%s" % (i.siteproxy_id.ptype,i.siteproxy_id.username,i.siteproxy_id.userpassword,i.siteproxy_id.address,i.siteproxy_id.port)
+                           }
+                
             #获取站点配置信息
             site_config = SiteConfig.objects.get(name=site_name)
             site_url = site_config.index_url
@@ -177,7 +184,7 @@ def sign(crontab_id):
                 #'cookie': site_cookie
             #}
             #统一签到入口
-            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type) 
+            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type, proxies) 
             
             try:
                 Log.objects.create(name = '签到',type_id = 1000, crontab_id = crontab_id, site_name=site_name, message = data, status = flag)
@@ -223,6 +230,12 @@ def signonekey():
         for i in sites:
             site_name = i.siteconfig_name
             site_cookie = i.cookie
+            if i.siteproxy_id == None:
+                proxies = {}
+            else:
+                #all代表http和https,如果分开根据请求url的http或https选择对于的代理地址
+                proxies = {'all':"%s://%s:%s@%s:%s" % (i.siteproxy_id.ptype,i.siteproxy_id.username,i.siteproxy_id.userpassword,i.siteproxy_id.address,i.siteproxy_id.port)
+                           }            
             #获取站点配置信息
             site_config = SiteConfig.objects.get(name=site_name)
             site_url = site_config.index_url
@@ -235,7 +248,7 @@ def signonekey():
                 #'cookie': site_cookie
             #}
             #统一签到入口
-            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type) 
+            flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type, proxies) 
             
             try:
                 Log.objects.create(name = '签到',type_id = 1000, crontab_id = crontab_id, site_name=site_name, message = data, status = flag)
@@ -290,6 +303,12 @@ def re_fail_sign(crontab_id):
 
         site_name = site_info.siteconfig_name
         site_cookie = site_info.cookie
+        if i.siteproxy_id == None:
+            proxies = {}
+        else:
+            #all代表http和https,如果分开根据请求url的http或https选择对于的代理地址
+            proxies = {'all':"%s://%s:%s@%s:%s" % (i.siteproxy_id.ptype,i.siteproxy_id.username,i.siteproxy_id.userpassword,i.siteproxy_id.address,i.siteproxy_id.port)
+                       }         
         #获取站点配置信息
         site_config = SiteConfig.objects.get(name=site_name)
         site_url = site_config.index_url
@@ -297,7 +316,7 @@ def re_fail_sign(crontab_id):
         site_sign_type = site_config.sign_type
      
         #统一签到入口
-        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type)
+        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type, proxies)
                 
         #补签成功，刷新状态
         if flag:

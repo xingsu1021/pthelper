@@ -84,6 +84,8 @@ def init_datas():
                   {'name':'hhanclub','name_cn':'憨憨PT','index_url':'https://hhanclub.top','sign_type':'general'},
                   {'name':'hdvideo','name_cn':'高清视频','index_url':'https://hdvideo.one','sign_type':'general'},
                   {'name':'nanyang','name_cn':'南洋','index_url':'https://nanyangpt.com','sign_type':'nosign'},
+                  {'name':'icc','name_cn':'ICC','index_url':'https://www.icc2022.com','sign_type':'general'},
+                  {'name':'hitpt','name_cn':'百川','index_url':'https://www.hitpt.com','sign_type':'nosign'},
                   ]
 
     for site in sites_data:

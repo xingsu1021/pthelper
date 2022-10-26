@@ -32,6 +32,17 @@ class SiteRank(models.Model):
     class Meta:
         unique_together=("name","siteconfig_name")
         
+class SiteProxy(models.Model):
+    """
+    站点代理
+    """
+    name = models.CharField('代理名称', max_length=50, unique=True)
+    address = models.CharField('代理地址', max_length=128)
+    ptype = models.CharField('代理类型 http,socks5', max_length=10)
+    port = models.IntegerField("代理端口")
+    username = models.CharField("账号", max_length=50)
+    userpassword = models.CharField("密码", max_length=128)        
+        
 class SiteInfo(models.Model):
     """
     站点信息
@@ -40,6 +51,8 @@ class SiteInfo(models.Model):
     siteconfig_name_cn = models.CharField('网站名简称,中文', max_length=50, null=True)
     cookie = models.CharField("网站cookie信息", max_length=1500)
     passkey = models.CharField("网站秘钥", max_length=200)
+    
+    siteproxy_id = models.ForeignKey(SiteProxy, on_delete=models.CASCADE, related_name='siteproxy', null=True)
     
 class SiteUser(models.Model):
     """
@@ -59,3 +72,4 @@ class SiteUser(models.Model):
     published_seed_num = models.IntegerField('发种数量')
     seed_num = models.IntegerField('做种数量')
     totle_seed_size = models.CharField('做种体积', max_length=20,default=0)
+

@@ -23,6 +23,28 @@
         </div>
     </div>
     
+    <div class="layui-form-item">
+        <label class="layui-form-label">代理设置</label>
+        <div class="layui-input-block">
+            {% if siteproxy_id == "" %}
+            <input type="checkbox" name="status" lay-filter="status" lay-skin="switch" lay-text="启用|禁用"/>
+            {% else %}
+            <input type="checkbox" name="status" checked="" lay-filter="status" lay-skin="switch" lay-text="启用|禁用"/>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if siteproxy_id == "" %}
+    <div class="layui-form-item" id="proxy" style="display:none">
+    {% else %}
+    <div class="layui-form-item" id="proxy">
+    {% endif %}
+        <label class="layui-form-label">代理名称</label>
+        <div class="layui-input-block">
+            <div id="proxy_id"></div>
+        </div>
+    </div>
+
     <div class="layui-form-item text-right">
         <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
         <button class="layui-btn" lay-filter="siteinfoEditForm-submit" lay-submit>保存</button>
@@ -30,15 +52,28 @@
 </form>
 
 <script>
-    layui.use(['layer', 'form', 'xmSelect', 'table', 'admin','formX'], function () {
+    layui.use(['layer', 'form', 'table', 'tableX', 'util', 'admin', 'formX', 'dropdown'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var form = layui.form;
-        var xmSelect = layui.xmSelect;
         var table = layui.table;
+        var tableX = layui.tableX;
+        var util = layui.util;
         var admin = layui.admin;
-
         var formX = layui.formX;
+        var setter = layui.setter;
+
+        form.render('checkbox', 'siteinfoEditForm');
+        form.render('select',"siteinfoEditForm");
+
+        form.on('switch(status)', function(data){
+            //console.log(data.value);
+            if(data.elem.checked==true){
+                 $("#proxy").show();
+             }else{
+                 $("#proxy").hide();
+             }
+         });
 
         var siteconfig_name = "{{siteconfig_name}}";
 
@@ -79,8 +114,43 @@
             }
         });
 
-        form.render('select',"siteinfoEditForm");
+        var proxyIDList = [];
+        // 渲染多选下拉框
+        var proxySel = xmSelect.render({
+          el: '#proxy_id',
+          name: 'proxy_id',
+          prop: {
+              name: 'name',
+              value: 'value',
+          },
+          layVerify: 'required',
+          radio: true,
+          clickClose: true,
+          filterable: true, //开启搜索
+          data: []
+        });
 
+        /* 获取所有记录类型 */
+        var loadIndex = layer.load(2);
+        admin.req('sites/siteproxy/select/list', function (res) {
+            layer.close(loadIndex);
+            if (0 === res.code) {
+                $.each(res.data, function (index, item) {
+                    if ( item.id.toString() === "{{siteproxy_id}}" ){
+                        proxyIDList.push({name: item.name, value: item.id,selected: true});
+                    } else {
+                        proxyIDList.push({name: item.name, value: item.id});
+                    }
+                });
+                proxySel.update({
+                    data: proxyIDList,
+                    autoRow: true,
+                })
+            } else {
+                layer.msg(res.msg, {icon: 2});
+            }
+        });
+    
         form.on('submit(siteinfoEditForm-submit)', function (data) {
             layer.load(2);
             admin.req('sites/siteinfo/edit', data.field, function (data) {
