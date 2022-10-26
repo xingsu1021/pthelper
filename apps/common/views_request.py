@@ -140,7 +140,8 @@ def signAgain(request):
             proxies = {}
         else:
             #all代表http和https,如果分开根据请求url的http或https选择对于的代理地址
-            proxies = {'all':"%s://%s:%s@%s:%s" % (i.siteproxy_id.ptype,i.siteproxy_id.username,i.siteproxy_id.userpassword,i.siteproxy_id.address,i.siteproxy_id.port)
+            proxies = {'all':"%s://%s:%s@%s:%s" % (site_info.siteproxy_id.ptype,site_info.siteproxy_id.username,
+                                                   site_info.siteproxy_id.userpassword,site_info.siteproxy_id.address,site_info.siteproxy_id.port)
                        }        
         #获取站点配置信息
         site_config = SiteConfig.objects.get(name=site_name)
@@ -187,7 +188,8 @@ def signCheck(request):
             proxies = {}
         else:
             #all代表http和https,如果分开根据请求url的http或https选择对于的代理地址
-            proxies = {'all':"%s://%s:%s@%s:%s" % (i.siteproxy_id.ptype,i.siteproxy_id.username,i.siteproxy_id.userpassword,i.siteproxy_id.address,i.siteproxy_id.port)
+            proxies = {'all':"%s://%s:%s@%s:%s" % (site_info.siteproxy_id.ptype,site_info.siteproxy_id.username,
+                                                   site_info.siteproxy_id.userpassword,site_info.siteproxy_id.address,site_info.siteproxy_id.port)
                        }        
         #获取站点配置信息
         site_config = SiteConfig.objects.get(name=site_name)
