@@ -16,7 +16,7 @@ GitPython
 thefuzz
 #thefuzz[speedup]
 #paddlepaddle
-paddleocr == 2.6.0.1
+paddleocr==2.6.0.1
 transmission-rpc
 qbittorrent-api
 feedparser

@@ -112,15 +112,15 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie, session):
         
         soup = BeautifulSoup(response.text, "lxml")
         csrf = soup.find('meta',{'name':'x-csrf'})
-        try:
-            csrf = csrf.attrs['content']
-        except:
+        if csrf == None or csrf == "":
             msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
             logger.error('--------------%s----------------' % site_name)
             logger.error(str(e))
             
-            return False, msg            
-        
+            return False, msg               
+            
+        csrf = csrf.attrs['content']
+
         data = {  
             'csrf': csrf
             #'csrf': 'e3a2895bb529c567fb2aae3723a97ba9144c1c5c'
