@@ -7,7 +7,7 @@ import requests
 import simplejson as json
 import re
 import time
-from .utils import getSiteUrl, parseUrl, capacity_convert, filesizeformat
+from common.utils import getSiteUrl, parseUrl, capacity_convert, filesizeformat
 
 
 logger = logging.getLogger('user')

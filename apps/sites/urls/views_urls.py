@@ -41,6 +41,9 @@ urlpatterns = [
     #用戶信息
     path('siteuser', views_request.siteuser),
     path('siteuser/update', views_request.getUserInfo),
+    #补签
+    path('signagain', views_request.signAgain),
+    path('signcheck', views_request.signCheck),
     
 ]
 

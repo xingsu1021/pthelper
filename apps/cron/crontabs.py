@@ -12,8 +12,8 @@ from transmission_rpc import Client
 import qbittorrentapi
 
 from common.utils import send_email,send_telegram,send_iyuu, send_enwechat, parseUrl
-from common.sites_sign import signIngress
-from common.sites_user import userIngress
+from sites.sites_sign import signIngress
+from sites.sites_user import userIngress
 from sites.models import SiteConfig, SiteInfo, SiteUser
 from .models import Job, Log
 from notify.models import NotifyConfig

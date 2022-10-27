@@ -8,9 +8,11 @@ from urllib import parse
 import tempfile
 import datetime
 
-from common.sites_user import userIngress
+from sites.sites_sign import signIngress
+from sites.sites_user import userIngress
 from .models import SiteConfig, SiteRank, SiteInfo, SiteUser, SiteProxy
 from rss.models import Config
+from cron.models import Log
 
 #直接使用检查是否管理员
 #from django.contrib.auth.decorators import user_passes_test
@@ -728,3 +730,96 @@ def getUserInfo(request):
     response_data={"code":1,"msg":"更新成功"}
 
     return JsonResponse(response_data)
+
+#==================
+@login_required
+def signAgain(request):
+    """
+    补签
+    """
+    if request.method == "POST":
+        action = request.POST.get('action')
+        name = request.POST.get('name')
+        _id = request.POST.get('id','')
+        
+        if action != 'again' or _id == "":
+            response_data={"code":0,"msg":"未知操作" }
+    
+            return JsonResponse(response_data) 
+        
+        #获取配置的站点信息
+        site_info = SiteInfo.objects.get(siteconfig_name=name)
+
+        site_name = site_info.siteconfig_name
+        site_cookie = site_info.cookie
+        if site_info.siteproxy_id == None:
+            proxies = {}
+        else:
+            #all代表http和https,如果分开根据请求url的http或https选择对于的代理地址
+            proxies = {'all':"%s://%s:%s@%s:%s" % (site_info.siteproxy_id.ptype,site_info.siteproxy_id.username,
+                                                   site_info.siteproxy_id.userpassword,site_info.siteproxy_id.address,site_info.siteproxy_id.port)
+                       }        
+        #获取站点配置信息
+        site_config = SiteConfig.objects.get(name=site_name)
+        site_url = site_config.index_url
+        site_name_cn = site_config.name_cn
+        site_sign_type = site_config.sign_type
+     
+        #统一签到入口
+        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type, proxies)
+                
+        #补签成功，刷新状态
+        if flag:
+            Log.objects.filter(id=_id).update(status=flag)
+        
+        #print(site_name,data)
+        if flag:
+            response_data={"code":1,"msg":data }
+        else:
+            response_data={"code":0,"msg":data }
+
+        return JsonResponse(response_data)         
+
+#==================
+@login_required
+def signCheck(request):
+    """
+    校验
+    """
+    if request.method == "POST":
+        action = request.POST.get('action')
+        _id = request.POST.get('id','')
+        
+        if action != 'check' or _id == "":
+            response_data={"code":0,"msg":"未知操作" }
+    
+            return JsonResponse(response_data) 
+        
+        #获取配置的站点信息
+        site_info = SiteInfo.objects.get(id=_id)
+
+        site_name = site_info.siteconfig_name
+        site_cookie = site_info.cookie
+        if site_info.siteproxy_id == None:
+            proxies = {}
+        else:
+            #all代表http和https,如果分开根据请求url的http或https选择对于的代理地址
+            proxies = {'all':"%s://%s:%s@%s:%s" % (site_info.siteproxy_id.ptype,site_info.siteproxy_id.username,
+                                                   site_info.siteproxy_id.userpassword,site_info.siteproxy_id.address,site_info.siteproxy_id.port)
+                       }        
+        #获取站点配置信息
+        site_config = SiteConfig.objects.get(name=site_name)
+        site_url = site_config.index_url
+        site_name_cn = site_config.name_cn
+        site_sign_type = site_config.sign_type
+     
+        #统一签到入口
+        flag, data = signIngress(site_name, site_name_cn, site_url, site_cookie, site_sign_type, proxies)
+        
+        #print(site_name,data)
+        if flag:
+            response_data={"code":1,"msg":data }
+        else:
+            response_data={"code":0,"msg":data }
+
+        return JsonResponse(response_data) 

@@ -227,7 +227,7 @@
                 layer.close(i);
                 layer.load(2);
                 $.ajax({ 
-                        url : "common/signagain",
+                        url : "sites/signagain",
                         type: 'POST', 
                         dataType : "json", 
                         data: {'id':data.id,'action':'again', 'name':data.name, csrfmiddlewaretoken: '{{ csrf_token }}' },

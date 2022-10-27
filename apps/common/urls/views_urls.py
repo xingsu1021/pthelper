@@ -15,9 +15,6 @@ urlpatterns = [
     path('backup/import', views_request.backupImport),
     path('backup/list', views_request.backupList),
     path('backup/del', views_request.backupDel),
-    #补签
-    path('signagain', views_request.signAgain),
-    path('signcheck', views_request.signCheck),
     #升级
     path('update', views.UpdateView.as_view()),
     

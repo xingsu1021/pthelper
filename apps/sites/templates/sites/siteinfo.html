@@ -124,7 +124,7 @@
                         layer.close(i);
                         layer.load(2);
                         $.ajax({
-                            url: "common/signcheck",
+                            url: "sites/signcheck",
                             type: 'POST',
                             dataType: "json",
                             data: { 'id': data.id, 'action': 'check', csrfmiddlewaretoken: '{{ csrf_token }}' },
