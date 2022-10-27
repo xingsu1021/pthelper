@@ -22,6 +22,7 @@ qbittorrent-api
 feedparser
 PyMySQL >= 1.0.2
 django-environ
+PySocks
 #使用后台运行
 #gunicorn
 
