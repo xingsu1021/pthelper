@@ -101,6 +101,10 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie, session):
         'referer': site_url,
         'cookie': site_cookie
     }
+    
+    #获取网站url,不带/结尾(获取crsf)
+    index_url = getSiteUrl(site_url) + '/index.php'
+    
     sign_url = 'https://hdchina.org/plugin_sign-in.php?cmd=signin'
     
     logger.info('--------------%s开始签到----------------' % site_name)
@@ -108,16 +112,10 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie, session):
     try:
 
         #请求首页获取csrf
-        response = session.get(site_url, headers=headers, timeout=10)
+        response = session.get(index_url, headers=headers, timeout=10)
         
         soup = BeautifulSoup(response.text, "lxml")
-        csrf = soup.find('meta',{'name':'x-csrf'})
-        if csrf == None or csrf == "":
-            msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
-            logger.error('--------------%s----------------' % site_name)
-            logger.error(str(e))
-            
-            return False, msg               
+        csrf = soup.find('meta',{'name':'x-csrf'})            
             
         csrf = csrf.attrs['content']
 

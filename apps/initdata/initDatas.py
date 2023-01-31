@@ -34,8 +34,8 @@ def init_datas():
                   {'name':'hdmayi','name_cn':'小蚂蚁','index_url':'http://hdmayi.com','sign_type':'general'},
                   {'name':'msg','name_cn':'马杀鸡','index_url':'https://pt.msg.vg','sign_type':'nosign'},
                   {'name':'beitai','name_cn':'备胎','index_url':'https://www.beitai.pt','sign_type':'nosign'},
-                  {'name':'oshen','name_cn':'奥申','index_url':'http://www.oshen.win','sign_type':'nosign'},
-                  {'name':'avgv','name_cn':'爱薇','index_url':'http://avgv.cc','sign_type':'nosign'},
+                  {'name':'oshen','name_cn':'奥申','index_url':'http://www.oshen.win','sign_type':'general'},
+                  #{'name':'avgv','name_cn':'爱薇','index_url':'http://avgv.cc','sign_type':'nosign'},
                   {'name':'eastgame','name_cn':'吐鲁番','index_url':'https://pt.eastgame.org','sign_type':'nosign'},
                   {'name':'keepfrds','name_cn':'朋友','index_url':'https://pt.keepfrds.com','sign_type':'keepfrds'},
                   {'name':'tjupt','name_cn':'北洋园','index_url':'https://tjupt.org','sign_type':'tjupt'},
@@ -69,7 +69,7 @@ def init_datas():
                   {'name':'hdatmos','name_cn':'阿童木','index_url':'https://hdatmos.club','sign_type':'general'},
                   {'name':'52pt','name_cn':'52PT','index_url':'https://52pt.site','sign_type':'pt52'},
                   {'name':'hdtime','name_cn':'高清时间','index_url':'https://hdtime.org','sign_type':'general'},
-                  {'name':'asf','name_cn':'A-SOUL','index_url':'https://pt.asf.ink','sign_type':'general'},
+                  #{'name':'asf','name_cn':'A-SOUL','index_url':'https://pt.asf.ink','sign_type':'general'},
                   {'name':'ptsbao','name_cn':'烧包','index_url':'https://ptsbao.club','sign_type':'nosign'},
                   {'name':'ssd','name_cn':'春天','index_url':'https://springsunday.net','sign_type':'nosign'},
                   {'name':'gainbound','name_cn':'丐帮','index_url':'https://gainbound.net','sign_type':'general'},
@@ -84,7 +84,7 @@ def init_datas():
                   {'name':'hhanclub','name_cn':'憨憨PT','index_url':'https://hhanclub.top','sign_type':'general'},
                   {'name':'hdvideo','name_cn':'高清视频','index_url':'https://hdvideo.one','sign_type':'general'},
                   {'name':'nanyang','name_cn':'南洋','index_url':'https://nanyangpt.com','sign_type':'nosign'},
-                  {'name':'icc','name_cn':'ICC','index_url':'https://www.icc2022.com','sign_type':'general'},
+                  {'name':'icc','name_cn':'冰激凌','index_url':'https://www.icc2022.com','sign_type':'general'},
                   {'name':'hitpt','name_cn':'百川','index_url':'https://www.hitpt.com','sign_type':'nosign'},
                   ]
 

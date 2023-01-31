@@ -40,8 +40,8 @@ class SiteProxy(models.Model):
     address = models.CharField('代理地址', max_length=128)
     ptype = models.CharField('代理类型 http,socks5', max_length=10)
     port = models.IntegerField("代理端口")
-    username = models.CharField("账号", max_length=50)
-    userpassword = models.CharField("密码", max_length=128)        
+    username = models.CharField("账号", max_length=50, null=True)
+    userpassword = models.CharField("密码", max_length=128, null=True)        
         
 class SiteInfo(models.Model):
     """

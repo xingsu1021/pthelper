@@ -30,6 +30,11 @@ pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.
 ```
 ![](https://raw.githubusercontent.com/xingsu1021/pthelper/master/static/screenshot/update.png)
 
+# v2.2.4 说明
+```shell
+  1、支持透明代理配置
+```
+
 # v2.2.3 说明
 ```shell
   1、新增签到代理支持
