@@ -4,7 +4,7 @@ django-filter >= 21.1
 simplejson >= 3.17.6
 requests >= 2.27.1
 django-apscheduler >= 0.6.0
-python-telegram-bot >= 13.11
+python-telegram-bot == 13.13
 lxml >= 4.7.1
 beautifulsoup4 >= 4.10.0
 wechatpy >= 1.8.18
