@@ -105,7 +105,7 @@ def hdchina(site_name, site_name_cn, site_url, site_cookie, session):
     #获取网站url,不带/结尾(获取crsf)
     index_url = getSiteUrl(site_url) + '/index.php'
     
-    sign_url = 'https://hdchina.org/plugin_sign-in.php?cmd=signin'
+    sign_url = getSiteUrl(site_url) + '/plugin_sign-in.php?cmd=signin'
     
     logger.info('--------------%s开始签到----------------' % site_name)
     
@@ -178,7 +178,7 @@ def hdarea(site_name, site_name_cn, site_url, site_cookie, session):
         'referer': site_url,
         'cookie': site_cookie
     }
-    sign_url = 'https://www.hdarea.co/sign_in.php'
+    sign_url = getSiteUrl(site_url) + '/sign_in.php'
     
     logger.info('--------------%s开始签到----------------' % site_name)
     
@@ -679,7 +679,7 @@ def tjupt(site_name, site_name_cn, site_url, site_cookie, session):
                                 'submit': "提交"
                                 }
                         
-                        response = session.post("https://tjupt.org/attendance.php", headers=headers, data=data, timeout=10)
+                        response = session.post(sign_url, headers=headers, data=data, timeout=10)
                         if '签到成功' in response.text:
                             msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
                             return True, msg
