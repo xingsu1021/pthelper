@@ -32,7 +32,7 @@ def init_datas():
                   {'name':'ptchina','name_cn':'铂金学院','index_url':'https://ptchina.org','sign_type':'general'},
                   {'name':'hdchina','name_cn':'瓷器','index_url':'https://hdchina.org','sign_type':'hdchina'},
                   {'name':'hdmayi','name_cn':'小蚂蚁','index_url':'http://hdmayi.com','sign_type':'general'},
-                  {'name':'msg','name_cn':'马杀鸡','index_url':'https://pt.msg.vg','sign_type':'nosign'},
+                  #{'name':'msg','name_cn':'马杀鸡','index_url':'https://pt.msg.vg','sign_type':'nosign'},
                   {'name':'beitai','name_cn':'备胎','index_url':'https://www.beitai.pt','sign_type':'nosign'},
                   {'name':'oshen','name_cn':'奥申','index_url':'http://www.oshen.win','sign_type':'general'},
                   #{'name':'avgv','name_cn':'爱薇','index_url':'http://avgv.cc','sign_type':'nosign'},
@@ -43,7 +43,7 @@ def init_datas():
                   {'name':'greatposterwall','name_cn':'海豹','index_url':'https://greatposterwall.com','sign_type':'nosign'},
                   {'name':'hd','name_cn':'海带','index_url':'https://www.hd.ai','sign_type':'hd'},
                   {'name':'m-team','name_cn':'馒头','index_url':'https://kp.m-team.cc','sign_type':'nosign'},
-                  {'name':'lemonhd','name_cn':'柠檬','index_url':'https://lemonhd.org','sign_type':'general'},
+                  #{'name':'lemonhd','name_cn':'柠檬','index_url':'https://lemonhd.org','sign_type':'general'},
                   {'name':'btschool','name_cn':'学校','index_url':'https://pt.btschool.club','sign_type':'btschool'},
                   {'name':'pthome','name_cn':'铂金家','index_url':'https://pthome.net','sign_type':'general'},
                   {'name':'totheglory','name_cn':'听听歌','index_url':'https://totheglory.im','sign_type':'ttg'},
@@ -72,7 +72,7 @@ def init_datas():
                   #{'name':'asf','name_cn':'A-SOUL','index_url':'https://pt.asf.ink','sign_type':'general'},
                   {'name':'ptsbao','name_cn':'烧包','index_url':'https://ptsbao.club','sign_type':'nosign'},
                   {'name':'ssd','name_cn':'春天','index_url':'https://springsunday.net','sign_type':'nosign'},
-                  {'name':'gainbound','name_cn':'丐帮','index_url':'https://gainbound.net','sign_type':'general'},
+                  #{'name':'gainbound','name_cn':'丐帮','index_url':'https://gainbound.net','sign_type':'general'},
                   {'name':'joyhd','name_cn':'开心','index_url':'https://www.joyhd.net','sign_type':'nosign'},
                   {'name':'carpt','name_cn':'车PT','index_url':'https://carpt.net','sign_type':'general'},
                   {'name':'piggo','name_cn':'猪猪网','index_url':'https://piggo.me','sign_type':'general'},
@@ -86,6 +86,7 @@ def init_datas():
                   {'name':'nanyang','name_cn':'南洋','index_url':'https://nanyangpt.com','sign_type':'nosign'},
                   {'name':'icc','name_cn':'冰激凌','index_url':'https://www.icc2022.com','sign_type':'general'},
                   {'name':'hitpt','name_cn':'百川','index_url':'https://www.hitpt.com','sign_type':'nosign'},
+                  {'name':'hdupt','name_cn':'好多油','index_url':'https://pt.hdupt.com','sign_type':'hdupt'},
                   ]
 
     for site in sites_data:

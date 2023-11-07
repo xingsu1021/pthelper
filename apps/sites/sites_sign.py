@@ -86,7 +86,9 @@ def signIngress(site_name, site_name_cn, site_url, site_cookie, sign_type, proxi
     elif sign_type == 'ssd':
         flag, data = ssd(site_name, site_name_cn, site_url, site_cookie, session)   
     elif sign_type == 'u2':
-        flag, data = u2(site_name, site_name_cn, site_url, site_cookie, session)          
+        flag, data = u2(site_name, site_name_cn, site_url, site_cookie, session)   
+    elif sign_type == 'hdupt' or sign_type == 'upxin':
+        flag, data = hdupt(site_name, site_name_cn, site_url, site_cookie, session)
     else:
         flag, data = (False,'%s 未匹配站点' % site_name) 
         
@@ -1533,3 +1535,57 @@ def monikadesign(site_name, site_name_cn, site_url, site_cookie, session):
         logger.error(str(e))
         
         return False, msg    
+    
+def hdupt(site_name, site_name_cn, site_url, site_cookie, session):
+    """
+    好多油签到
+    """
+    headers = {
+        'user-agent': user_agent,
+        'referer': site_url,
+        'cookie': site_cookie
+    }
+    sign_url = getSiteUrl(site_url) + '/added.php'
+    
+    logger.info('--------------%s开始签到----------------' % site_name)
+    
+    try:
+        data = {  
+            'action': 'qiandao'
+        }
+                
+        response = session.post(sign_url, headers=headers, data=data) 
+        
+        if response.status_code == 200:
+            try:
+                response_msg = response.text
+                if response_msg.strip() == '':
+                    msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_cookie)
+                    return False, msg
+                else:
+
+                    if '重复签到' in response_msg:
+                        msg = "%s(%s) %s " % (site_name,site_name_cn, msg_reok)
+                    else:
+                        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_ok)
+                    
+                return True, msg
+            except:
+                #失败，返回html
+                msg = "%s(%s) %s" % (site_name,site_name_cn, msg_err_cookie)
+                return False, msg
+                        
+            return True, msg
+        else:
+            msg = "%s(%s) %s" % (site_name,site_name_cn, msg_err_url)
+            logger.error('--------------%s----------------' % site_name)
+            logger.error(response.text)
+            
+            return False, msg
+        
+    except Exception as e:
+        msg = "%s(%s) %s" % (site_name, site_name_cn, msg_err_url)
+        logger.error('--------------%s----------------' % site_name)
+        logger.error(str(e))
+        
+        return False, msg
